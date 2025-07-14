@@ -1,6 +1,6 @@
 Checks: >
   clang-analyzer-*,bugprone-*,performance-*,portability-*,readability-*,
-  modernize-*,misc-*,-modernize-use-trailing-return-type,-readability-magic-numbers,-modernize-use-nodiscard
+  modernize-*,misc-*,-modernize-use-trailing-return-type,-readability-magic-numbers,-modernize-use-nodiscard,bugprone-use-after-move
 
 WarningsAsErrors: ''
 HeaderFilterRegex: 'sim/.*'
