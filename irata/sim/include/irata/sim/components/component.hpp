@@ -1,8 +1,10 @@
 #pragma once
 
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 
 namespace irata::sim {
@@ -51,22 +53,51 @@ public:
   std::string path() const;
 
   // Tick the whole component tree, doing all tick phases in order top down.
-  void tick();
+  void tick(std::ostream &log_output = std::cout);
+
+  enum class TickPhase {
+    Control,
+    Write,
+    Read,
+    Process,
+    Clear,
+  };
+
+  class Logger {
+  public:
+    explicit Logger(std::ostream &output, TickPhase tick_phase);
+    ~Logger();
+
+    Logger &for_component(const Component *component);
+
+    template <typename T> Logger &operator<<(const T &value) {
+      os_ << value;
+      logged_ = true;
+      return *this;
+    }
+
+  private:
+    std::ostringstream os_;
+    TickPhase tick_phase_;
+    const Component *component_ = nullptr;
+    std::ostream &output_;
+    bool logged_ = false;
+  };
 
   // Set up any control lines that will be used this tick.
-  virtual void tick_control() {}
+  virtual void tick_control(Logger &logger) {}
 
   // Write any data to the bus that was requested by control lines.
-  virtual void tick_write() {}
+  virtual void tick_write(Logger &logger) {}
 
   // Read any data from the bus that was requested by control lines.
-  virtual void tick_read() {}
+  virtual void tick_read(Logger &logger) {}
 
   // Do any local processing for this tick.
-  virtual void tick_process() {}
+  virtual void tick_process(Logger &logger) {}
 
   // Clear any control lines and any other state that was set up this tick.
-  virtual void tick_clear() {}
+  virtual void tick_clear(Logger &logger) {}
 
 private:
   // The name of the component.
@@ -80,7 +111,20 @@ private:
   std::map<std::string, Component *> children_;
 
   // Traverse this component's subtree, calling func on each component.
-  void traverse(std::function<void(Component *)> func);
+  template <typename Func> void traverse(Func func) {
+    func(this);
+    for (auto &[_, child] : children_) {
+      child->traverse(func);
+    }
+  }
+  template <typename Func> void traverse(Func func) const {
+    func(this);
+    for (const auto &[_, child] : children_) {
+      child->traverse(func);
+    }
+  }
 };
+
+std::ostream &operator<<(std::ostream &os, Component::TickPhase phase);
 
 } // namespace irata::sim

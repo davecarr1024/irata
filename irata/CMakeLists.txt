@@ -9,18 +9,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(IRATA_ENABLE_COVERAGE "Enable coverage instrumentation" OFF)
 option(IRATA_ENABLE_SANITIZER "Enable ASAN" OFF)
 
-# ---- Fetch GoogleTest ----
-include(FetchContent)
 
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.17.0
-  )
-
-# Let CMake download and build it
-FetchContent_MakeAvailable(googletest)
-
+add_subdirectory(extern/googletest)
 enable_testing()
 
 # ---- Add subprojects ----

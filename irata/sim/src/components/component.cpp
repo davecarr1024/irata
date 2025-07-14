@@ -1,9 +1,10 @@
+#include <iostream>
 #include <irata/sim/components/component.hpp>
-#include <memory>
+#include <map>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
-#include <vector>
 
 namespace irata::sim {
 
@@ -80,19 +81,55 @@ Component *Component::root() {
   }
 }
 
-void Component::tick() {
+void Component::tick(std::ostream &log_output) {
   auto *root = this->root();
-  root->traverse([](Component *component) { component->tick_control(); });
-  root->traverse([](Component *component) { component->tick_write(); });
-  root->traverse([](Component *component) { component->tick_read(); });
-  root->traverse([](Component *component) { component->tick_process(); });
-  root->traverse([](Component *component) { component->tick_clear(); });
+  auto traverse_phase = [&](TickPhase tick_phase,
+                            void (Component::*tick_fn)(Logger &)) {
+    root->traverse([&](Component *component) {
+      Logger logger(log_output, tick_phase);
+      (component->*tick_fn)(logger.for_component(component));
+    });
+  };
+
+  traverse_phase(TickPhase::Control, &Component::tick_control);
+  traverse_phase(TickPhase::Write, &Component::tick_write);
+  traverse_phase(TickPhase::Read, &Component::tick_read);
+  traverse_phase(TickPhase::Process, &Component::tick_process);
+  traverse_phase(TickPhase::Clear, &Component::tick_clear);
 }
 
-void Component::traverse(std::function<void(Component *)> func) {
-  func(this);
-  for (auto &[_, child] : children_) {
-    child->traverse(func);
+Component::Logger::Logger(std::ostream &output, TickPhase tick_phase)
+    : output_(output), tick_phase_(tick_phase) {}
+
+Component::Logger::~Logger() {
+  if (!logged_) {
+    return;
+  }
+  output_ << "[" << tick_phase_ << "] ";
+  if (component_ != nullptr) {
+    output_ << component_->path() << ": ";
+  }
+  output_ << os_.str() << std::endl;
+}
+
+Component::Logger &
+Component::Logger::for_component(const Component *component) {
+  component_ = component;
+  return *this;
+}
+
+std::ostream &operator<<(std::ostream &os, Component::TickPhase phase) {
+  switch (phase) {
+  case Component::TickPhase::Control:
+    return os << "tick_control";
+  case Component::TickPhase::Write:
+    return os << "tick_write";
+  case Component::TickPhase::Read:
+    return os << "tick_read";
+  case Component::TickPhase::Process:
+    return os << "tick_process";
+  case Component::TickPhase::Clear:
+    return os << "tick_clear";
   }
 }
 

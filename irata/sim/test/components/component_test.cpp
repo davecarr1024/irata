@@ -1,9 +1,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <irata/sim/components/component.hpp>
+#include <stdexcept>
 
 using namespace irata::sim;
 
+using ::testing::_;
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
@@ -120,22 +122,22 @@ namespace {
 class MockComponent : public Component {
 public:
   explicit MockComponent(std::string_view name) : Component(name) {}
-  MOCK_METHOD(void, tick_control, (), (override));
-  MOCK_METHOD(void, tick_write, (), (override));
-  MOCK_METHOD(void, tick_read, (), (override));
-  MOCK_METHOD(void, tick_process, (), (override));
-  MOCK_METHOD(void, tick_clear, (), (override));
+  MOCK_METHOD(void, tick_control, (Component::Logger & logger), (override));
+  MOCK_METHOD(void, tick_write, (Component::Logger & logger), (override));
+  MOCK_METHOD(void, tick_read, (Component::Logger & logger), (override));
+  MOCK_METHOD(void, tick_process, (Component::Logger & logger), (override));
+  MOCK_METHOD(void, tick_clear, (Component::Logger & logger), (override));
 };
 } // namespace
 
 TEST(ComponentTest, TickCallsTickPhases) {
   MockComponent root("root");
-  ::testing::InSequence s;
-  EXPECT_CALL(root, tick_control());
-  EXPECT_CALL(root, tick_write());
-  EXPECT_CALL(root, tick_read());
-  EXPECT_CALL(root, tick_process());
-  EXPECT_CALL(root, tick_clear());
+  const ::testing::InSequence s;
+  EXPECT_CALL(root, tick_control(_));
+  EXPECT_CALL(root, tick_write(_));
+  EXPECT_CALL(root, tick_read(_));
+  EXPECT_CALL(root, tick_process(_));
+  EXPECT_CALL(root, tick_clear(_));
   root.tick();
 }
 
@@ -143,16 +145,28 @@ TEST(ComponentTest, TickCallsTickPhasesForChildren) {
   MockComponent root("root");
   MockComponent child("child");
   root.add_child(&child);
-  ::testing::InSequence s;
-  EXPECT_CALL(root, tick_control());
-  EXPECT_CALL(child, tick_control());
-  EXPECT_CALL(root, tick_write());
-  EXPECT_CALL(child, tick_write());
-  EXPECT_CALL(root, tick_read());
-  EXPECT_CALL(child, tick_read());
-  EXPECT_CALL(root, tick_process());
-  EXPECT_CALL(child, tick_process());
-  EXPECT_CALL(root, tick_clear());
-  EXPECT_CALL(child, tick_clear());
+  const ::testing::InSequence s;
+  EXPECT_CALL(root, tick_control(_));
+  EXPECT_CALL(child, tick_control(_));
+  EXPECT_CALL(root, tick_write(_));
+  EXPECT_CALL(child, tick_write(_));
+  EXPECT_CALL(root, tick_read(_));
+  EXPECT_CALL(child, tick_read(_));
+  EXPECT_CALL(root, tick_process(_));
+  EXPECT_CALL(child, tick_process(_));
+  EXPECT_CALL(root, tick_clear(_));
+  EXPECT_CALL(child, tick_clear(_));
   root.tick();
+}
+
+TEST(ComponentTest, Log) {
+  Component root("root");
+  MockComponent child("child");
+  root.add_child(&child);
+  std::ostringstream os;
+  EXPECT_CALL(child, tick_process(_)).WillOnce([&](Component::Logger &logger) {
+    logger << "Hello, world!";
+  });
+  root.tick(os);
+  EXPECT_EQ(os.str(), "[tick_process] /child: Hello, world!\n");
 }
