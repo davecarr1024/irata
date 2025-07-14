@@ -10,6 +10,7 @@
 namespace irata::sim {
 
 class Control;
+class Status;
 
 // A component is a part of a simulation. It can have children, which are
 // also components.
@@ -103,6 +104,9 @@ public:
 
   // Returns a list of all controls in the component tree.
   virtual std::vector<Control *> controls();
+
+  // Returns a list of all statuses in the component tree.
+  virtual std::vector<Status *> statuses();
 
 private:
   // The name of the component.

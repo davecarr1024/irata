@@ -143,4 +143,14 @@ std::vector<Control *> Component::controls() {
   return result;
 }
 
+std::vector<Status *> Component::statuses() {
+  std::vector<Status *> result;
+  for (const auto &[_, child] : children_) {
+    for (const auto &status : child->statuses()) {
+      result.push_back(status);
+    }
+  }
+  return result;
+}
+
 } // namespace irata::sim
