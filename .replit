@@ -1,4 +1,4 @@
 modules = ["cpp-clang14"]
 [nix]
 channel = "stable-24_05"
-packages = ["cmake", "clang-tools_18"]
+packages = ["cmake", "clang-tools_18", "llvmPackages.bintools-unwrapped"]

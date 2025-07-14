@@ -12,3 +12,14 @@ add_executable(sim_tests ${SIM_TESTS})
 target_link_libraries(sim_tests irata-sim gtest gmock gtest_main)
 
 add_test(NAME SimTests COMMAND sim_tests)
+
+# Apply coverage flags only to irata targets
+if(IRATA_ENABLE_COVERAGE)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(irata-sim PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+    target_link_options(irata-sim PRIVATE -fprofile-instr-generate)
+
+    target_compile_options(sim_tests PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+    target_link_options(sim_tests PRIVATE -fprofile-instr-generate)
+  endif()
+endif()

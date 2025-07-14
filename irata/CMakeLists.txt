@@ -6,12 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(IRATA_ENABLE_COVERAGE "Enable coverage instrumentation" OFF)
+
 # ---- Fetch GoogleTest ----
 include(FetchContent)
 
 FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+  googletest
+  URL https://github.com/google/googletest/archive/refs/heads/main.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 # Let CMake download and build it
