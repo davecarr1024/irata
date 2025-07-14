@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -49,13 +50,37 @@ public:
   // "child" and its parent is named "parent", then the path is "/parent/child".
   std::string path() const;
 
+  // Tick the whole component tree, doing all tick phases in order top down.
+  void tick();
+
+  // Set up any control lines that will be used this tick.
+  virtual void tick_control() {}
+
+  // Write any data to the bus that was requested by control lines.
+  virtual void tick_write() {}
+
+  // Read any data from the bus that was requested by control lines.
+  virtual void tick_read() {}
+
+  // Do any local processing for this tick.
+  virtual void tick_process() {}
+
+  // Clear any control lines and any other state that was set up this tick.
+  virtual void tick_clear() {}
+
 private:
+  // The name of the component.
   std::string name_;
+
+  // The parent of the component, or nullptr if the component has no parent.
   Component *parent_ = nullptr;
 
   // The children of the component, keyed by name.
   // Note that the children are not owned by this map.
   std::map<std::string, Component *> children_;
+
+  // Traverse this component's subtree, calling func on each component.
+  void traverse(std::function<void(Component *)> func);
 };
 
 } // namespace irata::sim

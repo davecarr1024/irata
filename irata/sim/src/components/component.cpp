@@ -80,4 +80,20 @@ Component *Component::root() {
   }
 }
 
+void Component::tick() {
+  auto *root = this->root();
+  root->traverse([](Component *component) { component->tick_control(); });
+  root->traverse([](Component *component) { component->tick_write(); });
+  root->traverse([](Component *component) { component->tick_read(); });
+  root->traverse([](Component *component) { component->tick_process(); });
+  root->traverse([](Component *component) { component->tick_clear(); });
+}
+
+void Component::traverse(std::function<void(Component *)> func) {
+  func(this);
+  for (auto &[_, child] : children_) {
+    child->traverse(func);
+  }
+}
+
 } // namespace irata::sim

@@ -115,3 +115,44 @@ TEST(ComponentTest, GetPath) {
   EXPECT_EQ(parent.path(), "/parent");
   EXPECT_EQ(child.path(), "/parent/child");
 }
+
+namespace {
+class MockComponent : public Component {
+public:
+  explicit MockComponent(std::string_view name) : Component(name) {}
+  MOCK_METHOD(void, tick_control, (), (override));
+  MOCK_METHOD(void, tick_write, (), (override));
+  MOCK_METHOD(void, tick_read, (), (override));
+  MOCK_METHOD(void, tick_process, (), (override));
+  MOCK_METHOD(void, tick_clear, (), (override));
+};
+} // namespace
+
+TEST(ComponentTest, TickCallsTickPhases) {
+  MockComponent root("root");
+  ::testing::InSequence s;
+  EXPECT_CALL(root, tick_control());
+  EXPECT_CALL(root, tick_write());
+  EXPECT_CALL(root, tick_read());
+  EXPECT_CALL(root, tick_process());
+  EXPECT_CALL(root, tick_clear());
+  root.tick();
+}
+
+TEST(ComponentTest, TickCallsTickPhasesForChildren) {
+  MockComponent root("root");
+  MockComponent child("child");
+  root.add_child(&child);
+  ::testing::InSequence s;
+  EXPECT_CALL(root, tick_control());
+  EXPECT_CALL(child, tick_control());
+  EXPECT_CALL(root, tick_write());
+  EXPECT_CALL(child, tick_write());
+  EXPECT_CALL(root, tick_read());
+  EXPECT_CALL(child, tick_read());
+  EXPECT_CALL(root, tick_process());
+  EXPECT_CALL(child, tick_process());
+  EXPECT_CALL(root, tick_clear());
+  EXPECT_CALL(child, tick_clear());
+  root.tick();
+}
