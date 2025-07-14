@@ -1,3 +1,4 @@
-modules = ["go-1.23"]
+modules = ["cpp-clang14"]
 [nix]
 channel = "stable-24_05"
+packages = ["cmake", "clang-tools_18"]
