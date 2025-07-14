@@ -9,6 +9,8 @@
 
 namespace irata::sim {
 
+class Control;
+
 // A component is a part of a simulation. It can have children, which are
 // also components.
 class Component {
@@ -98,6 +100,9 @@ public:
 
   // Clear any control lines and any other state that was set up this tick.
   virtual void tick_clear(Logger &logger) {}
+
+  // Returns a list of all controls in the component tree.
+  virtual std::vector<Control *> controls();
 
 private:
   // The name of the component.

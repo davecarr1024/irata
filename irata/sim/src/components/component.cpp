@@ -133,4 +133,14 @@ std::ostream &operator<<(std::ostream &os, Component::TickPhase phase) {
   }
 }
 
+std::vector<Control *> Component::controls() {
+  std::vector<Control *> result;
+  for (const auto &[_, child] : children_) {
+    for (const auto &control : child->controls()) {
+      result.push_back(control);
+    }
+  }
+  return result;
+}
+
 } // namespace irata::sim

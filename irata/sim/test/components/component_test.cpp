@@ -5,7 +5,6 @@
 
 using namespace irata::sim;
 
-using ::testing::_;
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
@@ -133,11 +132,11 @@ public:
 TEST(ComponentTest, TickCallsTickPhases) {
   MockComponent root("root");
   const ::testing::InSequence s;
-  EXPECT_CALL(root, tick_control(_));
-  EXPECT_CALL(root, tick_write(_));
-  EXPECT_CALL(root, tick_read(_));
-  EXPECT_CALL(root, tick_process(_));
-  EXPECT_CALL(root, tick_clear(_));
+  EXPECT_CALL(root, tick_control(::testing::_));
+  EXPECT_CALL(root, tick_write(::testing::_));
+  EXPECT_CALL(root, tick_read(::testing::_));
+  EXPECT_CALL(root, tick_process(::testing::_));
+  EXPECT_CALL(root, tick_clear(::testing::_));
   root.tick();
 }
 
@@ -146,16 +145,16 @@ TEST(ComponentTest, TickCallsTickPhasesForChildren) {
   MockComponent child("child");
   root.add_child(&child);
   const ::testing::InSequence s;
-  EXPECT_CALL(root, tick_control(_));
-  EXPECT_CALL(child, tick_control(_));
-  EXPECT_CALL(root, tick_write(_));
-  EXPECT_CALL(child, tick_write(_));
-  EXPECT_CALL(root, tick_read(_));
-  EXPECT_CALL(child, tick_read(_));
-  EXPECT_CALL(root, tick_process(_));
-  EXPECT_CALL(child, tick_process(_));
-  EXPECT_CALL(root, tick_clear(_));
-  EXPECT_CALL(child, tick_clear(_));
+  EXPECT_CALL(root, tick_control(::testing::_));
+  EXPECT_CALL(child, tick_control(::testing::_));
+  EXPECT_CALL(root, tick_write(::testing::_));
+  EXPECT_CALL(child, tick_write(::testing::_));
+  EXPECT_CALL(root, tick_read(::testing::_));
+  EXPECT_CALL(child, tick_read(::testing::_));
+  EXPECT_CALL(root, tick_process(::testing::_));
+  EXPECT_CALL(child, tick_process(::testing::_));
+  EXPECT_CALL(root, tick_clear(::testing::_));
+  EXPECT_CALL(child, tick_clear(::testing::_));
   root.tick();
 }
 
@@ -164,9 +163,8 @@ TEST(ComponentTest, Log) {
   MockComponent child("child");
   root.add_child(&child);
   std::ostringstream os;
-  EXPECT_CALL(child, tick_process(_)).WillOnce([&](Component::Logger &logger) {
-    logger << "Hello, world!";
-  });
+  EXPECT_CALL(child, tick_process(::testing::_))
+      .WillOnce([&](Component::Logger &logger) { logger << "Hello, world!"; });
   root.tick(os);
   EXPECT_EQ(os.str(), "[tick_process] /child: Hello, world!\n");
 }
