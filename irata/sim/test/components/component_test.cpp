@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <irata/sim/components/component.h>
+#include <irata/sim/components/component.hpp>
 
 using namespace irata::sim;
 

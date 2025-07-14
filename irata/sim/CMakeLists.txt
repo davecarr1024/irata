@@ -1,7 +1,7 @@
 # Globbing source files
-file(GLOB SIM_SRC CONFIGURE_DEPENDS "src/**/*.cc")
-file(GLOB SIM_HEADERS CONFIGURE_DEPENDS "include/**/*.h")
-file(GLOB SIM_TESTS CONFIGURE_DEPENDS "test/**/*.cc")
+file(GLOB SIM_SRC CONFIGURE_DEPENDS "src/**/*.cpp")
+file(GLOB SIM_HEADERS CONFIGURE_DEPENDS "include/**/*.hpp")
+file(GLOB SIM_TESTS CONFIGURE_DEPENDS "test/**/*.cpp")
 
 # Main library target
 add_library(irata-sim ${SIM_SRC} ${SIM_HEADERS})
