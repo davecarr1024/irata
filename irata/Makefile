@@ -17,7 +17,7 @@ format: configure
 clean:
 	rm -rf build
 
-tidy: configure
+tidy: format
 	find sim -name '*.cpp' | xargs -I{} clang-tidy {} -- -Isim/include -Iextern/googletest/googlemock/include/ -Iextern/googletest/googletest/include/
 
 coverage:
