@@ -1067,4 +1067,3 @@ dkms.conf
 .config
 .ccls-cache
 **/CMakeFiles
-**/Makefile
