@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/irata/asm/schema.json",
+  "title": "IRATA Assembly Instruction Schema",
+  "type": "object",
+  "properties": {
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "opcode", "addressing_mode"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The mnemonic of the instruction (e.g. 'LDA')"
+          },
+          "opcode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "The opcode in hex (e.g. '0xA9')"
+          },
+          "addressing_mode": {
+            "type": "string",
+            "enum": [
+              "immediate",
+              "absolute"
+            ],
+            "description": "How the instruction addresses memory"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional documentation for the instruction"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["instructions"],
+  "additionalProperties": false
+}

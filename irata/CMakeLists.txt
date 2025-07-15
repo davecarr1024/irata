@@ -14,4 +14,5 @@ add_subdirectory(extern/googletest)
 enable_testing()
 
 # ---- Add subprojects ----
+add_subdirectory(asm)
 add_subdirectory(sim)
