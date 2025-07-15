@@ -170,8 +170,20 @@ TEST(ComponentTest, Log) {
   MockComponent child("child");
   root.add_child(&child);
   std::ostringstream os;
+  EXPECT_CALL(child, tick_control(::testing::_))
+      .WillOnce([&](Component::Logger &logger) { logger << "control msg"; });
+  EXPECT_CALL(child, tick_write(::testing::_))
+      .WillOnce([&](Component::Logger &logger) { logger << "write msg"; });
+  EXPECT_CALL(child, tick_read(::testing::_))
+      .WillOnce([&](Component::Logger &logger) { logger << "read msg"; });
   EXPECT_CALL(child, tick_process(::testing::_))
-      .WillOnce([&](Component::Logger &logger) { logger << "Hello, world!"; });
+      .WillOnce([&](Component::Logger &logger) { logger << "process msg"; });
+  EXPECT_CALL(child, tick_clear(::testing::_))
+      .WillOnce([&](Component::Logger &logger) { logger << "clear msg"; });
   root.tick(os);
-  EXPECT_EQ(os.str(), "[tick_process] /child: Hello, world!\n");
+  EXPECT_EQ(os.str(), "[tick_control] /child: control msg\n"
+                      "[tick_write] /child: write msg\n"
+                      "[tick_read] /child: read msg\n"
+                      "[tick_process] /child: process msg\n"
+                      "[tick_clear] /child: clear msg\n");
 }
