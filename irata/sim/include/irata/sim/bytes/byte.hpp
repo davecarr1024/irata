@@ -17,10 +17,10 @@ public:
   // Constructs a byte with the given signed value.
   static Byte from_signed(int8_t value);
 
-  // Allow copying.
+  // Allow copying and assigning.
   Byte() = default;
   Byte(const Byte &) = default;
-
+  Byte &operator=(const Byte &) = default;
   virtual ~Byte() = default;
 
   bool operator==(const Byte &rhs) const;
@@ -66,7 +66,7 @@ public:
 private:
   explicit Byte(uint8_t value);
 
-  const uint8_t value_ = 0;
+  uint8_t value_ = 0;
 };
 
 std::ostream &operator<<(std::ostream &os, const Byte &byte);
