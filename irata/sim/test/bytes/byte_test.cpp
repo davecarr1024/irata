@@ -232,3 +232,15 @@ TEST(ByteTest, SubtractNegativeWithoutBorrowOut) {
                      .half_carry = false,
                  }));
 }
+
+TEST(ByteTest, ToString) {
+  const auto to_str = [](const Byte &byte) {
+    std::ostringstream os;
+    os << byte;
+    return os.str();
+  };
+  EXPECT_EQ(to_str(Byte::from_unsigned(0x00)), "Byte(0x00)");
+  EXPECT_EQ(to_str(Byte::from_unsigned(0xAB)), "Byte(0xAB)");
+  EXPECT_EQ(to_str(Byte::from_signed(-85)), "Byte(0xAB)");
+  EXPECT_EQ(to_str(Byte::from_signed(85)), "Byte(0x55)");
+}
