@@ -12,7 +12,8 @@ namespace irata::sim {
 // clearing.
 class Control : public Component {
 public:
-  explicit Control(std::string_view name, bool auto_clear = true);
+  explicit Control(std::string_view name, Component *parent = nullptr,
+                   bool auto_clear = true);
   virtual ~Control() = default;
 
   // Returns the value of the control line.

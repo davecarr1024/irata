@@ -2,13 +2,10 @@
 
 namespace irata::sim {
 
-Control::Control(std::string_view name, bool auto_clear)
-    : Component(name), value_(false), auto_clear_(auto_clear),
-      clear_(auto_clear_ ? nullptr : std::make_unique<Control>("clear", true)) {
-  if (clear_) {
-    add_child(clear_.get());
-  }
-}
+Control::Control(std::string_view name, Component *parent, bool auto_clear)
+    : Component(name, parent), value_(false), auto_clear_(auto_clear),
+      clear_(auto_clear_ ? nullptr
+                         : std::make_unique<Control>("clear", this, true)) {}
 
 bool Control::value() const { return value_; }
 

@@ -25,7 +25,7 @@ TEST(ControlTest, AutoClear) {
 }
 
 TEST(ControlTest, ManualClear) {
-  Control control("control", false);
+  Control control("control", nullptr, false);
   // By default clear control is false and value is false.
   EXPECT_FALSE(control.value());
   EXPECT_THAT(control.clear(), Optional(false));
@@ -49,9 +49,7 @@ TEST(ControlTest, ManualClear) {
 
 TEST(ControlTest, GetControls) {
   Component root("root");
-  Control control1("control1");
-  Control control2("control2");
-  root.add_child(&control1);
-  root.add_child(&control2);
+  Control control1("control1", &root);
+  Control control2("control2", &root);
   EXPECT_THAT(root.controls(), UnorderedElementsAre(&control1, &control2));
 }

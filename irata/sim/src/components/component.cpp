@@ -8,7 +8,12 @@
 
 namespace irata::sim {
 
-Component::Component(std::string_view name) : name_(std::string(name)) {}
+Component::Component(std::string_view name, Component *parent)
+    : name_(std::string(name)), parent_(nullptr) {
+  if (parent != nullptr) {
+    parent->add_child(this);
+  }
+}
 
 std::string Component::name() const { return name_; }
 

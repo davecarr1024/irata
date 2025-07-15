@@ -10,7 +10,7 @@ namespace irata::sim {
 class Status : public Component {
 public:
   // Constructs a status line with the given name.
-  explicit Status(std::string_view name);
+  explicit Status(std::string_view name, Component *parent = nullptr);
   virtual ~Status() = default;
 
   // Returns the current value of this status line.

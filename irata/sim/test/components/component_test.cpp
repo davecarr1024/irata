@@ -16,6 +16,13 @@ TEST(ComponentTest, Empty) {
   EXPECT_EQ(test_component.parent(), nullptr);
 }
 
+TEST(ComponentTest, WithParent) {
+  Component parent("parent");
+  Component child("child", &parent);
+  EXPECT_EQ(child.parent(), &parent);
+  EXPECT_THAT(parent.children(), UnorderedElementsAre(Pair("child", &child)));
+}
+
 TEST(ComponentTest, AddChild) {
   Component parent("parent");
   Component child("child");

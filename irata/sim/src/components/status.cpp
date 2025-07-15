@@ -2,7 +2,8 @@
 
 namespace irata::sim {
 
-Status::Status(std::string_view name) : Component(name) {}
+Status::Status(std::string_view name, Component *parent)
+    : Component(name, parent) {}
 
 bool Status::value() const { return value_; }
 

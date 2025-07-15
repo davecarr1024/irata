@@ -17,7 +17,7 @@ class Status;
 class Component {
 public:
   // Constructs a new component with the given name.
-  explicit Component(std::string_view name);
+  explicit Component(std::string_view name, Component *parent = nullptr);
   virtual ~Component() = default;
 
   // Disable copying and moving.
