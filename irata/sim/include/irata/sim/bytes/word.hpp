@@ -11,6 +11,7 @@ public:
   // Constructs a word with the given value.
   explicit Word(uint16_t value = 0);
   Word(const Word &) = default;
+  Word &operator=(const Word &) = default;
   virtual ~Word() = default;
 
   // Constructs a word from the given high and low bytes.
@@ -22,7 +23,7 @@ public:
   uint16_t value() const;
 
 private:
-  const uint16_t value_;
+  uint16_t value_;
 };
 
 } // namespace irata::sim

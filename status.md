@@ -1,111 +1,134 @@
 # 🧾 Irata Project Status
 
-_Last updated: July 15, 2025_
+_Last updated: July 16, 2025_
 
 ---
 
 ## ✅ Current State
 
-The Irata simulated computer system is progressing well, with the following core structures in place:
+The Irata simulated computer system is progressing steadily, with the first full controller implementation now complete and fully tested.
 
 ### 🧠 Instruction Set + Microcode
 - Instruction set defined via `asm.yaml` and exported to C++ as `Instruction` structs.
-- Microcode paths and steps are defined separately in `instructions.cpp` with associated status flag conditions.
-- `StatusEncoder` implemented and tested:
-  - Encodes status conditions into 8-bit microcode address bits
-  - Supports permutations for "don't care" paths
-  - Fully tested with GTest
+- Microcode paths and steps are defined separately in `InstructionSet`, supporting relative or absolute control/status paths.
+- Status-based branching is supported per instruction, enabling conditional execution of control programs.
+- `InstructionMemory` class implemented:
+  - Encodes status bit permutations
+  - Exposes addressable control sequences
+  - Integrated with `Controller`
+
+### 📦 Controller
+- `Controller` component implemented and verified:
+  - Fetches microcode from `InstructionMemory` based on opcode, step, and status values
+  - Applies control line assertions via absolute or prefix-resolved paths
+  - Supports relative addressing via a configurable `path_prefix`
+- Thoroughly tested:
+  - 6 end-to-end GTest cases:
+    - Absolute + Relative addressing
+    - With and without status conditions
+    - Full integration with Registers and Status components
+- ✅ First working one-step instruction with data movement verified (`a ← b`)
 
 ### 🔗 Encoders
-- `StatusEncoder` working as part of the instruction memory address generator.
-- Planned: Instruction address = `opcode | step | status` layout, not finalized yet.
+- `StatusEncoder` working and tested.
+- `InstructionMemory` currently assumes a 16x32 layout (opcode x step) with branching via status masks.
+- Opcode, step, and status mapping is working — but final address scheme may still evolve.
 
 ### 🔌 Component Design
-- CPU being reimagined as a pluggable `Component` with:
-  - `DataBus<uint8_t>` (shared)
-  - `AddressBus<uint16_t>` (shared)
-  - Read/Write control lines
-  - Implicit clock via shared `Tick()` phase
-  - Component-local control lines resolved via prefix paths
+- Components use a tree-based hierarchy with absolute path addressing.
+- Control/status lines are resolved via names like `/reg/write` or relative paths like `reg/write` with a prefix.
+- All components respond to `tick()` cycles for state updates.
 
 ### 🧱 Buses
-- Address and data buses are separate physical entities.
-- Components connect via shared `Bus<T>` instances gated by control lines.
-- Future: generalize bus types with templated `Bus<T>` (byte, word, etc.)
+- Bus wiring verified:
+  - `Bus` class for shared signal propagation
+  - Registers and other devices connect via bus + gated control lines
+- Components update state via `tick()` phases
 
-### 🧰 WordRegister
-- Design in progress:
-  - Composed of two 8-bit subregisters: `.hi`, `.lo`
-  - Connects to 16-bit `AddressBus` for PC-style use
-  - Connects optionally to 8-bit `DataBus` for microcode-controlled loads
-  - Increment and reset behavior customizable via control lines
+### 🧰 Register + Counter
+- `Register` and `Counter` components implemented and tested
+- `Counter` supports increment and reset lines with override behavior
+- `Register` supports read/write via control lines and bus connection
+
+### 🧰 WordRegister (Design Phase)
+- Intended design:
+  - Two subregisters (`.hi` + `.lo`)
+  - Connected to 16-bit address bus
+  - Optionally connected to data bus for byte-level access
+  - Increment and reset via control lines
+- Bus connectivity configurable per use case (e.g. PC vs. temporary)
 
 ### 🧩 Memory Mapping Model
-- Moving away from flat `std::map<uint16_t, uint8_t>` memory (Flip-era)
-- Designing realistic, address-decoded memory model:
-  - Chips like RAM, ROM, IO are standalone `Component`s with buses and controls
-  - A `MemoryDecoder` or `AddressDecoder` component will:
-    - Observe address bus and control lines
-    - Enable routing of read/write/data to a subcomponent if address range matches
-    - Remap global address to local offset
-  - Each memory chip (RAM, ROM, etc.) gets its own local view of memory space
+- Legacy flat memory model (Flip) deprecated
+- Design direction:
+  - RAM/ROM/IO modeled as `Component`s with addressable buses
+  - AddressDecoder component will:
+    - Observe global address bus
+    - Enable/route access to subcomponents
+    - Translate global address to local offsets
+- Goal: pluggable realistic memory map for embedded use, paging, etc.
 
 ---
 
 ## 🔍 Open Design Questions
 
 ### 1. **Instruction Memory Address Layout**
-- How many bits for status vs step vs opcode?
-- Should address layout be abstracted into a `MicrocodeAddress` struct?
+- Current guess: 8-bit opcode, 5-bit step, 3-bit status mask (?)
+- Final layout TBD — should be abstracted into a `MicrocodeAddress`
 
 ### 2. **Control Path Resolution**
-- Controllers must address internal control lines relative to CPU or coprocessor root
-- Plan: support prefix pathing (`cpu.Registers.A.Enable`) for controller wiring
+- Relative vs. absolute paths fully working
+- Documented contract: control/status paths + prefix → must yield absolute `/...` path
 
 ### 3. **CPU as a Component**
-- What is the standard CPU interface?
-  - Data/Address buses + control lines?
-  - Externalized tick behavior?
-- What’s the cleanest way to model internal logic + external interface?
+- How to structure CPU internals:
+  - Internal wires = bus
+  - Controller provides brain
+  - Registers, ALU, and memory connect via path + bus
+- Clean interface TBD, but we're close
 
 ### 4. **Bus System Design**
-- Should `Bus<T>` be a simple shared pointer? ✅ Leaning yes
-- Should buses support write-gating only, or also simulate contention/direction?
-- Generalization: can `Bus<T>` work across byte, word, etc.?
+- `Bus<T>` is working well as a shared signal
+- Write gating and directionality implied by control signals
+- May generalize later (byte, word, etc.)
 
 ### 5. **Memory Mapping / Decoding**
-- Should memory routing be handled via a dedicated `MemoryDecoder`?
-- How to cleanly express address range, address offsetting, and chip enable logic?
-- Can MMIO/paging (like MMC3) be modeled as normal components hanging off decoder?
+- Plan:
+  - `AddressDecoder` observes bus + enables child components
+  - Each RAM/ROM/MMIO region gets own `Component`
+- Future idea: support for paging/MMC-like mappers
 
 ### 6. **Tick Phase Semantics**
-- Current tick phases: `control → write → read → process → clear`
-- Concern: when should memory routing (e.g. decoder logic) happen?
-- Option: introduce `tick_predecode()` for signal preparation in address decoders
-- Avoid modeling physical signal propagation — not worth the pain
+- Current tick flow: `control → write → read → process → clear`
+- Question: where should address decoding happen?
+  - Idea: `tick_predecode()` to prep address decoder before write/read
 
 ### 7. **WordRegister Generalization**
-- Only `PC` needs address + data bus connection
-- Other word-wide registers (indirect pointers, temporary) don’t
-- Plan: make bus/control hookups optional via configuration struct
+- Some registers need full address + data bus support
+- Some don’t — should support optional hookups via config struct
 
 ---
 
 ## 🔜 Next Steps
 
-- [ ] Finalize instruction memory address layout (status/step/opcode)
-- [ ] Implement `MicrocodeAddress` encoder
-- [ ] Finish `WordRegister` with `.lo`, `.hi`, and increment logic
+- [ ] Finalize instruction memory address layout + `MicrocodeAddress`
+- [ ] Build top-level `CPU` component:
+  - Register wiring
+  - ALU sketch
+  - Controller hookup
+- [ ] Write minimal ALU (even as a `Register` with op controls at first)
+- [ ] Implement `WordRegister`
 - [ ] Build `MemoryDecoder` and minimal `RAMComponent`
-- [ ] Wire up CPU to external bus and memory as a component
-- [ ] Write end-to-end test that loads a value (`LDA #$42`) into memory
+- [ ] Wire up a one-instruction CPU (e.g. `LDA #$42`)
+- [ ] End-to-end test: opcode → controller → buses → registers → result
 
 ---
 
 ## 🌱 Guiding Principles
 
-- Build one real machine — not a simulation framework
-- Keep components modular, but don’t abstract prematurely
-- Favor working vertical slices (load a value, tick it through the system)
-- Treat control lines and buses as physical phenomena
-- Embrace testability: all behavior should be observable and unit-testable
+- Build **one real machine**, not a simulator framework
+- Control lines are **physical**: wiring matters
+- Favor **end-to-end vertical slices**
+- Tests are the spec — every new component must be unit-testable
+- Component trees, paths, and control wiring are **real topology**
+- Avoid overengineering — build what’s needed, then refactor
