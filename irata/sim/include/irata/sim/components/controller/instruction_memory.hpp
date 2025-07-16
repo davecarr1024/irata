@@ -19,7 +19,7 @@ class InstructionMemory : public Component {
 public:
   // Creates a new instruction memory for the given instruction set.
   explicit InstructionMemory(const microcode::InstructionSet &instruction_set,
-                             std::string_view name = "InstructionMemory",
+                             std::string_view name = "instruction_memory",
                              Component *parent = nullptr);
 
   // Returns the set of statuses in the instruction set.

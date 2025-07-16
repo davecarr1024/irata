@@ -104,9 +104,11 @@ public:
 
   // Returns a list of all controls in the component tree.
   virtual std::vector<Control *> controls();
+  std::vector<const Control *> controls() const;
 
   // Returns a list of all statuses in the component tree.
   virtual std::vector<Status *> statuses();
+  std::vector<const Status *> statuses() const;
 
 private:
   // The name of the component.

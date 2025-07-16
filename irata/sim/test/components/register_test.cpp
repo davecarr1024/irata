@@ -3,7 +3,10 @@
 #include <irata/sim/components/register.hpp>
 #include <stdexcept>
 
-using namespace irata::sim;
+using ::testing::IsNull;
+using ::testing::NotNull;
+
+namespace irata::sim {
 
 TEST(RegisterTest, Value) {
   Bus bus("bus");
@@ -83,3 +86,13 @@ TEST(RegisterTest, ReadOpenBus) {
   // Tick. Expect an error since nothing is writing to the bus.
   EXPECT_THROW(bus.tick(), std::logic_error);
 }
+
+TEST(RegisterTest, ControlsExistInComponentTree) {
+  Component root("root");
+  Bus bus("bus", &root);
+  Register reg("reg", bus, &root);
+  EXPECT_THAT(root.child("/reg/write"), NotNull());
+  EXPECT_THAT(root.child("/reg/read"), NotNull());
+}
+
+} // namespace irata::sim

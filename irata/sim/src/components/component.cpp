@@ -148,12 +148,28 @@ std::vector<Control *> Component::controls() {
   return result;
 }
 
+std::vector<const Control *> Component::controls() const {
+  std::vector<const Control *> result;
+  for (auto *control : const_cast<Component *>(this)->controls()) {
+    result.push_back(control);
+  }
+  return result;
+}
+
 std::vector<Status *> Component::statuses() {
   std::vector<Status *> result;
   for (const auto &[_, child] : children_) {
     for (const auto &status : child->statuses()) {
       result.push_back(status);
     }
+  }
+  return result;
+}
+
+std::vector<const Status *> Component::statuses() const {
+  std::vector<const Status *> result;
+  for (auto *status : const_cast<Component *>(this)->statuses()) {
+    result.push_back(status);
   }
   return result;
 }

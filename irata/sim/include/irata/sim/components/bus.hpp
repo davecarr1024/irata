@@ -14,7 +14,7 @@ namespace irata::sim {
 class Bus : public Component {
 public:
   // Constructs a bus with the given name and parent.
-  explicit Bus(std::string_view name, Component *parent = nullptr);
+  explicit Bus(std::string_view name = "bus", Component *parent = nullptr);
   virtual ~Bus() = default;
 
   // Returns the current value on the bus during this tick, if any.
