@@ -1,9 +1,9 @@
 #include <irata/sim/components/register.hpp>
 #include <stdexcept>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
-Register::Register(std::string_view name, Bus &bus, Component *parent)
+Register::Register(std::string_view name, Bus<Byte> &bus, Component *parent)
     : Component(name, parent), bus_(bus), write_("write", this),
       read_("read", this), reset_("reset", this) {}
 
@@ -48,4 +48,4 @@ void Register::tick_process(Logger &logger) {
   }
 }
 
-} // namespace irata::sim
+} // namespace irata::sim::components

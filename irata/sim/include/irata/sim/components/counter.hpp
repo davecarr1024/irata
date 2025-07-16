@@ -1,5 +1,6 @@
 #pragma once
 
+#include <irata/sim/bytes/byte.hpp>
 #include <irata/sim/components/bus.hpp>
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/control.hpp>
@@ -10,7 +11,7 @@ namespace irata::sim::components {
 
 class Counter : public Register {
 public:
-  explicit Counter(std::string_view name, Bus &bus,
+  explicit Counter(std::string_view name, Bus<Byte> &bus,
                    Component *parent = nullptr);
   virtual ~Counter() = default;
 

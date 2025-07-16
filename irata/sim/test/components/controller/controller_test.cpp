@@ -11,7 +11,7 @@
 namespace irata::sim::components::controller {
 
 TEST(ControllerTest, SetAndGetOpcode) {
-  Bus bus;
+  Bus<Byte> bus;
   const auto instruction_set = microcode::InstructionSet{};
   Controller controller(instruction_set, bus);
   EXPECT_EQ(controller.opcode(), Byte::from_unsigned(0));
@@ -20,7 +20,7 @@ TEST(ControllerTest, SetAndGetOpcode) {
 }
 
 TEST(ControllerTest, SetAndGetStepIndex) {
-  Bus bus;
+  Bus<Byte> bus;
   const auto instruction_set = microcode::InstructionSet{};
   Controller controller(instruction_set, bus);
   EXPECT_EQ(controller.step_index(), Byte::from_unsigned(0));
@@ -48,7 +48,7 @@ TEST(ControllerTest, AbsoluteNoStatusProgram) {
   // Build up a simple component tree with a bus, and two registers a and b, and
   // a controller.
   Component root("root");
-  Bus bus("bus", &root);
+  Bus<Byte> bus("bus", &root);
   Register a("a", bus, &root);
   Register b("b", bus, &root);
   Controller controller(instruction_set, bus, "controller", &root);
@@ -92,7 +92,7 @@ TEST(ControllerTest, RelativeNoStatusProgram) {
   //       /a
   //       /b
   Component root("root");
-  Bus bus("bus", &root);
+  Bus<Byte> bus("bus", &root);
   Component ctl("ctl", &root);
   Register a("a", bus, &ctl);
   Register b("b", bus, &ctl);
@@ -137,7 +137,7 @@ TEST(ControllerTest, AbsoluteWithStatusProgram) {
                        }}}}};
 
   Component root("root");
-  Bus bus("bus", &root);
+  Bus<Byte> bus("bus", &root);
   Register a("a", bus, &root);
   Register b("b", bus, &root);
   Status lda_enable("lda_enable", &root);
@@ -203,7 +203,7 @@ TEST(ControllerTest, RelativeWithStatusProgram) {
   //       /b
   //       /lda_enable
   Component root("root");
-  Bus bus("bus", &root);
+  Bus<Byte> bus("bus", &root);
   Component ctl("ctl", &root);
   Register a("a", bus, &ctl);
   Register b("b", bus, &ctl);

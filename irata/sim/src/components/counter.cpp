@@ -3,7 +3,7 @@
 
 namespace irata::sim::components {
 
-Counter::Counter(std::string_view name, Bus &bus, Component *parent)
+Counter::Counter(std::string_view name, Bus<Byte> &bus, Component *parent)
     : Register(name, bus, parent), increment_("increment", this) {}
 
 bool Counter::increment() const { return increment_.value(); }

@@ -5,7 +5,7 @@
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/control.hpp>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 // A register is a component that stores a single byte of data.
 // It has a write control line that enables writing to the bus,
@@ -14,7 +14,7 @@ namespace irata::sim {
 class Register : public Component {
 public:
   // Constructs a register with the given name and bus.
-  Register(std::string_view name, Bus &bus, Component *parent = nullptr);
+  Register(std::string_view name, Bus<Byte> &bus, Component *parent = nullptr);
   virtual ~Register() = default;
 
   // Returns the current value of the register.
@@ -46,10 +46,10 @@ public:
 
 private:
   Byte value_;
-  Bus &bus_;
+  Bus<Byte> &bus_;
   Control write_;
   Control read_;
   Control reset_;
 };
 
-} // namespace irata::sim
+} // namespace irata::sim::components

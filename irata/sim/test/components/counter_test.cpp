@@ -1,12 +1,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/bytes/byte.hpp>
 #include <irata/sim/components/bus.hpp>
 #include <irata/sim/components/counter.hpp>
 
 namespace irata::sim::components {
 
 TEST(CounterTest, SetIncrement) {
-  Bus bus;
+  Bus<Byte> bus;
   Counter counter("counter", bus);
   EXPECT_FALSE(counter.increment());
   counter.set_increment(true);
@@ -14,7 +15,7 @@ TEST(CounterTest, SetIncrement) {
 }
 
 TEST(CounterTest, Idle) {
-  Bus bus;
+  Bus<Byte> bus;
   Counter counter("counter", bus);
   counter.set_increment(false);
   EXPECT_EQ(counter.value(), Byte::from_unsigned(0));
@@ -25,7 +26,7 @@ TEST(CounterTest, Idle) {
 }
 
 TEST(CounterTest, Increment) {
-  Bus bus;
+  Bus<Byte> bus;
   Counter counter("counter", bus);
   counter.set_increment(true);
   EXPECT_EQ(counter.value(), Byte::from_unsigned(0));
@@ -36,7 +37,7 @@ TEST(CounterTest, Increment) {
 }
 
 TEST(CounterTest, Overflow) {
-  Bus bus;
+  Bus<Byte> bus;
   Counter counter("counter", bus);
   counter.set_increment(true);
   counter.set_value(Byte::from_unsigned(255));
@@ -48,7 +49,7 @@ TEST(CounterTest, Overflow) {
 }
 
 TEST(CounterTest, Reset) {
-  Bus bus;
+  Bus<Byte> bus;
   Counter counter("counter", bus);
   counter.set_reset(true);
   counter.set_value(Byte::from_unsigned(1));
@@ -60,7 +61,7 @@ TEST(CounterTest, Reset) {
 }
 
 TEST(CounterTest, ResetOverridesIncrement) {
-  Bus bus;
+  Bus<Byte> bus;
   Counter counter("counter", bus);
   counter.set_reset(true);
   counter.set_increment(true);

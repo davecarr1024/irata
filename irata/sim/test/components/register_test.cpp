@@ -1,15 +1,17 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/bytes/byte.hpp>
+#include <irata/sim/components/bus.hpp>
 #include <irata/sim/components/register.hpp>
 #include <stdexcept>
 
 using ::testing::IsNull;
 using ::testing::NotNull;
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 TEST(RegisterTest, Value) {
-  Bus bus("bus");
+  Bus<Byte> bus("bus");
   Register reg("reg", bus, &bus);
   EXPECT_EQ(reg.value(), Byte::from_unsigned(0));
   reg.set_value(Byte::from_unsigned(0xAB));
@@ -17,7 +19,7 @@ TEST(RegisterTest, Value) {
 }
 
 TEST(RegisterTest, Idle) {
-  Bus bus("bus");
+  Bus<Byte> bus("bus");
   Register reg("reg", bus, &bus);
   // Set register value.
   reg.set_value(Byte::from_unsigned(0xAB));
@@ -34,7 +36,7 @@ TEST(RegisterTest, Idle) {
 }
 
 TEST(RegisterTest, WriteThroughBus) {
-  Bus bus("bus");
+  Bus<Byte> bus("bus");
   Register from("from", bus, &bus);
   Register to("to", bus, &bus);
   // Set value on from register.
@@ -62,7 +64,7 @@ TEST(RegisterTest, WriteThroughBus) {
 }
 
 TEST(RegisterTest, Reset) {
-  Bus bus("bus");
+  Bus<Byte> bus("bus");
   Register reg("reg", bus, &bus);
   // Set value on register.
   reg.set_value(Byte::from_unsigned(0xAB));
@@ -79,7 +81,7 @@ TEST(RegisterTest, Reset) {
 }
 
 TEST(RegisterTest, ReadOpenBus) {
-  Bus bus("bus");
+  Bus<Byte> bus("bus");
   Register reg("reg", bus, &bus);
   // Set read on register.
   reg.set_read(true);
@@ -89,10 +91,10 @@ TEST(RegisterTest, ReadOpenBus) {
 
 TEST(RegisterTest, ControlsExistInComponentTree) {
   Component root("root");
-  Bus bus("bus", &root);
+  Bus<Byte> bus("bus", &root);
   Register reg("reg", bus, &root);
   EXPECT_THAT(root.child("/reg/write"), NotNull());
   EXPECT_THAT(root.child("/reg/read"), NotNull());
 }
 
-} // namespace irata::sim
+} // namespace irata::sim::components
