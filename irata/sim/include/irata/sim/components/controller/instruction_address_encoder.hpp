@@ -1,7 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <irata/sim/components/controller/status_encoder.hpp>
 #include <irata/sim/microcode/instruction_set.hpp>
+#include <map>
+#include <set>
+#include <string>
+#include <tuple>
+#include <vector>
 
 namespace irata::sim::components::controller {
 
@@ -45,6 +51,9 @@ public:
 
   // Returns the number of bits used to encode the statuses.
   size_t status_bit_count() const;
+
+  // Returns the set of all statuses in the instruction set.
+  std::set<std::string> statuses() const;
 
 private:
   const StatusEncoder status_encoder_;

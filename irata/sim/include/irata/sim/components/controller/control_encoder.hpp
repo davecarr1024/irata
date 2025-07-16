@@ -21,7 +21,7 @@ public:
   uint32_t encode(const std::vector<std::string> &controls) const;
 
   // Decodes the given row of instruction memory into a vector of controls.
-  std::vector<std::string> decode(uint32_t encoded) const;
+  std::set<std::string> decode(uint32_t encoded) const;
 
   // Returns the set of all controls in the instruction set.
   std::set<std::string> controls() const;

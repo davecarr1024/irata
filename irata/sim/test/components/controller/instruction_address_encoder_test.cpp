@@ -135,4 +135,9 @@ TEST(InstructionAddressEncoderTest, PermuteStatusesAndEncode) {
               UnorderedElementsAre(0b101001, 0b101000));
 }
 
+TEST(InstructionAddressEncoderTest, GetStatuses) {
+  const auto encoder = InstructionAddressEncoder(instruction_set);
+  EXPECT_THAT(encoder.statuses(), UnorderedElementsAre("P1"));
+}
+
 } // namespace irata::sim::components::controller

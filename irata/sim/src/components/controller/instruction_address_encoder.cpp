@@ -103,4 +103,8 @@ std::vector<uint16_t> InstructionAddressEncoder::permute_statuses_and_encode(
   return result;
 }
 
+std::set<std::string> InstructionAddressEncoder::statuses() const {
+  return status_encoder_.statuses();
+}
+
 } // namespace irata::sim::components::controller

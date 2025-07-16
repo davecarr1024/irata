@@ -51,11 +51,11 @@ ControlEncoder::encode(const std::vector<std::string> &controls) const {
   return result;
 }
 
-std::vector<std::string> ControlEncoder::decode(uint32_t encoded) const {
-  std::vector<std::string> result;
+std::set<std::string> ControlEncoder::decode(uint32_t encoded) const {
+  std::set<std::string> result;
   for (const auto &[key, index] : control_indices_) {
     if (encoded & (1 << index)) {
-      result.push_back(key);
+      result.insert(key);
     }
   }
   return result;
