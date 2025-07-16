@@ -35,12 +35,17 @@ get_status_indices(const microcode::InstructionSet &instruction_set) {
 StatusEncoder::StatusEncoder(const microcode::InstructionSet &instruction_set)
     : status_indices_(get_status_indices(instruction_set)) {
   if (status_count() > 8) {
-    throw std::runtime_error("too many statuses");
+    throw std::invalid_argument("too many statuses");
   }
 }
 
-uint8_t
-StatusEncoder::encode(const std::map<std::string, bool> &statuses) const {
+uint8_t StatusEncoder::encode(std::map<std::string, bool> statuses) const {
+  // If any statuses are missing, throw an error.
+  for (const auto &[key, _] : status_indices_) {
+    if (statuses.find(key) == statuses.end()) {
+      throw std::invalid_argument("missing status: " + key);
+    }
+  }
   uint8_t result = 0;
   for (const auto &[key, value] : statuses) {
     result |= value << status_index(key);
@@ -61,7 +66,7 @@ uint8_t StatusEncoder::status_index(const std::string &status) const {
       it != status_indices_.end()) {
     return it->second;
   }
-  throw std::runtime_error("unknown status: " + status);
+  throw std::invalid_argument("unknown status: " + status);
 }
 
 size_t StatusEncoder::status_count() const { return status_indices_.size(); }
@@ -103,6 +108,15 @@ std::vector<std::map<std::string, bool>> StatusEncoder::permute_statuses(
     result.push_back(std::move(full));
   }
 
+  return result;
+}
+
+std::vector<uint8_t> StatusEncoder::permute_and_encode(
+    std::map<std::string, bool> partial_statuses) const {
+  std::vector<uint8_t> result;
+  for (const auto &statuses : permute_statuses(partial_statuses)) {
+    result.push_back(encode(statuses));
+  }
   return result;
 }
 

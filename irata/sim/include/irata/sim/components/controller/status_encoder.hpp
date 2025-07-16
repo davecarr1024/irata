@@ -18,7 +18,16 @@ public:
   virtual ~StatusEncoder() = default;
 
   // Encodes the given statuses into a single byte.
-  uint8_t encode(const std::map<std::string, bool> &statuses) const;
+  // Note that the statuses must be a complete set of statuses for the
+  // instruction set. If a status is not provided, an exception will be thrown.
+  // To generate all possible permutations of a partial set of statuses, use
+  // the permute_statuses method.
+  uint8_t encode(std::map<std::string, bool> statuses) const;
+
+  // Encodes every possible permutation of the given partial statuses into a
+  // vector of bytes.
+  std::vector<uint8_t>
+  permute_and_encode(std::map<std::string, bool> partial_statuses) const;
 
   // Decodes the given byte into a map of statuses.
   std::map<std::string, bool> decode(uint8_t encoded) const;

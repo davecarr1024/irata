@@ -28,7 +28,7 @@ TEST(StatusEncoderTest, TooManyStatuses) {
   for (int i = 0; i < 9; i++) {
     status_names.push_back("P" + std::to_string(i));
   }
-  EXPECT_THROW(build_encoder(status_names), std::runtime_error);
+  EXPECT_THROW(build_encoder(status_names), std::invalid_argument);
 }
 
 TEST(StatusEncoderTest, Statuses) {
@@ -41,11 +41,17 @@ TEST(StatusEncoderTest, Statuses) {
 
 TEST(StatusEncoderTest, Encode) {
   const auto encoder = build_encoder({"P1", "P2", "P3"});
-  EXPECT_THAT(encoder.encode({{"P1", true}}), 0b001);
-  EXPECT_THAT(encoder.encode({{"P2", true}}), 0b010);
-  EXPECT_THAT(encoder.encode({{"P3", false}}), 0b000);
+  EXPECT_THAT(encoder.encode({{"P1", true}, {"P2", true}, {"P3", true}}),
+              0b111);
   EXPECT_THAT(encoder.encode({{"P1", true}, {"P2", true}, {"P3", false}}),
               0b011);
+  EXPECT_THAT(encoder.encode({{"P1", false}, {"P2", false}, {"P3", false}}),
+              0b000);
+}
+
+TEST(StatusEncoderTest, EncodeFailsOnPartialStatuses) {
+  const auto encoder = build_encoder({"P1", "P2", "P3"});
+  EXPECT_THROW(encoder.encode({{"P1", true}}), std::invalid_argument);
 }
 
 TEST(StatusEncoderTest, Decode) {
@@ -66,7 +72,8 @@ TEST(StatusEncoderTest, Decode) {
 
 TEST(StatusEncoderTest, UnknownStatus) {
   const auto encoder = build_encoder({"P1"});
-  EXPECT_THROW(encoder.encode({{"P2", true}}), std::runtime_error);
+  EXPECT_THROW(encoder.encode({{"P1", true}, {"P2", true}}),
+               std::invalid_argument);
 }
 
 TEST(StatusEncoderTest, PermuteStatuses) {
@@ -84,6 +91,12 @@ TEST(StatusEncoderTest, PermuteStatuses) {
                            ElementsAre(Pair("P1", true), Pair("P2", false)),
                            ElementsAre(Pair("P1", false), Pair("P2", true)),
                            ElementsAre(Pair("P1", true), Pair("P2", true))));
+}
+
+TEST(StatusEncoderTest, PermuteAndEncode) {
+  const auto encoder = build_encoder({"P1", "P2"});
+  EXPECT_THAT(encoder.permute_and_encode({{"P1", true}}),
+              UnorderedElementsAre(0b01, 0b11));
 }
 
 } // namespace irata::sim::components::controller
