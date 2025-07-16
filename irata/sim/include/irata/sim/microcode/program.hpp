@@ -14,10 +14,10 @@ struct Program {
   // These are all executed sequentially.
   const std::vector<Statement> statements;
 
-  // The preconditions of the microcode program.
+  // The statuses of the microcode program.
   // If these are provided, the corresponding status lines must match
   // the specified values for this program to be executed.
-  const std::map<std::string, bool> preconditions;
+  const std::map<std::string, bool> statuses;
 };
 
 } // namespace irata::sim::microcode
