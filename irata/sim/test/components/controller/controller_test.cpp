@@ -13,7 +13,7 @@ namespace irata::sim::components::controller {
 TEST(ControllerTest, SetAndGetOpcode) {
   Bus<Byte> bus;
   const auto instruction_set = microcode::InstructionSet{};
-  Controller controller(instruction_set, bus);
+  Controller controller(instruction_set, &bus);
   EXPECT_EQ(controller.opcode(), Byte::from_unsigned(0));
   controller.set_opcode(Byte::from_unsigned(1));
   EXPECT_EQ(controller.opcode(), Byte::from_unsigned(1));
@@ -22,7 +22,7 @@ TEST(ControllerTest, SetAndGetOpcode) {
 TEST(ControllerTest, SetAndGetStepIndex) {
   Bus<Byte> bus;
   const auto instruction_set = microcode::InstructionSet{};
-  Controller controller(instruction_set, bus);
+  Controller controller(instruction_set, &bus);
   EXPECT_EQ(controller.step_index(), Byte::from_unsigned(0));
   controller.set_step_index(Byte::from_unsigned(1));
   EXPECT_EQ(controller.step_index(), Byte::from_unsigned(1));
@@ -49,9 +49,9 @@ TEST(ControllerTest, AbsoluteNoStatusProgram) {
   // a controller.
   Component root("root");
   Bus<Byte> bus("bus", &root);
-  Register a("a", bus, &root);
-  Register b("b", bus, &root);
-  Controller controller(instruction_set, bus, "controller", &root);
+  Register a("a", &bus, &root);
+  Register b("b", &bus, &root);
+  Controller controller(instruction_set, &bus, "controller", &root);
 
   // Set the opcode and step index to the first instruction in the instruction
   // Note that this is done directly and doesn't happen through any microcode
@@ -94,9 +94,9 @@ TEST(ControllerTest, RelativeNoStatusProgram) {
   Component root("root");
   Bus<Byte> bus("bus", &root);
   Component ctl("ctl", &root);
-  Register a("a", bus, &ctl);
-  Register b("b", bus, &ctl);
-  Controller controller(instruction_set, bus, "controller", &ctl, "/ctl/");
+  Register a("a", &bus, &ctl);
+  Register b("b", &bus, &ctl);
+  Controller controller(instruction_set, &bus, "controller", &ctl, "/ctl/");
 
   // Set initial opcode and step index manually.
   controller.set_opcode(Byte::from_unsigned(0x01));
@@ -138,10 +138,10 @@ TEST(ControllerTest, AbsoluteWithStatusProgram) {
 
   Component root("root");
   Bus<Byte> bus("bus", &root);
-  Register a("a", bus, &root);
-  Register b("b", bus, &root);
+  Register a("a", &bus, &root);
+  Register b("b", &bus, &root);
   Status lda_enable("lda_enable", &root);
-  Controller controller(instruction_set, bus, "controller", &root);
+  Controller controller(instruction_set, &bus, "controller", &root);
 
   // Set initial opcode and step index manually.
   controller.set_opcode(Byte::from_unsigned(0x01));
@@ -205,10 +205,10 @@ TEST(ControllerTest, RelativeWithStatusProgram) {
   Component root("root");
   Bus<Byte> bus("bus", &root);
   Component ctl("ctl", &root);
-  Register a("a", bus, &ctl);
-  Register b("b", bus, &ctl);
+  Register a("a", &bus, &ctl);
+  Register b("b", &bus, &ctl);
   Status lda_enable("lda_enable", &ctl);
-  Controller controller(instruction_set, bus, "controller", &ctl, "/ctl/");
+  Controller controller(instruction_set, &bus, "controller", &ctl, "/ctl/");
 
   // Set initial opcode and step index manually.
   controller.set_opcode(Byte::from_unsigned(0x01));

@@ -3,7 +3,7 @@
 #include <irata/sim/components/component.hpp>
 #include <optional>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 // A bus is a component that represents a data bus.
 // It is used to transfer data between components.
@@ -30,4 +30,4 @@ private:
   std::optional<std::string> setter_;
 };
 
-} // namespace irata::sim
+} // namespace irata::sim::components

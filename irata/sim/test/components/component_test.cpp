@@ -3,11 +3,11 @@
 #include <irata/sim/components/component.hpp>
 #include <stdexcept>
 
-using namespace irata::sim;
-
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
+
+namespace irata::sim::components {
 
 TEST(ComponentTest, Empty) {
   const Component test_component("test");
@@ -187,3 +187,5 @@ TEST(ComponentTest, Log) {
                       "[tick_process] /child: process msg\n"
                       "[tick_clear] /child: clear msg\n");
 }
+
+} // namespace irata::sim::components

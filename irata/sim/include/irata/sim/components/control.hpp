@@ -3,7 +3,7 @@
 #include <irata/sim/components/component.hpp>
 #include <optional>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 // Control is a component that represents a control line.
 // It can be set to true or false, and by default will be cleared at the end of
@@ -44,4 +44,4 @@ private:
   std::unique_ptr<Control> clear_;
 };
 
-} // namespace irata::sim
+} // namespace irata::sim::components

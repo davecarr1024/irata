@@ -6,7 +6,7 @@
 #include <string_view>
 #include <utility>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 Component::Component(std::string_view name, Component *parent)
     : name_(std::string(name)), parent_(nullptr) {
@@ -174,4 +174,4 @@ std::vector<const Status *> Component::statuses() const {
   return result;
 }
 
-} // namespace irata::sim
+} // namespace irata::sim::components

@@ -1,6 +1,6 @@
 #include <irata/sim/components/control.hpp>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 Control::Control(std::string_view name, Component *parent, bool auto_clear)
     : Component(name, parent), value_(false), auto_clear_(auto_clear),
@@ -41,4 +41,4 @@ std::vector<Control *> Control::controls() {
   return controls;
 }
 
-} // namespace irata::sim
+} // namespace irata::sim::components

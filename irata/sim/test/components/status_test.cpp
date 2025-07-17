@@ -2,8 +2,9 @@
 #include <gtest/gtest.h>
 #include <irata/sim/components/status.hpp>
 
-using namespace irata::sim;
 using ::testing::UnorderedElementsAre;
+
+namespace irata::sim::components {
 
 TEST(StatusTest, Value) {
   Status status("status");
@@ -22,3 +23,5 @@ TEST(StatusTest, GetStatuses) {
   root.add_child(&status2);
   EXPECT_THAT(root.statuses(), UnorderedElementsAre(&status1, &status2));
 }
+
+} // namespace irata::sim::components

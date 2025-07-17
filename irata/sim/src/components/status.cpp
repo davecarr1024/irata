@@ -1,6 +1,6 @@
 #include <irata/sim/components/status.hpp>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 Status::Status(std::string_view name, Component *parent)
     : Component(name, parent) {}
@@ -15,4 +15,4 @@ std::vector<Status *> Status::statuses() {
   return statuses;
 }
 
-} // namespace irata::sim
+} // namespace irata::sim::components

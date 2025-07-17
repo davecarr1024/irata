@@ -3,8 +3,9 @@
 #include <irata/sim/bytes/byte.hpp>
 #include <irata/sim/components/bus.hpp>
 
-using namespace irata::sim;
 using ::testing::Optional;
+
+namespace irata::sim::components {
 
 TEST(BusTest, Empty) {
   Bus<Byte> bus;
@@ -39,3 +40,5 @@ TEST(BusTest, ClearOnTick) {
   EXPECT_EQ(bus.value(), std::nullopt);
   EXPECT_EQ(bus.setter(), std::nullopt);
 }
+
+} // namespace irata::sim::components

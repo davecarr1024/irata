@@ -8,7 +8,7 @@ namespace irata::sim::components {
 
 TEST(CounterTest, SetIncrement) {
   Bus<Byte> bus;
-  Counter counter("counter", bus);
+  Counter counter("counter", &bus);
   EXPECT_FALSE(counter.increment());
   counter.set_increment(true);
   EXPECT_TRUE(counter.increment());
@@ -16,7 +16,7 @@ TEST(CounterTest, SetIncrement) {
 
 TEST(CounterTest, Idle) {
   Bus<Byte> bus;
-  Counter counter("counter", bus);
+  Counter counter("counter", &bus);
   counter.set_increment(false);
   EXPECT_EQ(counter.value(), Byte::from_unsigned(0));
   EXPECT_FALSE(counter.increment());
@@ -27,7 +27,7 @@ TEST(CounterTest, Idle) {
 
 TEST(CounterTest, Increment) {
   Bus<Byte> bus;
-  Counter counter("counter", bus);
+  Counter counter("counter", &bus);
   counter.set_increment(true);
   EXPECT_EQ(counter.value(), Byte::from_unsigned(0));
   EXPECT_TRUE(counter.increment());
@@ -38,7 +38,7 @@ TEST(CounterTest, Increment) {
 
 TEST(CounterTest, Overflow) {
   Bus<Byte> bus;
-  Counter counter("counter", bus);
+  Counter counter("counter", &bus);
   counter.set_increment(true);
   counter.set_value(Byte::from_unsigned(255));
   EXPECT_EQ(counter.value(), Byte::from_unsigned(255));
@@ -50,7 +50,7 @@ TEST(CounterTest, Overflow) {
 
 TEST(CounterTest, Reset) {
   Bus<Byte> bus;
-  Counter counter("counter", bus);
+  Counter counter("counter", &bus);
   counter.set_reset(true);
   counter.set_value(Byte::from_unsigned(1));
   EXPECT_EQ(counter.value(), Byte::from_unsigned(1));
@@ -62,7 +62,7 @@ TEST(CounterTest, Reset) {
 
 TEST(CounterTest, ResetOverridesIncrement) {
   Bus<Byte> bus;
-  Counter counter("counter", bus);
+  Counter counter("counter", &bus);
   counter.set_reset(true);
   counter.set_increment(true);
   counter.set_value(Byte::from_unsigned(1));

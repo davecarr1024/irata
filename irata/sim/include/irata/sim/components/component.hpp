@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 class Control;
 class Status;
@@ -58,6 +58,14 @@ public:
   // Tick the whole component tree, doing all tick phases in order top down.
   void tick(std::ostream &log_output = std::cout);
 
+  // Returns a list of all controls in the component tree.
+  virtual std::vector<Control *> controls();
+  std::vector<const Control *> controls() const;
+
+  // Returns a list of all statuses in the component tree.
+  virtual std::vector<Status *> statuses();
+  std::vector<const Status *> statuses() const;
+
   enum class TickPhase {
     Control,
     Write,
@@ -87,6 +95,7 @@ public:
     bool logged_ = false;
   };
 
+protected:
   // Set up any control lines that will be used this tick.
   virtual void tick_control(Logger &logger) {}
 
@@ -101,14 +110,6 @@ public:
 
   // Clear any control lines and any other state that was set up this tick.
   virtual void tick_clear(Logger &logger) {}
-
-  // Returns a list of all controls in the component tree.
-  virtual std::vector<Control *> controls();
-  std::vector<const Control *> controls() const;
-
-  // Returns a list of all statuses in the component tree.
-  virtual std::vector<Status *> statuses();
-  std::vector<const Status *> statuses() const;
 
 private:
   // The name of the component.
@@ -138,4 +139,4 @@ private:
 
 std::ostream &operator<<(std::ostream &os, Component::TickPhase phase);
 
-} // namespace irata::sim
+} // namespace irata::sim::components

@@ -2,7 +2,7 @@
 
 #include <irata/sim/components/component.hpp>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 // A status line that can be set to true or false.
 // Status lines are used to indicate the state of a component and can
@@ -25,4 +25,4 @@ private:
   bool value_ = false;
 };
 
-} // namespace irata::sim
+} // namespace irata::sim::components

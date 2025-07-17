@@ -2,7 +2,7 @@
 #include <irata/sim/bytes/word.hpp>
 #include <irata/sim/components/bus.hpp>
 
-namespace irata::sim {
+namespace irata::sim::components {
 
 template <typename T>
 Bus<T>::Bus(std::string_view name, Component *parent)
@@ -36,4 +36,4 @@ template <typename T> void Bus<T>::tick_clear(Logger &logger) {
 template class Bus<Byte>;
 template class Bus<Word>;
 
-} // namespace irata::sim
+} // namespace irata::sim::components

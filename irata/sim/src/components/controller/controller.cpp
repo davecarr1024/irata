@@ -3,7 +3,7 @@
 namespace irata::sim::components::controller {
 
 Controller::Controller(const microcode::InstructionSet &instruction_set,
-                       Bus<Byte> &bus, std::string_view name, Component *parent,
+                       Bus<Byte> *bus, std::string_view name, Component *parent,
                        std::string_view path_prefix)
     : Component(name, parent),
       instruction_memory_(instruction_set, "instruction_memory", this),

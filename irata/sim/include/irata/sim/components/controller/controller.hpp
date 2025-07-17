@@ -30,9 +30,13 @@ public:
   // Note that the path prefix, when combined with paths for controls
   // and statuses from the instruction set, must result in an absolute path
   // starting with a slash.
-  Controller(const microcode::InstructionSet &instruction_set, Bus<Byte> &bus,
-             std::string_view name = "controller", Component *parent = nullptr,
-             std::string_view path_prefix = "");
+  // If bus is provided, the controller will connect it to the opcode and step
+  // index registers.
+  explicit Controller(const microcode::InstructionSet &instruction_set,
+                      Bus<Byte> *bus = nullptr,
+                      std::string_view name = "controller",
+                      Component *parent = nullptr,
+                      std::string_view path_prefix = "");
   virtual ~Controller() = default;
 
   // Entry point for the controller.

@@ -2,9 +2,10 @@
 #include <gtest/gtest.h>
 #include <irata/sim/components/control.hpp>
 
-using namespace irata::sim;
 using ::testing::Optional;
 using ::testing::UnorderedElementsAre;
+
+namespace irata::sim::components {
 
 TEST(ControlTest, AutoClear) {
   Control control("control");
@@ -53,3 +54,5 @@ TEST(ControlTest, GetControls) {
   Control control2("control2", &root);
   EXPECT_THAT(root.controls(), UnorderedElementsAre(&control1, &control2));
 }
+
+} // namespace irata::sim::components
