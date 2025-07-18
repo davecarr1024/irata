@@ -38,6 +38,7 @@ The Irata simulated computer system is progressing steadily, with the first full
 - Components use a tree-based hierarchy with absolute path addressing.
 - Control/status lines are resolved via names like `/reg/write` or relative paths like `reg/write` with a prefix.
 - All components respond to `tick()` cycles for state updates.
+- Tick phases and logging now unified in base `Component` with a `Logger` helper class and overrideable phase hooks.
 
 ### 🧱 Buses
 - Bus wiring verified:
@@ -50,23 +51,23 @@ The Irata simulated computer system is progressing steadily, with the first full
 - `Counter` supports increment and reset lines with override behavior
 - `Register` supports read/write via control lines and bus connection
 
-### 🧰 WordRegister (Design Phase)
-- Intended design:
-  - Two subregisters (`.hi` + `.lo`)
-  - Connected to 16-bit address bus
-  - Optionally connected to data bus for byte-level access
-  - Increment and reset via control lines
-- Bus connectivity configurable per use case (e.g. PC vs. temporary)
+### 🧰 WordRegister
+- ✅ Implemented and tested
+- Composed of two `Register` subcomponents (`hi` + `lo`)
+- Supports:
+  - 16-bit bus connection via read/write lines
+  - Optional byte-bus connection for subregister access
+  - `reset` control line
+- Tested behavior:
+  - Read/write over word bus and byte bus
+  - Reset behavior
+  - Path-based control behavior matches top-level register model
 
-### 🧩 Memory Mapping Model
-- Legacy flat memory model (Flip) deprecated
-- Design direction:
-  - RAM/ROM/IO modeled as `Component`s with addressable buses
-  - AddressDecoder component will:
-    - Observe global address bus
-    - Enable/route access to subcomponents
-    - Translate global address to local offsets
-- Goal: pluggable realistic memory map for embedded use, paging, etc.
+### 🧮 WordCounter
+- ✅ Implemented and tested
+- Subclass of `WordRegister` with `increment` line
+- Increments on tick when asserted unless reset is active
+- Clean override priority: reset > increment > idle
 
 ---
 
@@ -104,8 +105,9 @@ The Irata simulated computer system is progressing steadily, with the first full
   - Idea: `tick_predecode()` to prep address decoder before write/read
 
 ### 7. **WordRegister Generalization**
-- Some registers need full address + data bus support
-- Some don’t — should support optional hookups via config struct
+- Fully supports modular hookup for word and byte buses
+- Open: does it need config object for more flexible constructor?
+- For now, works well as-is
 
 ---
 
@@ -117,8 +119,8 @@ The Irata simulated computer system is progressing steadily, with the first full
   - ALU sketch
   - Controller hookup
 - [ ] Write minimal ALU (even as a `Register` with op controls at first)
-- [ ] Implement `WordRegister`
-- [ ] Build `MemoryDecoder` and minimal `RAMComponent`
+- [ ] Implement `MemoryComponent` (RAM or ROM)
+- [ ] Implement `MemoryDecoder` to route global addresses to subcomponents
 - [ ] Wire up a one-instruction CPU (e.g. `LDA #$42`)
 - [ ] End-to-end test: opcode → controller → buses → registers → result
 
