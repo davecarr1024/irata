@@ -1,6 +1,7 @@
 #pragma once
 
 #include <irata/sim/bytes/byte.hpp>
+#include <ostream>
 #include <utility>
 
 namespace irata::sim {
@@ -22,8 +23,13 @@ public:
   // Returns the value of this word.
   uint16_t value() const;
 
+  bool operator==(const Word &other) const;
+  bool operator!=(const Word &other) const;
+
 private:
   uint16_t value_;
 };
+
+std::ostream &operator<<(std::ostream &os, const Word &word);
 
 } // namespace irata::sim

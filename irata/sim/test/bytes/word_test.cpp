@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <irata/sim/bytes/word.hpp>
 
-using namespace irata::sim;
+namespace irata::sim {
 
 TEST(WordTest, DefaultConstructor) {
   const Word word;
@@ -25,3 +25,20 @@ TEST(WordTest, ToBytes) {
   EXPECT_EQ(high, Byte::from_unsigned(0x12));
   EXPECT_EQ(low, Byte::from_unsigned(0x34));
 }
+
+TEST(WordTest, ToString) {
+  const auto to_string = [](Word word) {
+    std::ostringstream os;
+    os << word;
+    return os.str();
+  };
+  EXPECT_EQ(to_string(Word(0x1234)), "Word(0x1234)");
+  EXPECT_EQ(to_string(Word(0x0000)), "Word(0x0000)");
+}
+
+TEST(WordTest, Equal) {
+  EXPECT_EQ(Word(0x1234), Word(0x1234));
+  EXPECT_NE(Word(0x1234), Word(0x5678));
+}
+
+} // namespace irata::sim
