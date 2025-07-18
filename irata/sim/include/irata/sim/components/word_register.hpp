@@ -27,6 +27,7 @@ public:
   explicit WordRegister(std::string_view name, Bus<Word> *bus = nullptr,
                         Bus<Byte> *byte_bus = nullptr,
                         Component *parent = nullptr);
+  virtual ~WordRegister() = default;
 
   // Returns the value of the register.
   Word value() const;
