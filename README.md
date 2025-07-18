@@ -25,8 +25,8 @@ You can write programs in a custom C-like language, compile them into bytecode, 
 |----------------|-------------|
 | `irata-c`      | High-level systems language compiler (C-like, statically typed) |
 | `irata-asm`    | Shared bytecode and assembly interface for the Irata system |
-| `irata-vm`     | Fast bytecode interpreter for running programs |
-| `chuu`         | Tick-based, signal-level simulator of the Irata hardware |
+| `irata-vm`     | Fast bytecode interpreter for testing programs |
+| `irata-sim`    | Tick-based, signal-level simulator of the Irata hardware - codename chuu |
 | `irata-cart`   | Cartridge format and loader |
 | `irata-test`   | Test harnesses and golden test validation |
 | `irata-docs`   | Auto-generated reference documentation |

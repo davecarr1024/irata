@@ -1,136 +1,109 @@
 # 🧾 Irata Project Status
 
-_Last updated: July 16, 2025_
+_Last updated: July 17, 2025_
 
 ---
 
 ## ✅ Current State
 
-The Irata simulated computer system is progressing steadily, with the first full controller implementation now complete and fully tested.
+The Irata simulated computer system continues to advance with key subsystems implemented, tested, and integrated. The project has moved from basic components to early CPU structure and now toward memory mapping.
 
 ### 🧠 Instruction Set + Microcode
-- Instruction set defined via `asm.yaml` and exported to C++ as `Instruction` structs.
-- Microcode paths and steps are defined separately in `InstructionSet`, supporting relative or absolute control/status paths.
-- Status-based branching is supported per instruction, enabling conditional execution of control programs.
-- `InstructionMemory` class implemented:
-  - Encodes status bit permutations
-  - Exposes addressable control sequences
-  - Integrated with `Controller`
+- Instruction set defined in `asm.yaml`, converted to `Instruction` structs in C++.
+- `InstructionSet` maps opcodes to control sequences, with status-based conditional paths.
+- `InstructionMemory` holds microcode:
+  - Addressable by opcode, step, and status mask
+  - Used directly by the `Controller`
 
-### 📦 Controller
-- `Controller` component implemented and verified:
-  - Fetches microcode from `InstructionMemory` based on opcode, step, and status values
-  - Applies control line assertions via absolute or prefix-resolved paths
-  - Supports relative addressing via a configurable `path_prefix`
-- Thoroughly tested:
-  - 6 end-to-end GTest cases:
-    - Absolute + Relative addressing
-    - With and without status conditions
-    - Full integration with Registers and Status components
-- ✅ First working one-step instruction with data movement verified (`a ← b`)
+### 🧠 Controller
+- `Controller` component drives control line assertions via resolved paths.
+- Supports both absolute and prefix-relative addressing.
+- Tested end-to-end with `InstructionMemory`, registers, and status inputs.
 
-### 🔗 Encoders
-- `StatusEncoder` working and tested.
-- `InstructionMemory` currently assumes a 16x32 layout (opcode x step) with branching via status masks.
-- Opcode, step, and status mapping is working — but final address scheme may still evolve.
-
-### 🔌 Component Design
-- Components use a tree-based hierarchy with absolute path addressing.
-- Control/status lines are resolved via names like `/reg/write` or relative paths like `reg/write` with a prefix.
-- All components respond to `tick()` cycles for state updates.
-- Tick phases and logging now unified in base `Component` with a `Logger` helper class and overrideable phase hooks.
-
-### 🧱 Buses
-- Bus wiring verified:
-  - `Bus` class for shared signal propagation
-  - Registers and other devices connect via bus + gated control lines
-- Components update state via `tick()` phases
-
-### 🧰 Register + Counter
-- `Register` and `Counter` components implemented and tested
-- `Counter` supports increment and reset lines with override behavior
-- `Register` supports read/write via control lines and bus connection
-
-### 🧰 WordRegister
-- ✅ Implemented and tested
-- Composed of two `Register` subcomponents (`hi` + `lo`)
-- Supports:
-  - 16-bit bus connection via read/write lines
-  - Optional byte-bus connection for subregister access
-  - `reset` control line
-- Tested behavior:
-  - Read/write over word bus and byte bus
+### 🧰 Registers & Word Registers
+- `Register` and `WordRegister` both support:
+  - Optional connection to bus(es)
+  - Read/write via control lines
   - Reset behavior
-  - Path-based control behavior matches top-level register model
+- `WordRegister` contains `.high` and `.low` sub-registers
+- `WordCounter` extends `WordRegister` with increment control
+- Fully tested with GTest
 
-### 🧮 WordCounter
-- ✅ Implemented and tested
-- Subclass of `WordRegister` with `increment` line
-- Increments on tick when asserted unless reset is active
-- Clean override priority: reset > increment > idle
+### 🔌 Bus System
+- `Bus<T>` supports shared signal propagation with read/write gate control
+- Registers and devices connect via control lines and buses
+- Tick phases govern signal flow and update order
+
+### 🧰 Component Model
+- Hierarchical `Component` tree with named children
+- Supports `tick()` with defined phases (`control → write → read → process → clear`)
+- Control/status lines resolved by absolute or relative path
+- Logging and tick phase state encapsulated internally
+
+---
+
+## 🧩 Memory Mapping (New Design)
+
+Memory is being designed as a separate subsystem outside of `/cpu`, composed of:
+
+### 📦 `Memory` Component
+- Owns the address decoder and all memory modules
+- Exposed to the CPU via external buses and read/write lines
+
+### 🧰 `Module` Interface
+- Abstract interface for memory-mapped devices:
+  - `uint8_t read(uint16_t address)`
+  - Optional `void write(uint16_t address, uint8_t value)`
+  - `size()` must return a power-of-two ≤ 2¹⁶
+- Modules can be RAM, ROM, MMIO, etc.
+- May or may not inherit from `Component`
+
+### 🧠 `AddressDecoder`
+- Routes read/write controls and address bits to the correct module
+- Maps address ranges via offset and size (must not overlap)
+- Computes address masking/shifting internally
+- Validates module fit within 16-bit address space
+- Forwards requests by computing in-module address and dispatching
+
+### Design Tradeoffs
+- Not simulating real logic gates (no AND trees for decoder output lines)
+- Module interaction via C++ method calls, not buses — for now
+- This simplifies correctness and composability without going full circuit sim
 
 ---
 
 ## 🔍 Open Design Questions
 
-### 1. **Instruction Memory Address Layout**
-- Current guess: 8-bit opcode, 5-bit step, 3-bit status mask (?)
-- Final layout TBD — should be abstracted into a `MicrocodeAddress`
-
-### 2. **Control Path Resolution**
-- Relative vs. absolute paths fully working
-- Documented contract: control/status paths + prefix → must yield absolute `/...` path
-
-### 3. **CPU as a Component**
-- How to structure CPU internals:
-  - Internal wires = bus
-  - Controller provides brain
-  - Registers, ALU, and memory connect via path + bus
-- Clean interface TBD, but we're close
-
-### 4. **Bus System Design**
-- `Bus<T>` is working well as a shared signal
-- Write gating and directionality implied by control signals
-- May generalize later (byte, word, etc.)
-
-### 5. **Memory Mapping / Decoding**
-- Plan:
-  - `AddressDecoder` observes bus + enables child components
-  - Each RAM/ROM/MMIO region gets own `Component`
-- Future idea: support for paging/MMC-like mappers
-
-### 6. **Tick Phase Semantics**
-- Current tick flow: `control → write → read → process → clear`
-- Question: where should address decoding happen?
-  - Idea: `tick_predecode()` to prep address decoder before write/read
-
-### 7. **WordRegister Generalization**
-- Fully supports modular hookup for word and byte buses
-- Open: does it need config object for more flexible constructor?
-- For now, works well as-is
+### 1. **ALU Design**
+- Should the ALU be a full subsystem like the controller/memory?
+- How to express operations (control lines? internal opcodes?)
 
 ---
 
 ## 🔜 Next Steps
 
-- [ ] Finalize instruction memory address layout + `MicrocodeAddress`
-- [ ] Build top-level `CPU` component:
-  - Register wiring
-  - ALU sketch
-  - Controller hookup
-- [ ] Write minimal ALU (even as a `Register` with op controls at first)
-- [ ] Implement `MemoryComponent` (RAM or ROM)
-- [ ] Implement `MemoryDecoder` to route global addresses to subcomponents
-- [ ] Wire up a one-instruction CPU (e.g. `LDA #$42`)
-- [ ] End-to-end test: opcode → controller → buses → registers → result
+- [ ] Implement `components/memory/memory.hpp` and `module.hpp`
+- [ ] Write `AddressDecoder` with overlap checking and dispatch logic
+- [ ] Create RAM/ROM module implementations
+- [ ] Build minimal ALU or temporary register-based placeholder
+- [ ] Finalize `CPU` component wiring registers + controller
+- [ ] End-to-end test: `LDA #$42` or similar instruction
 
 ---
 
 ## 🌱 Guiding Principles
 
-- Build **one real machine**, not a simulator framework
-- Control lines are **physical**: wiring matters
-- Favor **end-to-end vertical slices**
-- Tests are the spec — every new component must be unit-testable
-- Component trees, paths, and control wiring are **real topology**
-- Avoid overengineering — build what’s needed, then refactor
+- Build **one concrete simulated machine**, not a general framework
+- Emulate physical signal flow via **tick phases**
+- Favor **end-to-end vertical slices** with full integration tests
+- Avoid premature abstraction — **build what you need**
+- Control and status lines are real — **topology matters**
+- Memory-mapped devices should feel like **real hardware**
+
+---
+
+## 🧠 Meta
+
+- Inspired by Ben Eater’s breadboard computer — but cleaner, faster, and easier to debug.
+- Flip3 may one day be a full circuit simulation, but Irata focuses on component-level realism with clear interfaces and behavior.
+
