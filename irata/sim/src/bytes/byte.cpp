@@ -32,6 +32,8 @@ std::vector<bool> Byte::bits() const {
   return result;
 }
 
+uint8_t Byte::value() const { return value_; }
+
 uint8_t Byte::unsigned_value() const { return value_; }
 
 int8_t Byte::signed_value() const { return static_cast<int8_t>(value_); }

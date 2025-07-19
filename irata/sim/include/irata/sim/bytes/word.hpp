@@ -25,6 +25,12 @@ public:
 
   bool operator==(const Word &other) const;
   bool operator!=(const Word &other) const;
+  bool operator<(const Word &other) const;
+  bool operator<=(const Word &other) const;
+  bool operator>(const Word &other) const;
+  bool operator>=(const Word &other) const;
+  Word operator+(const Word &other) const;
+  Word operator-(const Word &other) const;
 
 private:
   uint16_t value_;

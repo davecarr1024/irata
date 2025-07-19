@@ -27,4 +27,24 @@ bool Word::operator==(const Word &other) const {
 
 bool Word::operator!=(const Word &other) const { return !(*this == other); }
 
+bool Word::operator<(const Word &other) const { return value_ < other.value_; }
+
+bool Word::operator<=(const Word &other) const {
+  return value_ <= other.value_;
+}
+
+bool Word::operator>(const Word &other) const { return value_ > other.value_; }
+
+bool Word::operator>=(const Word &other) const {
+  return value_ >= other.value_;
+}
+
+Word Word::operator+(const Word &other) const {
+  return Word(value_ + other.value_);
+}
+
+Word Word::operator-(const Word &other) const {
+  return Word(value_ - other.value_);
+}
+
 } // namespace irata::sim

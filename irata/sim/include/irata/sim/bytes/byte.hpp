@@ -12,6 +12,9 @@ class ByteResult;
 class Byte {
 public:
   // Constructs a byte with the given unsigned value.
+  explicit Byte(uint8_t value);
+
+  // Constructs a byte with the given unsigned value.
   static Byte from_unsigned(uint8_t value);
 
   // Constructs a byte with the given signed value.
@@ -31,6 +34,8 @@ public:
   // Returns the value of all bits as a vector of bools.
   std::vector<bool> bits() const;
 
+  // Returns the unsigned value of this byte.
+  uint8_t value() const;
   // Returns the unsigned value of this byte.
   uint8_t unsigned_value() const;
   // Returns the signed value of this byte.
@@ -64,8 +69,6 @@ public:
   ByteResult rotate_right(bool carry_in = false) const;
 
 private:
-  explicit Byte(uint8_t value);
-
   uint8_t value_ = 0;
 };
 

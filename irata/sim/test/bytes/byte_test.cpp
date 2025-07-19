@@ -13,6 +13,11 @@ TEST(ByteTest, DefaultConstructor) {
   EXPECT_EQ(byte.signed_value(), 0);
 }
 
+TEST(ByteTest, UnsignedConstructor) {
+  const Byte byte(0x12);
+  EXPECT_EQ(byte.value(), 0x12);
+}
+
 TEST(ByteTest, FromUnsigned) {
   const Byte byte = Byte::from_unsigned(0xAB);
   EXPECT_EQ(byte.unsigned_value(), 0xAB);

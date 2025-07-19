@@ -41,4 +41,18 @@ TEST(WordTest, Equal) {
   EXPECT_NE(Word(0x1234), Word(0x5678));
 }
 
+TEST(WordTest, Add) { EXPECT_EQ(Word(0x1234) + Word(0x5678), Word(0x68AC)); }
+
+TEST(WordTest, Subtract) {
+  EXPECT_EQ(Word(0x5678) - Word(0x1234), Word(0x4444));
+}
+
+TEST(WordTest, LessThan) { EXPECT_LT(Word(0x1234), Word(0x5678)); }
+
+TEST(WordTest, LessThanOrEqual) { EXPECT_LE(Word(0x1234), Word(0x5678)); }
+
+TEST(WordTest, GreaterThan) { EXPECT_GT(Word(0x5678), Word(0x1234)); }
+
+TEST(WordTest, GreaterThanOrEqual) { EXPECT_GE(Word(0x5678), Word(0x1234)); }
+
 } // namespace irata::sim

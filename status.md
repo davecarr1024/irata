@@ -1,109 +1,137 @@
 # 🧾 Irata Project Status
 
-_Last updated: July 17, 2025_
+_Last updated: July 16, 2025_
 
 ---
 
 ## ✅ Current State
 
-The Irata simulated computer system continues to advance with key subsystems implemented, tested, and integrated. The project has moved from basic components to early CPU structure and now toward memory mapping.
+The Irata simulated computer is transitioning from isolated component testing to full system integration. Memory mapping, control flow, and component communication are in place, enabling work on the fetch-decode-execute loop.
 
 ### 🧠 Instruction Set + Microcode
-- Instruction set defined in `asm.yaml`, converted to `Instruction` structs in C++.
-- `InstructionSet` maps opcodes to control sequences, with status-based conditional paths.
+- Instruction set defined in `asm.yaml`
+- Compiled to `InstructionSet` C++ structs with status-based conditional paths
 - `InstructionMemory` holds microcode:
-  - Addressable by opcode, step, and status mask
-  - Used directly by the `Controller`
+  - Indexed by opcode, step, and status
+  - Drives controller's output lines per tick
 
 ### 🧠 Controller
-- `Controller` component drives control line assertions via resolved paths.
-- Supports both absolute and prefix-relative addressing.
-- Tested end-to-end with `InstructionMemory`, registers, and status inputs.
+- Drives control lines using `InstructionMemory` and `InstructionSet`
+- Supports opcode + step-based resolution with optional conditionals
+- Built with tick-phase integration
+- Fully tested in isolation
 
-### 🧰 Registers & Word Registers
-- `Register` and `WordRegister` both support:
-  - Optional connection to bus(es)
-  - Read/write via control lines
-  - Reset behavior
-- `WordRegister` contains `.high` and `.low` sub-registers
-- `WordCounter` extends `WordRegister` with increment control
-- Fully tested with GTest
+### 🧰 Registers
+- `Register` and `WordRegister` components
+  - Bus-compatible
+  - Support control lines for gated R/W
+- `WordCounter` (extends `WordRegister`) supports incrementing
+- `status_register` inputs available to control unit
 
 ### 🔌 Bus System
-- `Bus<T>` supports shared signal propagation with read/write gate control
-- Registers and devices connect via control lines and buses
-- Tick phases govern signal flow and update order
+- `Bus<T>` shares signal between components
+- Implements read/write logic with gate control
+- Enforces propagation during tick phases
 
 ### 🧰 Component Model
-- Hierarchical `Component` tree with named children
-- Supports `tick()` with defined phases (`control → write → read → process → clear`)
-- Control/status lines resolved by absolute or relative path
-- Logging and tick phase state encapsulated internally
+- Tree of `Component`s with named children
+- Tick phases:
+  - `control → write → read → process → clear`
+- Components can resolve and control arbitrary named lines (local or relative path)
+
+
+### 🧩 Memory Subsystem
+
+Memory is now a fully developed subsystem:
+
+#### 📦 `Memory` Component
+- Owns address decoder and memory regions
+- Connects via buses for external CPU interaction
+- Performs read/write routing by address
+
+#### 📦 `Module` Interface
+- Modules like `RAM`, `ROM`, `MMIO` must implement:
+  - `read(uint16_t)`
+  - Optional `write(uint16_t, uint8_t)`
+  - `size()`, `can_write()`
+- `Memory` owns regions and their lifecycle
+- Full unit test suite for:
+  - Region registration
+  - Address decoding
+  - Read/write behavior
+  - Error conditions (unmapped, readonly, bus errors)
 
 ---
 
-## 🧩 Memory Mapping (New Design)
+## 🔨 Upcoming: Canonical System Build
 
-Memory is being designed as a separate subsystem outside of `/cpu`, composed of:
-
-### 📦 `Memory` Component
-- Owns the address decoder and all memory modules
-- Exposed to the CPU via external buses and read/write lines
-
-### 🧰 `Module` Interface
-- Abstract interface for memory-mapped devices:
-  - `uint8_t read(uint16_t address)`
-  - Optional `void write(uint16_t address, uint8_t value)`
-  - `size()` must return a power-of-two ≤ 2¹⁶
-- Modules can be RAM, ROM, MMIO, etc.
-- May or may not inherit from `Component`
-
-### 🧠 `AddressDecoder`
-- Routes read/write controls and address bits to the correct module
-- Maps address ranges via offset and size (must not overlap)
-- Computes address masking/shifting internally
-- Validates module fit within 16-bit address space
-- Forwards requests by computing in-module address and dispatching
-
-### Design Tradeoffs
-- Not simulating real logic gates (no AND trees for decoder output lines)
-- Module interaction via C++ method calls, not buses — for now
-- This simplifies correctness and composability without going full circuit sim
+### 🧠 Planned Components
+- `RAM`, `ROM` modules
+- Static `Memory::canonical()` layout method
+  - Attaches system RAM and cartridge ROM
+- Static `Controller::from_instruction_set()` method
+  - Loads microcode from `asm.yaml`
+- `CPU` component
+  - Instantiates and wires registers, buses, controller
+- `IrataSystem` top-level component
+  - Builds CPU + Memory with canonical layout
+  - Accepts a cartridge (ROM)
+  - Starts ticking from a known entry point
 
 ---
 
-## 🔍 Open Design Questions
+## 🧪 Tooling and End-to-End Testing
 
-### 1. **ALU Design**
-- Should the ALU be a full subsystem like the controller/memory?
-- How to express operations (control lines? internal opcodes?)
+Once the canonical Irata computer is constructed, tooling will be built to support vertical integration tests:
 
----
-
-## 🔜 Next Steps
-
-- [ ] Implement `components/memory/memory.hpp` and `module.hpp`
-- [ ] Write `AddressDecoder` with overlap checking and dispatch logic
-- [ ] Create RAM/ROM module implementations
-- [ ] Build minimal ALU or temporary register-based placeholder
-- [ ] Finalize `CPU` component wiring registers + controller
-- [ ] End-to-end test: `LDA #$42` or similar instruction
-
----
-
-## 🌱 Guiding Principles
-
-- Build **one concrete simulated machine**, not a general framework
-- Emulate physical signal flow via **tick phases**
-- Favor **end-to-end vertical slices** with full integration tests
-- Avoid premature abstraction — **build what you need**
-- Control and status lines are real — **topology matters**
-- Memory-mapped devices should feel like **real hardware**
+### 🧰 Testing Framework
+- `Cartridge` file format for memory-mapped ROMs
+- CLI simulator runner: 
+  - loads cartridge
+  - simulates ticks until halt
+- Assembler tool:
+  - Converts `.asm` → `.rom`
+- E2E test harness:
+  - Takes test `.asm` + expected outcome
+  - Verifies memory, registers, system state after halt
+- Goal: validate all new behavior with end-to-end assembly-based tests
 
 ---
 
-## 🧠 Meta
+## 🔮 Vision
 
-- Inspired by Ben Eater’s breadboard computer — but cleaner, faster, and easier to debug.
-- Flip3 may one day be a full circuit simulation, but Irata focuses on component-level realism with clear interfaces and behavior.
+This is not just a simulator. It’s a full virtual machine with real development workflows.
 
+### 🐞 Future Ideas
+- **Interactive Debugger**
+  - Step through ticks, watch registers/buses
+  - Inspect memory and control flow live
+- **Dev Tooling**
+  - Language server for Irata assembly
+  - Visualizer for bus + signal propagation
+- **Self-hosting goal?**
+  - Eventually write the assembler in Irata Assembly
+
+---
+
+## 🧠 Meta Principles
+
+- Build one specific, realistic simulated computer
+- Design for vertical slices over general abstractions
+- Use real tick-based flow to model physical constraints
+- Prioritize end-to-end correctness over raw performance
+- Every instruction should be testable from cartridge → halt
+
+---
+
+## 🔜 Immediate Next Steps
+
+- [ ] Implement `RAM` and `ROM` modules
+- [ ] Build canonical `Memory` layout
+- [ ] Implement static controller constructor from `asm.yaml`
+- [ ] Create `CPU` component with full internal wiring
+- [ ] Create `IrataSystem` root-level simulator
+- [ ] Define cartridge format and boot-from-ROM flow
+- [ ] Write assembler and run E2E test with `LDA #$42`
+
+---
