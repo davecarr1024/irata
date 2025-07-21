@@ -15,8 +15,8 @@ public:
   // The region will map the range [offset, offset + module.size()) to the
   // module.
   // Throws an exception if the offset is not aligned to the size of the module.
-  explicit Region(std::string_view name, Module &module, Word offset,
-                  Component *parent = nullptr);
+  explicit Region(std::string_view name, std::unique_ptr<Module> module,
+                  Word offset, Component *parent = nullptr);
   virtual ~Region() = default;
 
   // Returns the size of the region in bytes.
@@ -48,7 +48,7 @@ public:
 
 private:
   // The contained module.
-  Module &module_;
+  std::unique_ptr<Module> module_;
 
   // The offset of the region in memory.
   const Word offset_;

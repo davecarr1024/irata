@@ -1,226 +1,242 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/bytes/byte.hpp>
+#include <irata/sim/bytes/word.hpp>
+#include <irata/sim/components/bus.hpp>
+#include <irata/sim/components/component.hpp>
 #include <irata/sim/components/memory/memory.hpp>
+#include <irata/sim/components/memory/ram.hpp>
+#include <irata/sim/components/memory/rom.hpp>
 #include <irata/sim/components/register.hpp>
+#include <irata/sim/components/word_register.hpp>
 
-using ::testing::_;
+using ::testing::Pair;
 using ::testing::Pointee;
 using ::testing::Property;
-using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
 namespace irata::sim::components::memory {
 
 namespace {
 
-class MockModule : public Module {
-public:
-  explicit MockModule(std::string_view name) : Module(name) {}
+// A test fixture for the Memory class.
+// This fixture provides a component hierarchy with an address bus, a data
+// bus, a data register and an address register. The data register is
+// connected to the data bus and the address register is connected to the
+// address bus.
+// Memory can be created with different regions and the data and address
+// registers can be used to read and write data to the memory.
+class MemoryTest : public ::testing::Test {
+protected:
+  // Creates a RAM region with the given size, offset, name and data.
+  std::unique_ptr<Region> ram(size_t size, Word offset,
+                              std::string_view name = "ram",
+                              std::map<Word, Byte> data = {}) {
+    auto ram = std::make_unique<RAM>(size, name, std::move(data));
+    return std::make_unique<Region>(name, std::move(ram), offset);
+  }
 
-  MOCK_METHOD(size_t, size, (), (const, override));
-  MOCK_METHOD(Byte, read, (Word address), (const, override));
-  MOCK_METHOD(void, write, (Word address, Byte value), (override));
-  MOCK_METHOD(bool, can_write, (), (const, override));
+  // Creates a ROM region with the given size, offset, name and data.
+  std::unique_ptr<Region> rom(size_t size, Word offset,
+                              std::string_view name = "rom",
+                              std::map<Word, Byte> data = {}) {
+    auto rom = std::make_unique<ROM>(size, name, std::move(data));
+    return std::make_unique<Region>(name, std::move(rom), offset);
+  }
+
+  // Creates a memory with the given regions and name.
+  Memory memory(std::vector<std::unique_ptr<Region>> regions,
+                std::string_view name = "memory") {
+    return Memory(name, std::move(regions), address_bus_, data_bus_, &root);
+  }
+
+  // Creates a RAM memory with the given size, offset, name and data.
+  Memory ram_memory(size_t size = 0x1000, Word offset = Word(0x0000),
+                    std::string_view name = "ram",
+                    std::map<Word, Byte> data = {}) {
+    std::vector<std::unique_ptr<Region>> regions;
+    regions.emplace_back(ram(size, offset, name, std::move(data)));
+    return memory(std::move(regions), name);
+  }
+
+  // Creates a ROM memory with the given size, offset, name and data.
+  Memory rom_memory(size_t size = 0x1000, Word offset = Word(0x0000),
+                    std::string_view name = "rom",
+                    std::map<Word, Byte> data = {}) {
+    std::vector<std::unique_ptr<Region>> regions;
+    regions.emplace_back(rom(size, offset, name, std::move(data)));
+    return memory(std::move(regions), name);
+  }
+
+  // Returns the testing data register.
+  // This register is connected to the data bus and is used to read and write
+  // data to the memory.
+  Register &data_register() { return data_register_; }
+  // Returns the value of the testing data register.
+  Byte data() const { return data_register_.value(); }
+  // Sets the value of the testing data register.
+  void set_data(Byte value) { data_register_.set_value(value); }
+
+  // Returns the testing address register.
+  // This register is connected to the address bus and is used to set the
+  // address of the memory.
+  WordRegister &address_register() { return address_register_; }
+  // Returns the value of the testing address register.
+  Word address() const { return address_register_.value(); }
+  // Sets the value of the testing address register.
+  void set_address(Word value) { address_register_.set_value(value); }
+
+private:
+  Component root = Component("root");
+  Bus<Word> address_bus_ = Bus<Word>("address_bus", &root);
+  Bus<Byte> data_bus_ = Bus<Byte>("data_bus", &root);
+  Register data_register_ = Register("data_register", &data_bus_, &root);
+  WordRegister address_register_ =
+      WordRegister("address_register", &address_bus_, nullptr, &root);
 };
 
 } // namespace
 
-TEST(MemoryTest, Regions) {
-  Component root("root");
-  MockModule module1("module1");
-  MockModule module2("module2");
-  EXPECT_CALL(module1, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module2, size()).WillRepeatedly(Return(1024));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
+TEST_F(MemoryTest, Constructor) {
   std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region1", module1, Word(0)));
-  regions.emplace_back(
-      std::make_unique<Region>("region2", module2, Word(1024)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
+  regions.emplace_back(ram(0x1000, Word(0x0000)));
+  regions.emplace_back(rom(0x1000, Word(0x1000)));
+  auto memory = this->memory(std::move(regions), "memory");
+  EXPECT_EQ(memory.name(), "memory");
+  EXPECT_EQ(memory.address_bus().path(), "/address_bus");
+  EXPECT_EQ(memory.data_bus().path(), "/data_bus");
   EXPECT_THAT(memory.regions(),
               UnorderedElementsAre(
-                  Pointee(Property(&Region::path, "/memory/region1")),
-                  Pointee(Property(&Region::path, "/memory/region2"))));
+                  Pointee(Property("path", &Region::path, "/memory/ram")),
+                  Pointee(Property("path", &Region::path, "/memory/rom"))));
 }
 
-TEST(MemoryTest, OverlappingRegions) {
-  Component root("root");
-  MockModule module1("module1");
-  MockModule module2("module2");
-  EXPECT_CALL(module1, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module2, size()).WillRepeatedly(Return(2048));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
+TEST_F(MemoryTest, NullRegion) {
   std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(
-      std::make_unique<Region>("region1", module1, Word(1024)));
-  regions.emplace_back(std::make_unique<Region>("region2", module2, Word(0)));
-  EXPECT_THROW(
-      Memory("memory", std::move(regions), address_bus, data_bus, &root),
-      std::invalid_argument);
+  regions.emplace_back(nullptr);
+  EXPECT_THROW(memory(std::move(regions)), std::invalid_argument);
 }
 
-TEST(MemoryTest, SetAddressThroughBus) {
-  // Build a read-only 1k memory starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(false));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
+TEST_F(MemoryTest, OverlappingRegions) {
   std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
+  regions.emplace_back(ram(0x2000, Word(0x0000)));
+  regions.emplace_back(rom(0x1000, Word(0x1000)));
+  EXPECT_THROW(memory(std::move(regions)), std::invalid_argument);
+}
 
-  // Create a word register sp to write the address from.
-  WordRegister sp("sp", &address_bus, nullptr, &root);
+TEST_F(MemoryTest, RegionsAreChildren) {
+  std::vector<std::unique_ptr<Region>> regions;
+  auto ram = this->ram(0x1000, Word(0x0000), "ram");
+  auto *ram_ptr = ram.get();
+  auto rom = this->rom(0x1000, Word(0x1000), "rom");
+  auto *rom_ptr = rom.get();
+  regions.emplace_back(std::move(ram));
+  regions.emplace_back(std::move(rom));
+  auto memory = this->memory(std::move(regions));
+  EXPECT_EQ(memory.child("ram"), ram_ptr);
+  EXPECT_EQ(ram_ptr->parent(), &memory);
+  EXPECT_EQ(memory.child("rom"), rom_ptr);
+  EXPECT_EQ(rom_ptr->parent(), &memory);
+}
 
-  // Write the address to the memory address register.
-  sp.set_value(Word(0x0012));
-  sp.set_write(true);
+TEST_F(MemoryTest, SetAddressRegister) {
+  auto memory = this->memory({});
+  EXPECT_EQ(memory.address(), Word(0x0000));
+  memory.set_address(Word(0x1234));
+  EXPECT_EQ(memory.address(), Word(0x1234));
+}
+
+TEST_F(MemoryTest, SetAddressThroughAddressBus) {
+  auto memory = this->memory({});
+
+  // Set up external address register for writing.
+  set_address(Word(0x1234));
+  EXPECT_EQ(address(), Word(0x1234));
+  address_register().set_write(true);
+
+  // Set up memory address register for reading.
+  EXPECT_EQ(memory.address(), Word(0x0000));
   memory.address_register().set_read(true);
-  root.tick();
-  EXPECT_EQ(memory.address(), Word(0x0012));
+
+  // Tick the memory.
+  memory.tick();
+
+  // Check that the address register was written to.
+  EXPECT_EQ(memory.address(), Word(0x1234));
 }
 
-TEST(MemoryTest, Read) {
-  // Build a memory with a read only 1k region starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(false));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
-  std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
-
-  // Create a data register a to write data to.
-  Register a("a", &data_bus, &root);
-
-  // Read from the memory at the selected address to a.
-  memory.set_address(Word(0x0012));
-  EXPECT_CALL(module, read(Word(0x0012))).WillOnce(Return(Byte(0xAB)));
+TEST_F(MemoryTest, Read) {
+  std::map<Word, Byte> data = {{Word(0x00BE), Byte(0xEF)}};
+  auto memory = rom_memory(0x1000, Word(0x1000), "rom", std::move(data));
+  memory.set_address(Word(0x10BE));
   memory.set_write(true);
-  a.set_read(true);
-  root.tick();
-  EXPECT_EQ(a.value(), Byte(0xAB));
+  data_register().set_read(true);
+  memory.tick();
+  EXPECT_EQ(this->data(), Byte(0xEF));
 }
 
-TEST(MemoryTest, ReadUnmappedAddress) {
-  // Build a memory with a read only 1k region starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(false));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
-  std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
-
-  // Create a data register a to write data to.
-  Register a("a", &data_bus, &root);
-
-  // Try to read from an unmapped address to a.
-  memory.set_address(Word(0x0400));
-  a.set_read(true);
+TEST_F(MemoryTest, ReadDefaultZero) {
+  auto memory = rom_memory(0x1000, Word(0x1000), "rom");
+  memory.set_address(Word(0x10BE));
   memory.set_write(true);
-  EXPECT_THROW(root.tick(), std::runtime_error);
+  data_register().set_read(true);
+  // Set data register to non-zero value to check that it is overwritten.
+  set_data(Byte(0x12));
+  memory.tick();
+  EXPECT_EQ(this->data(), Byte(0x00));
 }
 
-TEST(MemoryTest, Write) {
-  // Build a memory with a read-write 1k region starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(true));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
-  std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
-
-  // Create a data register a to write data from.
-  Register a("a", &data_bus, &root);
-
-  // Write to the memory at the selected address from a.
-  memory.set_address(Word(0x0012));
-  EXPECT_CALL(module, write(Word(0x0012), Byte(0xAB)));
-  a.set_value(Byte(0xAB));
-  memory.set_read(true);
-  a.set_write(true);
-  root.tick();
+TEST_F(MemoryTest, ReadOutOfRange) {
+  auto memory = rom_memory(0x1000, Word(0x1000), "rom");
+  memory.set_address(Word(0x2000));
+  memory.set_write(true);
+  data_register().set_read(true);
+  EXPECT_THROW(memory.tick(), std::runtime_error);
 }
 
-TEST(MemoryTest, WriteUnmappedAddress) {
-  // Build a memory with a read-write 1k region starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(true));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
-  std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
+TEST_F(MemoryTest, Write) {
+  auto memory = ram_memory(0x1000, Word(0x1000), "ram");
 
-  // Create a data register a to write data from.
-  Register a("a", &data_bus, &root);
-
-  // Try to write to an unmapped address from a.
-  a.set_write(true);
+  // Write to memory.
+  memory.set_address(Word(0x10BE));
   memory.set_read(true);
-  memory.set_address(Word(0x0400));
-  EXPECT_CALL(module, write(_, _)).Times(0);
-  EXPECT_THROW(root.tick(), std::runtime_error);
+  set_data(Byte(0xEF));
+  data_register().set_write(true);
+  memory.tick();
+
+  // Read from memory.
+  memory.set_write(true);
+  // Reset data register to zero to check that it is overwritten.
+  set_data(Byte(0x00));
+  data_register().set_read(true);
+  memory.tick();
+  EXPECT_EQ(data(), Byte(0xEF));
 }
 
-TEST(MemoryTest, WriteReadOnlyRegion) {
-  // Build a memory with a read-only 1k region starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(false));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
-  std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
-
-  // Create a data register a to write data from.
-  Register a("a", &data_bus, &root);
-
-  // Try to write to the read-only region from a.
-  a.set_write(true);
+TEST_F(MemoryTest, WriteOutOfRange) {
+  auto memory = ram_memory(0x1000, Word(0x1000), "ram");
+  memory.set_address(Word(0x2000));
   memory.set_read(true);
-  memory.set_address(Word(0x0012));
-  EXPECT_CALL(module, write(_, _)).Times(0);
-  EXPECT_THROW(root.tick(), std::runtime_error);
+  set_data(Byte(0xEF));
+  data_register().set_write(true);
+  EXPECT_THROW(memory.tick(), std::runtime_error);
 }
 
-TEST(MemoryTest, WriteNoDataOnBus) {
-  // Build a memory with a read-write 1k region starting at address 0.
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(true));
-  Bus<Word> address_bus("address_bus", &root);
-  Bus<Byte> data_bus("data_bus", &root);
-  std::vector<std::unique_ptr<Region>> regions;
-  regions.emplace_back(std::make_unique<Region>("region", module, Word(0)));
-  Memory memory("memory", std::move(regions), address_bus, data_bus, &root);
-
-  // No source register is connected to the data bus, so there will be no
-  // data on the bus during tick_read.
-
-  // Try to write to the memory at the selected address from a, but don't
-  // write anything to the bus.
-  memory.set_address(Word(0x0012));
+TEST_F(MemoryTest, WriteToReadOnlyMemory) {
+  auto memory = rom_memory(0x1000, Word(0x1000), "rom");
+  memory.set_address(Word(0x10BE));
   memory.set_read(true);
-  EXPECT_CALL(module, write(_, _)).Times(0);
-  EXPECT_THROW(root.tick(), std::runtime_error);
+  set_data(Byte(0xEF));
+  data_register().set_write(true);
+  EXPECT_THROW(memory.tick(), std::runtime_error);
+}
+
+TEST_F(MemoryTest, WriteOpenBus) {
+  auto memory = ram_memory(0x1000, Word(0x1000), "ram");
+  memory.set_address(Word(0x10BE));
+  memory.set_read(true);
+  data_register().set_write(false);
+  EXPECT_THROW(memory.tick(), std::runtime_error);
 }
 
 } // namespace irata::sim::components::memory

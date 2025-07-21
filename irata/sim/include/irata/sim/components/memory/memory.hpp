@@ -6,6 +6,7 @@
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/control.hpp>
 #include <irata/sim/components/memory/region.hpp>
+#include <irata/sim/components/memory/rom.hpp>
 #include <irata/sim/components/word_register.hpp>
 #include <string_view>
 #include <vector>
@@ -18,6 +19,11 @@ namespace irata::sim::components::memory {
 // Regions must be non-overlapping and aligned.
 class Memory : public Component {
 public:
+  // Builds a memory component with the default irata machine memory layout.
+  static Memory irata(Bus<Word> &address_bus, Bus<Byte> &data_bus,
+                      std::unique_ptr<Module> cartridge = nullptr,
+                      Component *parent = nullptr);
+
   // Creates a new memory component with the given name, regions, and buses.
   // The regions must be non-overlapping and aligned.
   // Throws an exception if the regions are not valid.

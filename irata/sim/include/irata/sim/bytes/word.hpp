@@ -31,6 +31,8 @@ public:
   bool operator>=(const Word &other) const;
   Word operator+(const Word &other) const;
   Word operator-(const Word &other) const;
+  Word operator+(size_t other) const;
+  Word operator-(size_t other) const;
 
 private:
   uint16_t value_;

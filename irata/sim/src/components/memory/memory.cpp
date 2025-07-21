@@ -1,8 +1,23 @@
 #include <irata/sim/components/memory/memory.hpp>
+#include <irata/sim/components/memory/ram.hpp>
+#include <irata/sim/components/memory/rom.hpp>
 #include <stdexcept>
 #include <utility>
 
 namespace irata::sim::components::memory {
+
+Memory Memory::irata(Bus<Word> &address_bus, Bus<Byte> &data_bus,
+                     std::unique_ptr<Module> cartridge, Component *parent) {
+  std::vector<std::unique_ptr<Region>> regions;
+  regions.emplace_back(std::make_unique<Region>(
+      "ram", std::make_unique<RAM>(0x2000), Word(0x0000)));
+  if (cartridge != nullptr) {
+    auto cartridge_region = std::make_unique<Region>(
+        "cartridge", std::move(cartridge), Word(0x8000));
+    regions.emplace_back(std::move(cartridge_region));
+  }
+  return Memory("memory", std::move(regions), address_bus, data_bus, parent);
+}
 
 Memory::Memory(std::string_view name,
                std::vector<std::unique_ptr<Region>> regions,
@@ -11,6 +26,12 @@ Memory::Memory(std::string_view name,
       regions_(std::move(regions)),
       address_("address", &address_bus_, nullptr, this), write_("write", this),
       read_("read", this) {
+  // Throw an exception if any regions are null.
+  for (const auto &region : regions_) {
+    if (region == nullptr) {
+      throw std::invalid_argument("region is null");
+    }
+  }
   // Throw an exception if any regions overlap.
   for (size_t i = 0; i < regions_.size(); ++i) {
     for (size_t j = i + 1; j < regions_.size(); ++j) {

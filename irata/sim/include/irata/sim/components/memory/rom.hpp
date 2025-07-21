@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/sim/bytes/byte.hpp>
 #include <irata/sim/bytes/word.hpp>
 #include <irata/sim/components/memory/module.hpp>

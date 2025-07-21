@@ -55,4 +55,12 @@ TEST(WordTest, GreaterThan) { EXPECT_GT(Word(0x5678), Word(0x1234)); }
 
 TEST(WordTest, GreaterThanOrEqual) { EXPECT_GE(Word(0x5678), Word(0x1234)); }
 
+TEST(WordTest, AddSizet) {
+  EXPECT_EQ(Word(0x1234) + size_t(0x5678), Word(0x68AC));
+}
+
+TEST(WordTest, SubtractSizet) {
+  EXPECT_EQ(Word(0x5678) - size_t(0x1234), Word(0x4444));
+}
+
 } // namespace irata::sim

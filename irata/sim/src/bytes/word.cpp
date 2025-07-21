@@ -47,4 +47,8 @@ Word Word::operator-(const Word &other) const {
   return Word(value_ - other.value_);
 }
 
+Word Word::operator+(size_t other) const { return Word(value_ + other); }
+
+Word Word::operator-(size_t other) const { return Word(value_ - other); }
+
 } // namespace irata::sim

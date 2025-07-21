@@ -1,164 +1,104 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/bytes/byte.hpp>
+#include <irata/sim/bytes/word.hpp>
+#include <irata/sim/components/component.hpp>
+#include <irata/sim/components/memory/ram.hpp>
 #include <irata/sim/components/memory/region.hpp>
-
-using ::testing::_;
-using ::testing::Return;
+#include <irata/sim/components/memory/rom.hpp>
+#include <stdexcept>
 
 namespace irata::sim::components::memory {
 
-namespace {
-
-class MockModule : public Module {
-public:
-  explicit MockModule(std::string_view name) : Module(name) {}
-
-  MOCK_METHOD(size_t, size, (), (const, override));
-  MOCK_METHOD(Byte, read, (Word address), (const, override));
-  MOCK_METHOD(void, write, (Word address, Byte value), (override));
-  MOCK_METHOD(bool, can_write, (), (const, override));
-};
-
-} // namespace
-
-TEST(RegionTest, Size) {
+TEST(RegionTest, Constructor) {
   Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  Region region("region", module, Word(0), &root);
-  EXPECT_EQ(region.size(), 1024);
+  Region region("ram", std::make_unique<RAM>(0x400), Word(0x1000), &root);
+  EXPECT_EQ(region.name(), "ram");
+  EXPECT_EQ(region.size(), 0x400);
+  EXPECT_EQ(region.offset(), Word(0x1000));
+  EXPECT_EQ(region.parent(), &root);
+  EXPECT_EQ(root.child("ram"), &region);
+  EXPECT_EQ(region.path(), "/ram");
 }
 
-TEST(RegionTest, SizeNotPowerOfTwo) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1023));
-  EXPECT_THROW(Region("region", module, Word(0), &root), std::invalid_argument);
+TEST(RegionTest, NullModule) {
+  EXPECT_THROW(Region("ram", nullptr, Word(0x1000)), std::invalid_argument);
 }
 
-TEST(RegionTest, Offset) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  Region region("region", module, Word(2048), &root);
-  EXPECT_EQ(region.offset(), Word(2048));
-}
-
-TEST(RegionTest, OffsetNotAligned) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_THROW(Region("region", module, Word(2049), &root),
+TEST(RegionTest, ModuleSizeZero) {
+  EXPECT_THROW(Region("ram", std::make_unique<RAM>(0x0000), Word(0x1000)),
                std::invalid_argument);
 }
 
+TEST(RegionTest, ModuleSizeNotAPowerOfTwo) {
+  EXPECT_THROW(Region("ram", std::make_unique<RAM>(0x3FF), Word(0x1000)),
+               std::invalid_argument);
+}
+
+TEST(RegionTest, UnalignedModule) {
+  EXPECT_THROW(Region("ram", std::make_unique<RAM>(0x400), Word(0x1001)),
+               std::invalid_argument);
+}
+
+TEST(RegionTest, ModuleSizeOverflows) {
+  EXPECT_THROW(Region("ram", std::make_unique<RAM>(0x1FFFFFFFF), Word(0x0000)),
+               std::invalid_argument);
+}
+
+TEST(RegionTest, ModuleSizePlusOffsetOverflows) {
+  EXPECT_THROW(Region("ram", std::make_unique<RAM>(0x2000), Word(0xF000)),
+               std::invalid_argument);
+}
+
+TEST(RegionTest, ModuleIsChildOfRegion) {
+  auto ram = std::make_unique<RAM>(0x400);
+  auto *ram_ptr = ram.get();
+  Region region("ram", std::move(ram), Word(0x1000));
+  EXPECT_EQ(ram_ptr->parent(), &region);
+  EXPECT_EQ(region.child("ram"), ram_ptr);
+}
+
 TEST(RegionTest, ContainsAddress) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  Region region("region", module, Word(2048), &root);
-  EXPECT_TRUE(region.contains_address(Word(2048)));
-  EXPECT_TRUE(region.contains_address(Word(3071)));
-  EXPECT_FALSE(region.contains_address(Word(2047)));
-  EXPECT_FALSE(region.contains_address(Word(3072)));
+  Region region("ram", std::make_unique<RAM>(0x400), Word(0x1000));
+  EXPECT_TRUE(region.contains_address(Word(0x1000)));
+  EXPECT_TRUE(region.contains_address(Word(0x13FF)));
+  EXPECT_FALSE(region.contains_address(Word(0x0FFF)));
+  EXPECT_FALSE(region.contains_address(Word(0x1400)));
 }
 
 TEST(RegionTest, Read) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  Region region("region", module, Word(2048), &root);
-  EXPECT_CALL(module, read(Word(0x0001))).WillOnce(Return(Byte(0x12)));
-  EXPECT_EQ(region.read(Word(2049)), Byte(0x12));
+  std::map<Word, Byte> data = {{Word(0x100), Byte(0x12)}};
+  Region region("ram", std::make_unique<RAM>(0x400, "ram", std::move(data)),
+                Word(0x1000));
+  EXPECT_EQ(region.read(Word(0x1100)), Byte(0x12));
+  EXPECT_EQ(region.read(Word(0x1101)), Byte(0x00));
 }
 
 TEST(RegionTest, ReadOutOfRange) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  Region region("region", module, Word(2048), &root);
-  EXPECT_THROW(region.read(Word(2047)), std::out_of_range);
-  EXPECT_THROW(region.read(Word(3072)), std::out_of_range);
+  Region region("ram", std::make_unique<RAM>(0x400), Word(0x1000));
+  EXPECT_THROW(region.read(Word(0x1400)), std::out_of_range);
+  EXPECT_THROW(region.read(Word(0x0FFF)), std::out_of_range);
 }
 
 TEST(RegionTest, Write) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(true));
-  Region region("region", module, Word(2048), &root);
-  EXPECT_CALL(module, write(Word(0x0001), Byte(0x12)));
-  region.write(Word(2049), Byte(0x12));
+  Region region("ram", std::make_unique<RAM>(0x400), Word(0x1000));
+  EXPECT_TRUE(region.can_write());
+  EXPECT_EQ(region.read(Word(0x1100)), Byte(0x00));
+  region.write(Word(0x1100), Byte(0x12));
+  EXPECT_EQ(region.read(Word(0x1100)), Byte(0x12));
 }
 
 TEST(RegionTest, WriteOutOfRange) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(true));
-  EXPECT_CALL(module, write(_, _)).Times(0);
-  Region region("region", module, Word(2048), &root);
-  EXPECT_THROW(region.write(Word(2047), Byte(0x12)), std::out_of_range);
-  EXPECT_THROW(region.write(Word(3072), Byte(0x12)), std::out_of_range);
-}
-
-TEST(RegionTest, WriteNotWritable) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(false));
-  EXPECT_CALL(module, write(_, _)).Times(0);
-  Region region("region", module, Word(2048), &root);
-  EXPECT_THROW(region.write(Word(2049), Byte(0x12)), std::runtime_error);
-}
-
-TEST(RegionTest, CanWrite) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(true));
-  Region region("region", module, Word(2048), &root);
+  Region region("ram", std::make_unique<RAM>(0x400), Word(0x1000));
   EXPECT_TRUE(region.can_write());
+  EXPECT_THROW(region.write(Word(0x1400), Byte(0x12)), std::out_of_range);
+  EXPECT_THROW(region.write(Word(0x0FFF), Byte(0x12)), std::out_of_range);
 }
 
-TEST(RegionTest, CannotWrite) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module, can_write()).WillRepeatedly(Return(false));
-  Region region("region", module, Word(2048), &root);
+TEST(RegionTest, WriteToReadOnlyModule) {
+  Region region("rom", std::make_unique<ROM>(0x400), Word(0x1000));
   EXPECT_FALSE(region.can_write());
-}
-
-TEST(RegionTest, NoOverlap) {
-  Component root("root");
-  MockModule module1("module1");
-  MockModule module2("module2");
-  EXPECT_CALL(module1, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module2, size()).WillRepeatedly(Return(1024));
-  Region region1("region1", module1, Word(2048), &root);
-  Region region2("region2", module2, Word(3072), &root);
-  EXPECT_FALSE(region1.overlaps(region2));
-}
-
-TEST(RegionTest, Overlap) {
-  Component root("root");
-  MockModule module1("module1");
-  MockModule module2("module2");
-  EXPECT_CALL(module1, size()).WillRepeatedly(Return(1024));
-  EXPECT_CALL(module2, size()).WillRepeatedly(Return(2048));
-  Region region1("region1", module1, Word(1024), &root);
-  Region region2("region2", module2, Word(0), &root);
-  EXPECT_TRUE(region1.overlaps(region2));
-  EXPECT_TRUE(region2.overlaps(region1));
-}
-
-TEST(RegionTest, RegionHasModuleAsChild) {
-  Component root("root");
-  MockModule module("module");
-  EXPECT_CALL(module, size()).WillRepeatedly(Return(1024));
-  Region region("region", module, Word(0), &root);
-  EXPECT_EQ(region.child("module"), &module);
+  EXPECT_THROW(region.write(Word(0x1100), Byte(0x12)), std::runtime_error);
 }
 
 } // namespace irata::sim::components::memory
