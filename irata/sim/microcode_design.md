@@ -2,8 +2,6 @@
 
 This document outlines the design goals, constraints, and architecture for the Irata microcode system, which defines the behavior of each instruction in terms of hardware-level control line sequences. The system is structured as a staged pipeline with clearly separated concerns and validation boundaries.
 
-
-
 ## Goals
 
 The microcode system must:
@@ -12,8 +10,7 @@ The microcode system must:
 - Compile declarative instruction definitions into control-line-based step sequences.
 - Validate hardware interactions for safety, correctness, and consistency.
 - Generate instruction memory data structures for execution in the `chuu` simulator.
-
-
+- Support expressive, reusable, and composable microcode declarations.
 
 ## Architectural Layers
 
@@ -21,84 +18,84 @@ The system is organized into four distinct layers:
 
 ### 1. Hardware Model (Meta-HDL)
 
-A declarative model of the hardware platform, including:
+A declarative, structured model of the hardware platform, including:
 
 - All components (registers, ALUs, memory modules, buses, status lines).
 - Valid control lines and access modes for each component.
-- Bus structures and associated conflict rules.
+- Bus structures and conflict rules for shared resources.
 - Legal status flags and branching conditions.
 
-The hardware model provides named handles and ensures that all microcode operates only on declared and valid hardware features. It also supports static validation of hardware-level conflicts, such as illegal simultaneous bus usage.
+The hardware model provides named handles and a tree of hardware declarations. All microcode must reference only declared hardware. This enables static validation of hardware-level misuse and ensures simulation and compilation safety.
 
 ### 2. Microcode Declaration DSL (Dataflow IR)
 
-An abstract, high-level description of each instruction's behavior, expressed in terms of data movement, transformations, and control logic. This layer includes:
+An abstract intermediate representation of instruction behavior, referred to as the "spec" or dataflow IR. It is designed to be expressive and composable, and it defines a program as an unordered set of operations with dependencies. Key features include:
 
-- Register-to-register or register-to-bus copies
-- Arithmetic and logic operations
-- Status flag updates
-- Branching on flag values
-- Label-based flow control
+- Each operation represents exactly one clock cycle.
+- Operations may have zero or more inputs and outputs.
+- Inputs and outputs may be registers, memory, buses, or other operations.
+- Operations may assert arbitrary sets of control lines.
+- Status-aware operations may have conditional branches or alternatives.
+- Programs are declarative and unordered; control flow and scheduling are not encoded.
+- Programs may be nested or composed to allow for reuse of common microcode patterns.
+- Flattening routines allow composed programs to be reduced to a linear form for compilation.
 
-This declaration format does not reference steps or ticks. It is purely functional and represents the desired behavior without committing to any particular execution schedule.
+This layer serves as the implementation language for the Irata instruction set. Programs may be written manually or built via reusable functional building blocks.
 
 ### 3. Microcode Compiler (Scheduler / Linearizer)
 
-A transformation layer that compiles dataflow declarations into executable microcode programs. Responsibilities include:
+This stage compiles declarative microcode programs into per-cycle execution steps suitable for building instruction memory. It performs:
 
-- Scheduling data operations into valid per-cycle groupings
-- Resolving and sequencing control line activations
-- Inserting tick boundaries where needed
-- Evaluating resource constraints and dependencies
-- Handling conditional execution and branching paths
-- Validating hardware safety (e.g., bus conflicts, conflicting line usage)
+- Topological sort of operations respecting data and control dependencies.
+- Cycle-by-cycle grouping of non-conflicting operations.
+- Static analysis and validation of control line assertions and hardware access.
+- Handling of branching behavior and conditional expansions.
+- Fan-in and fan-out resolution.
+- Conflict resolution for buses, components, and shared resources.
+- Generation of one or more execution traces for each instruction, depending on branching.
 
-This stage is where dataflow turns into execution steps. It may eventually support optimization passes, such as dead cycle elimination or micro-op compaction.
+The compiler defines how declarative semantics map to clock-based execution. Future passes may include optimizations or parallelization transforms.
 
 ### 4. Microcode Table (Execution Representation)
 
-The compiled result of the microcode compiler. This structure:
+The compiled result, suitable for use by the simulator. This table:
 
-- Maps opcodes and status flags to per-cycle control line sequences
-- Is directly consumed by the `InstructionMemory` and `Controller` in the simulator
-- Has no dependency on the dataflow DSL or compiler internals
-
-The microcode table defines the final, runtime behavior of the processor.
-
-
+- Maps `(opcode, step, status)` tuples to sets of control lines.
+- Is indexed by the controller to fetch the correct micro-operations during simulation.
+- Contains no declarative or structural information.
+- Is the final, authoritative source of CPU behavior at runtime.
 
 ## Design Principles
 
-- **Separation of Concerns**: Declaration, validation, and execution are fully decoupled.
-- **Structure Over Convention**: All behavior must be explicitly defined through structured representations.
-- **Fail Fast**: All invalid microcode, hardware references, or resource conflicts are reported at build time.
-- **Traceability**: Each compiled micro-op is traceable to its declarative source.
-- **Declarative First**: Instruction definitions should describe what happens, not how or when it happens.
-- **Scheduler-Driven Timing**: The compiler is responsible for all timing and cycle sequencing decisions.
-
-
+- **Separation of Concerns**: Declarations, validation, and compilation are distinct and independently testable.
+- **Explicitness**: No implicit conventions; all behavior must be structurally defined.
+- **Fail Fast**: Errors in hardware usage, conflicts, or undefined behavior are surfaced at build time.
+- **Reusability**: Common operations and instruction behaviors can be factored and reused.
+- **Traceability**: All compiled micro-operations are traceable back to their declarative sources.
+- **Declarative First**: Instruction definitions express *what* should happen, not *how* or *when*.
+- **Scheduler-Driven Execution**: Timing is determined by the compiler, not by declaration.
 
 ## Branching and Conditional Behavior
 
-Branching is supported at the declarative level via conditional expressions and labeled flow control. Instructions may define alternative execution paths based on status flag values. The compiler expands these into appropriate instruction memory entries, keyed by opcode and status combinations.
+Operations may include status flag dependencies and conditional alternatives. The DSL supports branching logic within a declarative structure, allowing instructions to specify alternate paths depending on processor state. The compiler resolves these into multiple microcode table entries as needed, ensuring each condition is accounted for explicitly.
 
+## Program Composition
 
+Programs may be composed of smaller program fragments. These sub-programs may be reused or parameterized. Composition is recursive, and programs may be inputs or outputs of operations. The compiler supports flattening this structure into a dependency-aware DAG for scheduling and linearization.
 
 ## Deliverables
 
-- Hardware Model definition structure and validator
-- Dataflow DSL for microcode declaration
-- Microcode compiler with scheduler and validator
-- Instruction microcode table format
-- Unit and integration tests for each layer
-- Diagnostic tooling for validation and visualization (optional)
-
-
+- HDL structure definition and validator
+- Microcode spec DSL for declarative instruction behavior
+- Compiler for transforming specs into executable microcode
+- Instruction memory table format for use in simulation
+- Unit and integration tests across all layers
+- Optional tooling for visualization and debugging
 
 ## Future Directions
 
-- Microcode visualizer and flow debugger
-- Graph-based hazard and dependency analysis
-- Optimizing scheduler (dead cycle removal, parallelization)
-- YAML or external formats for instruction import/export
-- Pattern reuse and instruction templating
+- Graph-based microcode visualizer and debugger
+- Optimizing scheduler and instruction compactor
+- External definition formats (e.g., YAML, TOML)
+- Instruction templating and macro support
+- Status-aware speculative execution or delayed branching
