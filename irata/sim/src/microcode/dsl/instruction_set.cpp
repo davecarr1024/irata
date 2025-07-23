@@ -1,8 +1,8 @@
-#include <irata/sim/microcode/ir/instruction.hpp>
-#include <irata/sim/microcode/ir/instruction_set.hpp>
-#include <irata/sim/microcode/ir/step.hpp>
+#include <irata/sim/microcode/dsl/instruction.hpp>
+#include <irata/sim/microcode/dsl/instruction_set.hpp>
+#include <irata/sim/microcode/dsl/step.hpp>
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 Instruction *
 InstructionSet::create_instruction(const asm_::Instruction &instruction) {
@@ -16,4 +16,4 @@ InstructionSet::instructions() const {
   return instructions_;
 }
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

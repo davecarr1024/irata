@@ -1,8 +1,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <irata/sim/microcode/ir/instruction.hpp>
-#include <irata/sim/microcode/ir/instruction_set.hpp>
-#include <irata/sim/microcode/ir/step.hpp>
+#include <irata/sim/microcode/dsl/instruction.hpp>
+#include <irata/sim/microcode/dsl/instruction_set.hpp>
+#include <irata/sim/microcode/dsl/step.hpp>
 #include <stdexcept>
 
 using ::testing::AllOf;
@@ -11,7 +11,7 @@ using ::testing::IsEmpty;
 using ::testing::Property;
 using ::testing::UnorderedElementsAre;
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 namespace {
 
@@ -89,4 +89,4 @@ TEST_F(StepTest, CreateStep) {
                   Pointee(StepHasControls(UnorderedElementsAre(&control2)))));
 }
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

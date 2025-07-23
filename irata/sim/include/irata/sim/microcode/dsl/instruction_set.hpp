@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 class Instruction;
 
@@ -34,4 +34,4 @@ private:
   std::vector<std::unique_ptr<Instruction>> instructions_;
 };
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

@@ -1,9 +1,9 @@
-#include <irata/sim/microcode/ir/instruction.hpp>
-#include <irata/sim/microcode/ir/instruction_set.hpp>
-#include <irata/sim/microcode/ir/step.hpp>
+#include <irata/sim/microcode/dsl/instruction.hpp>
+#include <irata/sim/microcode/dsl/instruction_set.hpp>
+#include <irata/sim/microcode/dsl/step.hpp>
 #include <stdexcept>
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 Step::Step(Instruction *instruction) : instruction_(instruction) {
   if (instruction == nullptr) {
@@ -39,4 +39,4 @@ Step *Step::with_bus(const hdl::BusDecl &bus) {
 
 const std::set<const hdl::BusDecl *> &Step::buses() const { return buses_; }
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

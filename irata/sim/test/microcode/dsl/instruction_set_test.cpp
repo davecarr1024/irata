@@ -1,14 +1,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <irata/sim/microcode/ir/instruction.hpp>
-#include <irata/sim/microcode/ir/instruction_set.hpp>
-#include <irata/sim/microcode/ir/step.hpp>
+#include <irata/sim/microcode/dsl/instruction.hpp>
+#include <irata/sim/microcode/dsl/instruction_set.hpp>
+#include <irata/sim/microcode/dsl/step.hpp>
 
 using ::testing::AllOf;
 using ::testing::IsEmpty;
 using ::testing::Property;
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 namespace {
 
@@ -54,4 +54,4 @@ TEST(InstructionSetTest, CreateInstruction) {
                         InstructionHasStatuses(IsEmpty())))));
 }
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

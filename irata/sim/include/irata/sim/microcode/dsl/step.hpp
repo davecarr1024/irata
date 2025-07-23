@@ -4,7 +4,7 @@
 #include <irata/sim/hdl/hdl.hpp>
 #include <set>
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 class Instruction;
 class InstructionSet;
@@ -50,4 +50,4 @@ private:
   std::set<const hdl::BusDecl *> buses_;
 };
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

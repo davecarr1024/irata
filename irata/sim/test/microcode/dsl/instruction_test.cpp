@@ -1,9 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <irata/asm/asm.hpp>
-#include <irata/sim/microcode/ir/instruction.hpp>
-#include <irata/sim/microcode/ir/instruction_set.hpp>
-#include <irata/sim/microcode/ir/step.hpp>
+#include <irata/sim/microcode/dsl/instruction.hpp>
+#include <irata/sim/microcode/dsl/instruction_set.hpp>
+#include <irata/sim/microcode/dsl/step.hpp>
 
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
@@ -11,7 +11,7 @@ using ::testing::Pair;
 using ::testing::Property;
 using ::testing::UnorderedElementsAre;
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 namespace {
 
@@ -101,4 +101,4 @@ TEST_F(InstructionTest, CreateInstruction) {
                   Pointee(InstructionHasDescriptor(instruction_descriptor))));
 }
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl

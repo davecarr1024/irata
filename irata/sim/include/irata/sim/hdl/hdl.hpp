@@ -90,17 +90,45 @@ public:
 // Control Signals
 //------------------------------------------------------------------------------
 
-class ControlDecl final : public ComponentWithParentDecl {
-public:
-  ControlDecl(std::string_view name, const ComponentDecl &parent,
-              TickPhase phase)
-      : ComponentWithParentDecl(name, parent), phase_(phase) {}
+class ControlDecl : public ComponentWithParentDecl {
+protected:
+  ControlDecl(std::string_view name, const ComponentDecl &parent)
+      : ComponentWithParentDecl(name, parent) {}
 
-  TickPhase phase() const { return phase_; }
+public:
+  virtual TickPhase phase() const = 0;
+  virtual const BusDecl *maybe_bus() const { return nullptr; }
+};
+
+template <TickPhase Phase> class ControlWithPhaseDecl : public ControlDecl {
+public:
+  ControlWithPhaseDecl(std::string_view name, const ComponentDecl &parent)
+      : ControlDecl(name, parent) {}
+
+  TickPhase phase() const override { return Phase; }
+};
+
+using ControlControlDecl = ControlWithPhaseDecl<TickPhase::Control>;
+using ProcessControlDecl = ControlWithPhaseDecl<TickPhase::Process>;
+using ClearControlDecl = ControlWithPhaseDecl<TickPhase::Clear>;
+
+template <TickPhase Phase>
+class ControlWithBusDecl : public ControlWithPhaseDecl<Phase> {
+public:
+  ControlWithBusDecl(std::string_view name, const ComponentDecl &parent,
+                     const BusDecl &bus)
+      : ControlWithPhaseDecl<Phase>(name, parent), bus_(bus) {}
+
+  const BusDecl &bus() const { return bus_; }
+
+  const BusDecl *maybe_bus() const override { return &bus_; }
 
 private:
-  const TickPhase phase_;
+  const BusDecl &bus_;
 };
+
+using WriteControlDecl = ControlWithBusDecl<TickPhase::Write>;
+using ReadControlDecl = ControlWithBusDecl<TickPhase::Read>;
 
 //------------------------------------------------------------------------------
 // Status Signals
@@ -120,13 +148,12 @@ class DisconnectedByteRegisterDecl : public ComponentWithParentDecl {
 public:
   DisconnectedByteRegisterDecl(std::string_view name,
                                const ComponentDecl &parent)
-      : ComponentWithParentDecl(name, parent),
-        reset_("reset", *this, TickPhase::Process) {}
+      : ComponentWithParentDecl(name, parent), reset_("reset", *this) {}
 
-  const ControlDecl &reset() const { return reset_; }
+  const ProcessControlDecl &reset() const { return reset_; }
 
 private:
-  const ControlDecl reset_;
+  const ProcessControlDecl reset_;
 };
 
 class ConnectedByteRegisterDecl : public DisconnectedByteRegisterDecl {
@@ -134,8 +161,7 @@ public:
   ConnectedByteRegisterDecl(std::string_view name, const ComponentDecl &parent,
                             const ByteBusDecl &bus)
       : DisconnectedByteRegisterDecl(name, parent), bus_(bus),
-        write_("write", *this, TickPhase::Write),
-        read_("read", *this, TickPhase::Read) {}
+        write_("write", *this, bus_), read_("read", *this, bus_) {}
 
   const ByteBusDecl &bus() const { return bus_; }
   const ControlDecl &write() const { return write_; }
@@ -143,8 +169,8 @@ public:
 
 private:
   const ByteBusDecl &bus_;
-  const ControlDecl write_;
-  const ControlDecl read_;
+  const WriteControlDecl write_;
+  const ReadControlDecl read_;
 };
 
 class IncrementableConnectedByteRegisterDecl final
@@ -154,12 +180,12 @@ public:
                                          const ComponentDecl &parent,
                                          const ByteBusDecl &bus)
       : ConnectedByteRegisterDecl(name, parent, bus),
-        increment_("increment", *this, TickPhase::Process) {}
+        increment_("increment", *this) {}
 
-  const ControlDecl &increment() const { return increment_; }
+  const ProcessControlDecl &increment() const { return increment_; }
 
 private:
-  const ControlDecl increment_;
+  const ProcessControlDecl increment_;
 };
 
 class ConnectedWordRegisterDecl : public ComponentWithParentDecl {
@@ -167,10 +193,8 @@ public:
   ConnectedWordRegisterDecl(std::string_view name, const ComponentDecl &parent,
                             const WordBusDecl &bus)
       : ComponentWithParentDecl(name, parent), bus_(bus),
-        write_("write", *this, TickPhase::Write),
-        read_("read", *this, TickPhase::Read),
-        reset_("reset", *this, TickPhase::Process), high_("high", *this),
-        low_("low", *this) {}
+        write_("write", *this, bus_), read_("read", *this, bus_),
+        reset_("reset", *this), high_("high", *this), low_("low", *this) {}
 
   const WordBusDecl &bus() const { return bus_; }
   const ControlDecl &write() const { return write_; }
@@ -182,9 +206,9 @@ public:
 
 private:
   const WordBusDecl &bus_;
-  const ControlDecl write_;
-  const ControlDecl read_;
-  const ControlDecl reset_;
+  const WriteControlDecl write_;
+  const ReadControlDecl read_;
+  const ProcessControlDecl reset_;
   const DisconnectedByteRegisterDecl high_;
   const DisconnectedByteRegisterDecl low_;
 };
@@ -196,12 +220,12 @@ public:
                                          const ComponentDecl &parent,
                                          const WordBusDecl &bus)
       : ConnectedWordRegisterDecl(name, parent, bus),
-        increment_("increment", *this, TickPhase::Process) {}
+        increment_("increment", *this) {}
 
-  const ControlDecl &increment() const { return increment_; }
+  const ProcessControlDecl &increment() const { return increment_; }
 
 private:
-  const ControlDecl increment_;
+  const ProcessControlDecl increment_;
 };
 
 //------------------------------------------------------------------------------
@@ -214,23 +238,22 @@ public:
              const WordBusDecl &address_bus, const ByteBusDecl &data_bus)
       : ComponentWithParentDecl(name, parent), address_bus_(address_bus),
         data_bus_(data_bus), address_register_("address", *this, address_bus),
-        write_("write", *this, TickPhase::Write),
-        read_("read", *this, TickPhase::Read) {}
+        write_("write", *this, data_bus_), read_("read", *this, data_bus_) {}
 
   const WordBusDecl &address_bus() const { return address_bus_; }
   const ByteBusDecl &data_bus() const { return data_bus_; }
   const ConnectedWordRegisterDecl &address_register() const {
     return address_register_;
   }
-  const ControlDecl &write() const { return write_; }
-  const ControlDecl &read() const { return read_; }
+  const WriteControlDecl &write() const { return write_; }
+  const ReadControlDecl &read() const { return read_; }
 
 private:
   const WordBusDecl &address_bus_;
   const ByteBusDecl &data_bus_;
   const ConnectedWordRegisterDecl address_register_;
-  const ControlDecl write_;
-  const ControlDecl read_;
+  const WriteControlDecl write_;
+  const ReadControlDecl read_;
 };
 
 //------------------------------------------------------------------------------

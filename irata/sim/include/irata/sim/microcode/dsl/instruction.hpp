@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace irata::sim::microcode::ir {
+namespace irata::sim::microcode::dsl {
 
 class InstructionSet;
 class Step;
@@ -62,4 +62,4 @@ private:
   std::map<const hdl::StatusDecl *, bool> statuses_;
 };
 
-} // namespace irata::sim::microcode::ir
+} // namespace irata::sim::microcode::dsl
