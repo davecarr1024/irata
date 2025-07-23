@@ -11,6 +11,7 @@
 // All components are immutable at compile time and structured as a tree.
 // Components are accessed through hierarchical composition, not by name lookup.
 
+#include <ostream>
 #include <string>
 #include <string_view>
 
@@ -22,12 +23,14 @@ namespace irata::sim::hdl {
 //   - identify when control lines are consumed
 //   - support collapsing compatible operations within a tick
 enum class TickPhase {
-  Control, // Control lines are asserted
-  Write,   // Values are written onto buses
-  Read,    // Values are read from buses
-  Process, // Local, internal component updates
-  Clear    // Cleanup of latched or asserted control signals
+  Control = 0, // Control lines are asserted
+  Write = 1,   // Values are written onto buses
+  Read = 2,    // Values are read from buses
+  Process = 3, // Local, internal component updates
+  Clear = 4,   // Cleanup of latched or asserted control signals
 };
+
+std::ostream &operator<<(std::ostream &os, TickPhase phase);
 
 //------------------------------------------------------------------------------
 // Component Base Types
@@ -57,6 +60,8 @@ private:
   const std::string name_;
   ComponentDecl const *const parent_;
 };
+
+std::ostream &operator<<(std::ostream &os, const ComponentDecl &component);
 
 class ComponentWithParentDecl : public ComponentDecl {
 public:
@@ -97,8 +102,9 @@ protected:
 
 public:
   virtual TickPhase phase() const = 0;
-  virtual const BusDecl *maybe_bus() const { return nullptr; }
 };
+
+std::ostream &operator<<(std::ostream &os, const ControlDecl &control);
 
 template <TickPhase Phase> class ControlWithPhaseDecl : public ControlDecl {
 public:
@@ -106,9 +112,14 @@ public:
       : ControlDecl(name, parent) {}
 
   TickPhase phase() const override { return Phase; }
+
+  static constexpr TickPhase phase_v = Phase;
+
+  static_assert(phase_v != TickPhase::Control,
+                "Control lines must not use TickPhase::Control — that phase is "
+                "reserved for controller output.");
 };
 
-using ControlControlDecl = ControlWithPhaseDecl<TickPhase::Control>;
 using ProcessControlDecl = ControlWithPhaseDecl<TickPhase::Process>;
 using ClearControlDecl = ControlWithPhaseDecl<TickPhase::Clear>;
 
@@ -121,11 +132,17 @@ public:
 
   const BusDecl &bus() const { return bus_; }
 
-  const BusDecl *maybe_bus() const override { return &bus_; }
-
 private:
   const BusDecl &bus_;
 };
+
+template <TickPhase Phase>
+inline std::ostream &operator<<(std::ostream &os,
+                                const ControlWithBusDecl<Phase> &control) {
+  os << "ControlWithBus(" << control.path() << ", phase=" << control.phase()
+     << ", bus=" << control.bus() << ")";
+  return os;
+}
 
 using WriteControlDecl = ControlWithBusDecl<TickPhase::Write>;
 using ReadControlDecl = ControlWithBusDecl<TickPhase::Read>;
@@ -164,8 +181,8 @@ public:
         write_("write", *this, bus_), read_("read", *this, bus_) {}
 
   const ByteBusDecl &bus() const { return bus_; }
-  const ControlDecl &write() const { return write_; }
-  const ControlDecl &read() const { return read_; }
+  const WriteControlDecl &write() const { return write_; }
+  const ReadControlDecl &read() const { return read_; }
 
 private:
   const ByteBusDecl &bus_;

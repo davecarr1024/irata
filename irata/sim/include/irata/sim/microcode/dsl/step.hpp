@@ -2,6 +2,7 @@
 
 #include <irata/asm/asm.hpp>
 #include <irata/sim/hdl/hdl.hpp>
+#include <ostream>
 #include <set>
 
 namespace irata::sim::microcode::dsl {
@@ -33,21 +34,29 @@ public:
   Instruction *create_instruction(const asm_::Instruction &instruction);
 
   // Adds the given control line to the step.
+  Step *with_control(const hdl::WriteControlDecl &control);
+  Step *with_control(const hdl::ReadControlDecl &control);
   Step *with_control(const hdl::ControlDecl &control);
 
   // Returns the control lines for the step.
+  // This includes all control lines, including read and write control lines.
   const std::set<const hdl::ControlDecl *> &controls() const;
 
-  // Adds the given bus to the step.
-  Step *with_bus(const hdl::BusDecl &bus);
+  // Returns the write control lines for the step.
+  // This is a subset of the control lines returned by controls().
+  const std::set<const hdl::WriteControlDecl *> &write_controls() const;
 
-  // Returns the buses for the step.
-  const std::set<const hdl::BusDecl *> &buses() const;
+  // Returns the read control lines for the step.
+  // This is a subset of the control lines returned by controls().
+  const std::set<const hdl::ReadControlDecl *> &read_controls() const;
 
 private:
   Instruction *const instruction_;
   std::set<const hdl::ControlDecl *> controls_;
-  std::set<const hdl::BusDecl *> buses_;
+  std::set<const hdl::WriteControlDecl *> write_controls_;
+  std::set<const hdl::ReadControlDecl *> read_controls_;
 };
+
+std::ostream &operator<<(std::ostream &os, const Step &step);
 
 } // namespace irata::sim::microcode::dsl

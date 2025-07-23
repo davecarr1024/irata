@@ -23,6 +23,18 @@ Instruction *Step::create_instruction(const asm_::Instruction &instruction) {
   return instruction_->create_instruction(instruction);
 }
 
+Step *Step::with_control(const hdl::WriteControlDecl &control) {
+  controls_.insert(&control);
+  write_controls_.insert(&control);
+  return this;
+}
+
+Step *Step::with_control(const hdl::ReadControlDecl &control) {
+  controls_.insert(&control);
+  read_controls_.insert(&control);
+  return this;
+}
+
 Step *Step::with_control(const hdl::ControlDecl &control) {
   controls_.insert(&control);
   return this;
@@ -32,11 +44,23 @@ const std::set<const hdl::ControlDecl *> &Step::controls() const {
   return controls_;
 }
 
-Step *Step::with_bus(const hdl::BusDecl &bus) {
-  buses_.insert(&bus);
-  return this;
+const std::set<const hdl::WriteControlDecl *> &Step::write_controls() const {
+  return write_controls_;
 }
 
-const std::set<const hdl::BusDecl *> &Step::buses() const { return buses_; }
+const std::set<const hdl::ReadControlDecl *> &Step::read_controls() const {
+  return read_controls_;
+}
+
+std::ostream &operator<<(std::ostream &os, const Step &step) {
+  os << "Step(";
+  os << "instruction=" << step.instruction()->instruction().name;
+  os << ", controls={";
+  for (const auto &control : step.controls()) {
+    os << *control << " ";
+  }
+  os << "})";
+  return os;
+}
 
 } // namespace irata::sim::microcode::dsl
