@@ -1,6 +1,6 @@
 # 🧾 Irata Project Status
 
-_Last updated: July 16, 2025_
+_Last updated: July 23, 2025_
 
 ---
 
@@ -14,12 +14,17 @@ The Irata simulated computer is transitioning from isolated component testing to
 - `InstructionMemory` holds microcode:
   - Indexed by opcode, step, and status
   - Drives controller's output lines per tick
+- Microcode compiler implemented
+  - Supports validation of bus usage and complementary status variants
+  - Automatically merges compatible steps within instructions
+  - Ensures phase-order correctness using `TickPhase` model
 
 ### 🧠 Controller
 - Drives control lines using `InstructionMemory` and `InstructionSet`
 - Supports opcode + step-based resolution with optional conditionals
 - Built with tick-phase integration
 - Fully tested in isolation
+- Next: update controller to consume compiled microcode table
 
 ### 🧰 Registers
 - `Register` and `WordRegister` components
@@ -38,7 +43,6 @@ The Irata simulated computer is transitioning from isolated component testing to
 - Tick phases:
   - `control → write → read → process → clear`
 - Components can resolve and control arbitrary named lines (local or relative path)
-
 
 ### 🧩 Memory Subsystem
 
@@ -66,14 +70,11 @@ Memory is now a fully developed subsystem:
 ## 🔨 Upcoming: Canonical System Build
 
 ### 🧠 Planned Components
-- `RAM`, `ROM` modules
-- Static `Memory::canonical()` layout method
-  - Attaches system RAM and cartridge ROM
-- Static `Controller::from_instruction_set()` method
+- Static `Controller::irata()` method
   - Loads microcode from `asm.yaml`
 - `CPU` component
   - Instantiates and wires registers, buses, controller
-- `IrataSystem` top-level component
+- `Irata` top-level component
   - Builds CPU + Memory with canonical layout
   - Accepts a cartridge (ROM)
   - Starts ticking from a known entry point
@@ -126,12 +127,15 @@ This is not just a simulator. It’s a full virtual machine with real developmen
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Implement `RAM` and `ROM` modules
-- [ ] Build canonical `Memory` layout
 - [ ] Implement static controller constructor from `asm.yaml`
 - [ ] Create `CPU` component with full internal wiring
 - [ ] Create `IrataSystem` root-level simulator
 - [ ] Define cartridge format and boot-from-ROM flow
 - [ ] Write assembler and run E2E test with `LDA #$42`
+- [ ] Modify controller to consume compiled microcode table
+- [ ] Implement tick-constrained control assertions in simulator
+- [ ] Extend HDL with reset line modeling
+- [ ] Validate simulator against HDL expectations from `asm.yaml`
+- [ ] Serialize/deserialize simulator state
 
 ---
