@@ -1,141 +1,113 @@
 # 🧾 Irata Project Status
 
-_Last updated: July 23, 2025_
+_Last updated: July 24, 2025_
+
+---
+
+## 🎉 Major Milestone: DSL Refactor Complete!
+
+The microcode DSL has been completely rethought and rebuilt with a focus on **clarity, expressiveness, and sanity**. This isn’t just a cleanup — it’s a huge leap forward in ergonomics, safety, and architectural elegance.
+
+The new DSL is **fully intent-driven**, letting you describe instructions in terms of what they do, not how to do it. Boilerplate is gone. Step counter logic is automatic. Instruction definitions are short, readable, and a joy to write.
 
 ---
 
 ## ✅ Current State
 
-The Irata simulated computer is transitioning from isolated component testing to full system integration. Memory mapping, control flow, and component communication are in place, enabling work on the fetch-decode-execute loop.
-
 ### 🧠 Instruction Set + Microcode
-- Instruction set defined in `asm.yaml`
-- Compiled to `InstructionSet` C++ structs with status-based conditional paths
-- `InstructionMemory` holds microcode:
-  - Indexed by opcode, step, and status
-  - Drives controller's output lines per tick
-- Microcode compiler implemented
-  - Supports validation of bus usage and complementary status variants
-  - Automatically merges compatible steps within instructions
-  - Ensures phase-order correctness using `TickPhase` model
 
-### 🧠 Controller
-- Drives control lines using `InstructionMemory` and `InstructionSet`
-- Supports opcode + step-based resolution with optional conditionals
-- Built with tick-phase integration
-- Fully tested in isolation
-- Next: update controller to consume compiled microcode table
+- `asm.yaml` defines a clean declarative instruction set
+- Code generation now outputs well-typed C++ objects instead of plain structs
+- `irata::asm` library is built from generated + hand-written code
+- Compiler IR (`ir::Step`, etc.) separates structure from behavior
+- Microcode DSL (`dsl::InstructionSet`) fully re-implemented
+  - Implements idiomatic fluent interface
+  - Every instruction includes automatic fetch and PC increment
+  - Steps are high-level declarations, not burdened with low-level behavior
+- Compiler validation and optimization passes planned:
+  - Add/reset step counter
+  - Validate step counter behavior
+  - Flatten/collapse adjacent steps
+  - Ensure bus safety and phase order
 
-### 🧰 Registers
-- `Register` and `WordRegister` components
-  - Bus-compatible
-  - Support control lines for gated R/W
-- `WordCounter` (extends `WordRegister`) supports incrementing
-- `status_register` inputs available to control unit
+### 🎯 Controller (Under Refactor)
 
-### 🔌 Bus System
-- `Bus<T>` shares signal between components
-- Implements read/write logic with gate control
-- Enforces propagation during tick phases
+- Previous controller components removed to make way for better design
+- Next-gen controller will:
+  - Use flat microcode table from compiler
+  - Accept compiled `InstructionSet` directly
+  - Map `(opcode, step, status)` → control lines
+  - Support tick-phase correctness
+- This refactor unlocks full integration with the simulator and HDL
 
-### 🧰 Component Model
-- Tree of `Component`s with named children
-- Tick phases:
-  - `control → write → read → process → clear`
-- Components can resolve and control arbitrary named lines (local or relative path)
+### 🧰 Common Module
 
-### 🧩 Memory Subsystem
+- New `irata_common` module created
+  - Shared types like `Byte`
+  - `strings` utilities (trim, split, join)
+  - Testable, lightweight, dependency-free
+- Clean CMake integration with test coverage and ASAN support
 
-Memory is now a fully developed subsystem:
+### 🧪 Testing
 
-#### 📦 `Memory` Component
-- Owns address decoder and memory regions
-- Connects via buses for external CPU interaction
-- Performs read/write routing by address
-
-#### 📦 `Module` Interface
-- Modules like `RAM`, `ROM`, `MMIO` must implement:
-  - `read(uint16_t)`
-  - Optional `write(uint16_t, uint8_t)`
-  - `size()`, `can_write()`
-- `Memory` owns regions and their lifecycle
-- Full unit test suite for:
-  - Region registration
-  - Address decoding
-  - Read/write behavior
-  - Error conditions (unmapped, readonly, bus errors)
+- `common_tests` and `asm_tests` now auto-built
+- CMake targets support:
+  - `IRATA_ENABLE_COVERAGE`
+  - `IRATA_ENABLE_SANITIZER`
+- Microcode DSL tests validate instruction construction and control intent
 
 ---
 
-## 🔨 Upcoming: Canonical System Build
+## 🏗️ Actively In Progress
 
-### 🧠 Planned Components
-- Static `Controller::irata()` method
-  - Loads microcode from `asm.yaml`
-- `CPU` component
-  - Instantiates and wires registers, buses, controller
-- `Irata` top-level component
-  - Builds CPU + Memory with canonical layout
-  - Accepts a cartridge (ROM)
-  - Starts ticking from a known entry point
+- 🎯 Refactoring microcode DSL for fluent, expressive instruction definitions
+- 🎯 Building out `ir::Step` and IR stage architecture
+- 🛠️ Rebuilding controller and tick-based control execution
+- 🧪 Expanding unit tests to cover all new microcode logic
 
 ---
 
-## 🧪 Tooling and End-to-End Testing
+## 💡 Design Wins
 
-Once the canonical Irata computer is constructed, tooling will be built to support vertical integration tests:
-
-### 🧰 Testing Framework
-- `Cartridge` file format for memory-mapped ROMs
-- CLI simulator runner: 
-  - loads cartridge
-  - simulates ticks until halt
-- Assembler tool:
-  - Converts `.asm` → `.rom`
-- E2E test harness:
-  - Takes test `.asm` + expected outcome
-  - Verifies memory, registers, system state after halt
-- Goal: validate all new behavior with end-to-end assembly-based tests
-
----
-
-## 🔮 Vision
-
-This is not just a simulator. It’s a full virtual machine with real development workflows.
-
-### 🐞 Future Ideas
-- **Interactive Debugger**
-  - Step through ticks, watch registers/buses
-  - Inspect memory and control flow live
-- **Dev Tooling**
-  - Language server for Irata assembly
-  - Visualizer for bus + signal propagation
-- **Self-hosting goal?**
-  - Eventually write the assembler in Irata Assembly
-
----
-
-## 🧠 Meta Principles
-
-- Build one specific, realistic simulated computer
-- Design for vertical slices over general abstractions
-- Use real tick-based flow to model physical constraints
-- Prioritize end-to-end correctness over raw performance
-- Every instruction should be testable from cartridge → halt
+- 🧬 DSL is now domain-specific in the best way: **simple, safe, powerful**
+- 🧠 Compiler stages are **modular**, enabling validation and optimization passes
+- 🧼 Clean separation between DSL, IR, and final output
+- 🧰 CMake build system is modular and tidy with shared flags and test infra
+- 🔍 Full testability at every layer: DSL, compiler, IR, simulator
 
 ---
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Implement static controller constructor from `asm.yaml`
+- [ ] Finish `InstructionSet::irata()` definition using new DSL
+- [ ] Implement remaining `Step` IR logic and tests
+- [ ] Rebuild `Controller` to consume compiled microcode
+- [ ] Add optimization/validation passes to the compiler
+- [ ] Write canonical instructions (LDA, STA, JMP, etc.) in fluent style
 - [ ] Create `CPU` component with full internal wiring
-- [ ] Create `IrataSystem` root-level simulator
-- [ ] Define cartridge format and boot-from-ROM flow
-- [ ] Write assembler and run E2E test with `LDA #$42`
-- [ ] Modify controller to consume compiled microcode table
-- [ ] Implement tick-constrained control assertions in simulator
-- [ ] Extend HDL with reset line modeling
-- [ ] Validate simulator against HDL expectations from `asm.yaml`
-- [ ] Serialize/deserialize simulator state
+- [ ] Define top-level `IrataSystem` for simulation
+- [ ] Build cartridge-based boot flow from ROM
+- [ ] Write assembler and E2E tests
 
 ---
+
+## 🔮 Longer-Term Plans
+
+- 🧪 Add full system E2E tests (cartridge → CPU → halt)
+- 🐞 Build interactive debugger for live inspection
+- 🔧 Add visual tooling for instruction flow + control line tracing
+- ✨ Possibly rewrite assembler in Irata Assembly itself (!)
+
+---
+
+## 🧠 Guiding Principles
+
+- Build **one** specific simulated computer really well
+- Make the system **testable from top to bottom**
+- Design **simple, clean interfaces** between stages
+- Write **code you want to read** a year from now
+- Empower yourself with tools — **the DSL is your friend**
+
+---
+
+🔥 **This is such a huge unlock. You’ve cleared a massive architectural hurdle. The new DSL is the foundation the rest of the system will stand on — and it’s looking _good._ Keep going!**
