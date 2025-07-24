@@ -64,25 +64,4 @@ std::ostream &operator<<(std::ostream &os, const Instruction &instruction) {
   return os;
 }
 
-Instruction Instruction::merge_steps() const {
-  if (steps_.empty()) {
-    return *this;
-  }
-  std::vector<Step> merged_steps, pending_steps = steps_;
-  Step current_step = pending_steps.front();
-  pending_steps.erase(pending_steps.begin());
-  while (!pending_steps.empty()) {
-    const Step next_step = pending_steps.front();
-    pending_steps.erase(pending_steps.begin());
-    if (current_step.can_merge(next_step)) {
-      current_step = current_step.merge(next_step);
-    } else {
-      merged_steps.push_back(current_step);
-      current_step = next_step;
-    }
-  }
-  merged_steps.push_back(current_step);
-  return Instruction(descriptor_, merged_steps, statuses_);
-}
-
 } // namespace irata::sim::microcode::compiler::ir

@@ -10,17 +10,16 @@ namespace irata::sim::microcode::compiler::ir {
 // Trivially copyable.
 class Step {
 public:
+  // Constructs a step from a set of controls, write controls, and read
+  // controls.
+  // The controls must be non-null.
+  // The write controls and read controls must be a subset of the controls.
+  Step(std::set<const hdl::ControlDecl *> controls,
+       std::set<const hdl::WriteControlDecl *> write_controls,
+       std::set<const hdl::ReadControlDecl *> read_controls);
+
   // Constructs a step from a DSL step.
   explicit Step(const dsl::Step &step);
-
-  // Returns true if this step can be merged with another step.
-  // This is true if the maximum phase of this step is less than or equal to
-  // the minimum phase of the other step.
-  // This ensures that all controls in this step are consumed before any
-  // controls in the other step are consumed. Since controls are consumed
-  // in tick-phase order, and all controls in a tick phase are assumed
-  // to be consumed simultaneously, this is safe.
-  bool can_merge(const Step &other) const;
 
   // Merges this step with another step. The other step must be mergable.
   Step merge(const Step &other) const;
@@ -41,16 +40,6 @@ public:
   const std::set<const hdl::ReadControlDecl *> &read_controls() const;
 
 private:
-  Step(std::set<const hdl::ControlDecl *> controls,
-       std::set<const hdl::WriteControlDecl *> write_controls,
-       std::set<const hdl::ReadControlDecl *> read_controls);
-
-  // Returns the maximum phase of all controls in this step.
-  hdl::TickPhase max_phase() const;
-
-  // Returns the minimum phase of all controls in this step.
-  hdl::TickPhase min_phase() const;
-
   std::set<const hdl::ControlDecl *> controls_;
   std::set<const hdl::WriteControlDecl *> write_controls_;
   std::set<const hdl::ReadControlDecl *> read_controls_;

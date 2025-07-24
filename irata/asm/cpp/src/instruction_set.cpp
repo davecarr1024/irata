@@ -2,6 +2,7 @@
 #include <cctype>
 #include <irata/asm/instruction.hpp>
 #include <irata/asm/instruction_set.hpp>
+#include <irata/common/strings/strings.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -43,21 +44,10 @@ const InstructionSet &InstructionSet::irata() {
   return instruction_set;
 }
 
-namespace {
-
-std::string to_upper(const std::string &input) {
-  std::string result = input;
-  std::transform(result.begin(), result.end(), result.begin(),
-                 [](unsigned char c) { return std::toupper(c); });
-  return result;
-}
-
-} // namespace
-
 const Instruction &
-InstructionSet::get_instruction(const std::string &name,
+InstructionSet::get_instruction(std::string_view name,
                                 AddressingMode addressing_mode) const {
-  const std::string upper_name = to_upper(name);
+  const std::string upper_name = common::strings::to_upper(name);
   for (const auto &instruction : instructions_) {
     if (instruction.name() == upper_name &&
         instruction.addressing_mode() == addressing_mode) {

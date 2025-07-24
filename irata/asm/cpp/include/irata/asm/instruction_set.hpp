@@ -18,7 +18,7 @@ public:
 
   static const InstructionSet &irata();
 
-  const Instruction &get_instruction(const std::string &name,
+  const Instruction &get_instruction(std::string_view name,
                                      AddressingMode addressing_mode) const;
   const Instruction &get_instruction(uint8_t opcode) const;
 

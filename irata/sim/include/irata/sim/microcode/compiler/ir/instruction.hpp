@@ -16,6 +16,9 @@ namespace irata::sim::microcode::compiler::ir {
 // Trivially copyable.
 class Instruction {
 public:
+  Instruction(const asm_::Instruction &descriptor, std::vector<Step> steps,
+              std::map<const hdl::StatusDecl *, bool> statuses);
+
   // Creates a new instruction based on the given dsl instruction.
   explicit Instruction(const dsl::Instruction &instruction);
 
@@ -32,14 +35,7 @@ public:
   bool operator!=(const Instruction &other) const;
   bool operator<(const Instruction &other) const;
 
-  // Returns a new instruction that is the result of merging the steps of this
-  // instruction with their following steps, if possible.
-  Instruction merge_steps() const;
-
 private:
-  Instruction(const asm_::Instruction &descriptor, std::vector<Step> steps,
-              std::map<const hdl::StatusDecl *, bool> statuses);
-
   asm_::Instruction descriptor_;
   std::vector<Step> steps_;
   std::map<const hdl::StatusDecl *, bool> statuses_;

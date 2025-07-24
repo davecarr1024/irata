@@ -23,4 +23,8 @@ std::string join(const std::vector<T> &vec, std::string_view delim) {
   return os.str();
 }
 
+std::string to_upper(std::string_view str);
+
+std::string to_lower(std::string_view str);
+
 } // namespace irata::common::strings

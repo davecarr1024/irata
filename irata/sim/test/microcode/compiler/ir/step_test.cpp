@@ -4,4 +4,6 @@
 
 namespace irata::sim::microcode::compiler::ir {
 
+TEST(MicrocodeIrStepTest, ConstructFromDsl) {}
+
 } // namespace irata::sim::microcode::compiler::ir

@@ -55,6 +55,24 @@ public:
   // Returns the status flags for the instruction.
   const std::map<const hdl::StatusDecl *, bool> &statuses() const;
 
+  Instruction *copy(const hdl::ConnectedByteRegisterDecl &source,
+                    const hdl::ConnectedByteRegisterDecl &dest);
+
+  Instruction *copy(const hdl::ConnectedWordRegisterDecl &source,
+                    const hdl::ConnectedWordRegisterDecl &dest);
+
+  Instruction *copy(const hdl::MemoryDecl &source,
+                    const hdl::ConnectedByteRegisterDecl &dest);
+
+  Instruction *copy(const hdl::ConnectedByteRegisterDecl &source,
+                    const hdl::MemoryDecl &dest);
+
+  Instruction *read_memory(const hdl::ConnectedWordRegisterDecl &address_source,
+                           const hdl::ConnectedByteRegisterDecl &data_dest);
+
+  Instruction *
+  read_memory_at_pc(const hdl::ConnectedByteRegisterDecl &data_dest);
+
 private:
   const asm_::Instruction &descriptor_;
   InstructionSet *const instruction_set_;

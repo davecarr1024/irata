@@ -27,6 +27,11 @@ public:
   // descriptor. The new instruction is owned by this instruction set.
   Instruction *create_instruction(const asm_::Instruction &descriptor);
 
+  // Creates an instruction for the declaration loaded from irata-asm with the
+  // given name and addressing mode.
+  Instruction *create_instruction(std::string_view name,
+                                  asm_::AddressingMode mode);
+
   // Returns the instructions in the instruction set.
   const std::vector<std::unique_ptr<Instruction>> &instructions() const;
 

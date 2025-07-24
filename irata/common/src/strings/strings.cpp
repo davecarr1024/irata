@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <irata/common/strings/strings.hpp>
 
 namespace irata::common::strings {
@@ -43,6 +44,20 @@ std::vector<std::string> split(std::string_view str, std::string_view delim) {
     start += end + 1; // Move past the delimiter
   }
 
+  return result;
+}
+
+std::string to_upper(std::string_view str) {
+  std::string result(str);
+  std::transform(result.begin(), result.end(), result.begin(),
+                 [](unsigned char c) { return std::toupper(c); });
+  return result;
+}
+
+std::string to_lower(std::string_view str) {
+  std::string result(str);
+  std::transform(result.begin(), result.end(), result.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
   return result;
 }
 
