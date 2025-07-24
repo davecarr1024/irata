@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <irata/asm/asm.hpp>
+#include <irata/asm/instruction_set.hpp>
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
@@ -34,7 +34,7 @@ protected:
 
   template <typename InstructionDescriptorMatcher>
   static auto InstructionHasDescriptor(InstructionDescriptorMatcher matcher) {
-    return Property("instruction", &Instruction::instruction, matcher);
+    return Property("descriptor", &Instruction::descriptor, matcher);
   }
 
   Instruction *create_instruction(const asm_::Instruction &instruction) {
@@ -45,12 +45,9 @@ protected:
 
   InstructionSet instruction_set_;
 
-  const asm_::Instruction lda_imm_{
-      .name = "lda",
-      .opcode = 0x00,
-      .addressing_mode = asm_::AddressingMode::IMMEDIATE,
-      .description = "Load A with immediate value",
-  };
+  const asm_::Instruction &lda_imm_ =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::IMMEDIATE);
 };
 
 } // namespace
@@ -91,14 +88,12 @@ TEST_F(InstructionTest, WithStatus) {
 
 TEST_F(InstructionTest, CreateInstruction) {
   auto *instruction1 = lda_imm();
-  const asm_::Instruction instruction_descriptor{};
-  auto *instruction2 = instruction1->create_instruction(instruction_descriptor);
+  auto *instruction2 = instruction1->create_instruction(lda_imm_);
   EXPECT_EQ(instruction2->instruction_set(), &instruction_set_);
-  EXPECT_EQ(instruction2->instruction(), instruction_descriptor);
-  EXPECT_THAT(
-      instruction_set_.instructions(),
-      ElementsAre(Pointee(InstructionHasDescriptor(lda_imm_)),
-                  Pointee(InstructionHasDescriptor(instruction_descriptor))));
+  EXPECT_EQ(instruction2->descriptor(), lda_imm_);
+  EXPECT_THAT(instruction_set_.instructions(),
+              ElementsAre(Pointee(InstructionHasDescriptor(lda_imm_)),
+                          Pointee(InstructionHasDescriptor(lda_imm_))));
 }
 
 } // namespace irata::sim::microcode::dsl

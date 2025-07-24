@@ -1,50 +1,18 @@
-#pragma once
-
-#include <irata/asm/asm.hpp>
-#include <map>
+#include <irata/sim/microcode/table/entry.hpp>
 #include <ostream>
 #include <set>
-#include <string>
-#include <vector>
 
 namespace irata::sim::microcode::table {
 
-struct Step {
-  const std::set<std::string> controls;
-
-  bool operator==(const Step &other) const;
-  bool operator!=(const Step &other) const;
-};
-
-std::ostream &operator<<(std::ostream &os, const Step &step);
-
-struct InstructionVariant {
-  const std::vector<Step> steps;
-  const std::map<std::string, bool> statuses;
-
-  bool operator==(const InstructionVariant &other) const;
-  bool operator!=(const InstructionVariant &other) const;
-};
-
-std::ostream &operator<<(std::ostream &os, const InstructionVariant &variant);
-
-struct Instruction {
-  const asm_::Instruction descriptor;
-  const std::vector<InstructionVariant> variants;
-
-  bool operator==(const Instruction &other) const;
-  bool operator!=(const Instruction &other) const;
-};
-
-std::ostream &operator<<(std::ostream &os, const Instruction &instruction);
-
+// The microcode table is a set of entries that represent compiled microcode,
+// ready to be encoded into instruction memory.
 struct Table {
-  const std::vector<Instruction> instructions;
-
-  bool operator==(const Table &other) const;
-  bool operator!=(const Table &other) const;
+  // The entries in the microcode table.
+  const std::set<Entry> entries;
 };
 
+bool operator==(const Table &lhs, const Table &rhs);
+bool operator!=(const Table &lhs, const Table &rhs);
 std::ostream &operator<<(std::ostream &os, const Table &table);
 
 } // namespace irata::sim::microcode::table

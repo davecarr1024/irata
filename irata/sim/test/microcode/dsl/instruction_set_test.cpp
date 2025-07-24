@@ -1,13 +1,16 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/asm/instruction_set.hpp>
 #include <irata/sim/hdl/hdl.hpp>
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
 
 using ::testing::AllOf;
+using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Property;
+using ::testing::UnorderedElementsAre;
 
 namespace irata::sim::microcode::dsl {
 
@@ -15,7 +18,7 @@ namespace {
 
 template <typename InstructionDescriptorMatcher>
 auto InstructionHasDescriptor(InstructionDescriptorMatcher matcher) {
-  return Property("instruction", &Instruction::instruction, matcher);
+  return Property("instruction", &Instruction::descriptor, matcher);
 }
 
 template <typename StepMatcher> auto InstructionHasSteps(StepMatcher matcher) {
@@ -27,6 +30,10 @@ auto InstructionHasStatuses(StatusMatcher matcher) {
   return Property("statuses", &Instruction::statuses, matcher);
 }
 
+template <typename Matcher> auto StepHasControls(Matcher matcher) {
+  return Property("controls", &Step::controls, matcher);
+}
+
 } // namespace
 
 TEST(InstructionSetTest, Empty) {
@@ -35,24 +42,21 @@ TEST(InstructionSetTest, Empty) {
 }
 
 TEST(InstructionSetTest, CreateInstruction) {
-  const asm_::Instruction instruction_descriptor1{.name = "instruction1"};
-  const asm_::Instruction instruction_descriptor2{.name = "instruction2"};
   InstructionSet instruction_set;
-  auto *instruction1 =
-      instruction_set.create_instruction(instruction_descriptor1);
-  auto *instruction2 =
-      instruction1->create_instruction(instruction_descriptor2);
-  EXPECT_EQ(instruction1->instruction_set(), &instruction_set);
-  EXPECT_EQ(instruction2->instruction_set(), &instruction_set);
+  const asm_::Instruction &descriptor =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::IMMEDIATE);
+  instruction_set.create_instruction(descriptor)
+      ->create_step()
+      ->with_control(hdl::irata().memory().write())
+      ->with_control(hdl::irata().cpu().a().read());
   EXPECT_THAT(
       instruction_set.instructions(),
-      ElementsAre(
-          Pointee(AllOf(InstructionHasDescriptor(instruction_descriptor1),
-                        InstructionHasSteps(IsEmpty()),
-                        InstructionHasStatuses(IsEmpty()))),
-          Pointee(AllOf(InstructionHasDescriptor(instruction_descriptor2),
-                        InstructionHasSteps(IsEmpty()),
-                        InstructionHasStatuses(IsEmpty())))));
+      UnorderedElementsAre(Pointee(AllOf(
+          InstructionHasDescriptor(descriptor),
+          InstructionHasSteps(ElementsAre(Pointee(StepHasControls(
+              UnorderedElementsAre(&hdl::irata().memory().write(),
+                                   &hdl::irata().cpu().a().read())))))))));
 }
 
 } // namespace irata::sim::microcode::dsl

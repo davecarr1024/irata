@@ -1,6 +1,6 @@
 #pragma once
 
-#include <irata/asm/asm.hpp>
+#include <irata/asm/instruction.hpp>
 #include <irata/sim/hdl/hdl.hpp>
 #include <ostream>
 #include <set>
@@ -31,7 +31,7 @@ public:
 
   // Creates a new instruction that is owned by the same instruction set as
   // this step.
-  Instruction *create_instruction(const asm_::Instruction &instruction);
+  Instruction *create_instruction(const asm_::Instruction &descriptor);
 
   // Adds the given control line to the step.
   Step *with_control(const hdl::WriteControlDecl &control);

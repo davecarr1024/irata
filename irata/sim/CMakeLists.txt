@@ -12,7 +12,7 @@ target_link_libraries(irata_sim PUBLIC irata_asm)
 add_executable(sim_tests ${SIM_TESTS})
 target_link_libraries(sim_tests irata_sim irata_asm gtest gmock gtest_main)
 
-add_test(NAME SimTests COMMAND sim_tests)
+add_test(NAME sim_tests COMMAND sim_tests)
 
 # Apply coverage flags only to irata targets
 if(IRATA_ENABLE_COVERAGE)

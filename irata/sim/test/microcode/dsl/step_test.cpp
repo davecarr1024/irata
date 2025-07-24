@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/asm/instruction_set.hpp>
 #include <irata/sim/hdl/hdl.hpp>
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
@@ -21,7 +22,9 @@ protected:
   Step *create_step() { return instruction_->create_step(); }
 
   InstructionSet instruction_set_;
-  const asm_::Instruction instruction_descriptor_{};
+  const asm_::Instruction instruction_descriptor_ =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::IMMEDIATE);
   Instruction *instruction_ =
       instruction_set_.create_instruction(instruction_descriptor_);
   const hdl::ComponentDecl hw_root_ = hdl::ComponentDecl("root", nullptr);
@@ -94,10 +97,9 @@ TEST_F(StepTest, DuplicateControls) {
 
 TEST_F(StepTest, CreateInstruction) {
   auto *step = create_step();
-  const asm_::Instruction instruction_descriptor{};
-  auto *instruction = step->create_instruction(instruction_descriptor);
+  auto *instruction = step->create_instruction(instruction_descriptor_);
   EXPECT_EQ(instruction->instruction_set(), &instruction_set_);
-  EXPECT_EQ(instruction->instruction(), instruction_descriptor);
+  EXPECT_EQ(instruction->descriptor(), instruction_descriptor_);
   EXPECT_THAT(instruction->steps(), IsEmpty());
 }
 

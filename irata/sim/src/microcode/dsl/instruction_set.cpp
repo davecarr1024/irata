@@ -5,9 +5,9 @@
 namespace irata::sim::microcode::dsl {
 
 Instruction *
-InstructionSet::create_instruction(const asm_::Instruction &instruction) {
+InstructionSet::create_instruction(const asm_::Instruction &descriptor) {
   return instructions_
-      .emplace_back(std::make_unique<Instruction>(instruction, this))
+      .emplace_back(std::make_unique<Instruction>(descriptor, this))
       .get();
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <irata/asm/asm.hpp>
+#include <irata/asm/instruction.hpp>
 #include <memory>
 #include <vector>
 
@@ -25,7 +25,7 @@ public:
 
   // Adds an instruction to the instruction set with the given instruction
   // descriptor. The new instruction is owned by this instruction set.
-  Instruction *create_instruction(const asm_::Instruction &instruction);
+  Instruction *create_instruction(const asm_::Instruction &descriptor);
 
   // Returns the instructions in the instruction set.
   const std::vector<std::unique_ptr<Instruction>> &instructions() const;

@@ -5,17 +5,15 @@
 
 namespace irata::sim::microcode::dsl {
 
-Instruction::Instruction(const asm_::Instruction &instruction,
+Instruction::Instruction(const asm_::Instruction &descriptor,
                          InstructionSet *instruction_set)
-    : instruction_(instruction), instruction_set_(instruction_set) {
+    : descriptor_(descriptor), instruction_set_(instruction_set) {
   if (instruction_set == nullptr) {
     throw std::invalid_argument("instruction_set cannot be null");
   }
 }
 
-const asm_::Instruction &Instruction::instruction() const {
-  return instruction_;
-}
+const asm_::Instruction &Instruction::descriptor() const { return descriptor_; }
 
 InstructionSet *Instruction::instruction_set() const {
   return instruction_set_;

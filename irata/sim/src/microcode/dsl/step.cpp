@@ -19,8 +19,8 @@ InstructionSet *Step::instruction_set() const {
 
 Step *Step::create_step() { return instruction_->create_step(); }
 
-Instruction *Step::create_instruction(const asm_::Instruction &instruction) {
-  return instruction_->create_instruction(instruction);
+Instruction *Step::create_instruction(const asm_::Instruction &descriptor) {
+  return instruction_->create_instruction(descriptor);
 }
 
 Step *Step::with_control(const hdl::WriteControlDecl &control) {
@@ -53,9 +53,7 @@ const std::set<const hdl::ReadControlDecl *> &Step::read_controls() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const Step &step) {
-  os << "Step(";
-  os << "instruction=" << step.instruction()->instruction().name;
-  os << ", controls={";
+  os << "Step(controls={";
   for (const auto &control : step.controls()) {
     os << *control << " ";
   }

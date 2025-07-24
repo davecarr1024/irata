@@ -205,6 +205,22 @@ private:
   const ProcessControlDecl increment_;
 };
 
+class StatusAnalyzerDecl final : public ConnectedByteRegisterDecl {
+public:
+  StatusAnalyzerDecl(std::string_view name, const ComponentDecl &parent,
+                     const ByteBusDecl &bus)
+      : ConnectedByteRegisterDecl(name, parent, bus), zero_("zero", *this),
+        negative_("negative", *this) {}
+
+  const StatusDecl &zero() const { return zero_; }
+
+  const StatusDecl &negative() const { return negative_; }
+
+private:
+  const StatusDecl zero_;
+  const StatusDecl negative_;
+};
+
 class ConnectedWordRegisterDecl : public ComponentWithParentDecl {
 public:
   ConnectedWordRegisterDecl(std::string_view name, const ComponentDecl &parent,
@@ -307,7 +323,8 @@ public:
       : ComponentWithParentDecl(name, parent), a_("a", *this, data_bus),
         x_("x", *this, data_bus), y_("y", *this, data_bus),
         program_counter_("program_counter", *this, address_bus),
-        controller_("controller", *this, data_bus) {}
+        controller_("controller", *this, data_bus),
+        status_analyzer_("status", *this, data_bus) {}
 
   const ConnectedByteRegisterDecl &a() const { return a_; }
   const ConnectedByteRegisterDecl &x() const { return x_; }
@@ -316,6 +333,7 @@ public:
     return program_counter_;
   }
   const ControllerDecl &controller() const { return controller_; }
+  const StatusAnalyzerDecl &status_analyzer() const { return status_analyzer_; }
 
 private:
   const ConnectedByteRegisterDecl a_;
@@ -323,6 +341,7 @@ private:
   const ConnectedByteRegisterDecl y_;
   const IncrementableConnectedWordRegisterDecl program_counter_;
   const ControllerDecl controller_;
+  const StatusAnalyzerDecl status_analyzer_;
 };
 
 //------------------------------------------------------------------------------

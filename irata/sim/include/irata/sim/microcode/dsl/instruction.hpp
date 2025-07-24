@@ -1,4 +1,4 @@
-#include <irata/asm/asm.hpp>
+#include <irata/asm/instruction.hpp>
 #include <irata/sim/hdl/hdl.hpp>
 #include <map>
 #include <memory>
@@ -26,14 +26,14 @@ public:
   // Constructs a new instruction with the given instruction descriptor and
   // instruction set. The instruction is owned by the instruction set.
   // This should only be called by InstructionSet::create_instruction.
-  Instruction(const asm_::Instruction &instruction,
+  Instruction(const asm_::Instruction &descriptor,
               InstructionSet *instruction_set);
 
   Instruction(const Instruction &) = delete;
   Instruction &operator=(const Instruction &) = delete;
 
   // Returns the instruction descriptor for the instruction.
-  const asm_::Instruction &instruction() const;
+  const asm_::Instruction &descriptor() const;
 
   // Returns the instruction set that owns this instruction.
   InstructionSet *instruction_set() const;
@@ -56,7 +56,7 @@ public:
   const std::map<const hdl::StatusDecl *, bool> &statuses() const;
 
 private:
-  const asm_::Instruction &instruction_;
+  const asm_::Instruction &descriptor_;
   InstructionSet *const instruction_set_;
   std::vector<std::unique_ptr<Step>> steps_;
   std::map<const hdl::StatusDecl *, bool> statuses_;
