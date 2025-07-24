@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <irata/sim/bytes/word.hpp>
+#include <irata/common/bytes/word.hpp>
 
-namespace irata::sim {
+namespace irata::common::bytes {
 
 TEST(WordTest, DefaultConstructor) {
   const Word word;
@@ -63,4 +63,4 @@ TEST(WordTest, SubtractSizet) {
   EXPECT_EQ(Word(0x5678) - size_t(0x1234), Word(0x4444));
 }
 
-} // namespace irata::sim
+} // namespace irata::common::bytes

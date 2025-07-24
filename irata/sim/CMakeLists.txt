@@ -1,33 +1,12 @@
-# Globbing source files
-file(GLOB_RECURSE SIM_SRC CONFIGURE_DEPENDS "src/*.cpp")
-file(GLOB_RECURSE SIM_HEADERS CONFIGURE_DEPENDS "include/*.hpp")
-file(GLOB_RECURSE SIM_TESTS CONFIGURE_DEPENDS "test/*.cpp")
-
-# Main library target
-add_library(irata_sim ${SIM_SRC} ${SIM_HEADERS})
+file(GLOB_RECURSE SRCS CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE HDRS CONFIGURE_DEPENDS "include/*.hpp")
+add_library(irata_sim ${SRCS} ${HDRS})
 target_include_directories(irata_sim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(irata_sim PUBLIC irata_asm)
+target_link_libraries(irata_sim PUBLIC irata_asm irata_common)
+target_link_libraries(irata_sim PRIVATE irata_build_flags)
 
-# Test executable
-add_executable(sim_tests ${SIM_TESTS})
-target_link_libraries(sim_tests irata_sim irata_asm gtest gmock gtest_main)
-
+file(GLOB_RECURSE TEST_SRCS CONFIGURE_DEPENDS "test/*.cpp")
+add_executable(sim_tests ${TEST_SRCS})
+target_link_libraries(sim_tests PUBLIC irata_sim irata_asm irata_common gtest gmock gtest_main)
+target_link_libraries(sim_tests PRIVATE irata_build_flags)
 add_test(NAME sim_tests COMMAND sim_tests)
-
-# Apply coverage flags only to irata targets
-if(IRATA_ENABLE_COVERAGE)
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(irata_sim PRIVATE -fprofile-instr-generate -fcoverage-mapping)
-    target_link_options(irata_sim PRIVATE -fprofile-instr-generate)
-
-    target_compile_options(sim_tests PRIVATE -fprofile-instr-generate -fcoverage-mapping)
-    target_link_options(sim_tests PRIVATE -fprofile-instr-generate)
-  endif()
-endif()
-
-if(IRATA_ENABLE_SANITIZER)
-  target_compile_options(irata_sim PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-  target_link_options(irata_sim PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-  target_compile_options(sim_tests PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-  target_link_options(sim_tests PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-endif()

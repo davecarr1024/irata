@@ -1,9 +1,9 @@
 #include <iomanip>
-#include <irata/sim/bytes/byte.hpp>
-#include <irata/sim/bytes/byte_result.hpp>
+#include <irata/common/bytes/byte.hpp>
+#include <irata/common/bytes/byte_result.hpp>
 #include <stdexcept>
 
-namespace irata::sim {
+namespace irata::common::bytes {
 
 Byte Byte::from_unsigned(uint8_t value) { return Byte(value); }
 
@@ -181,4 +181,4 @@ ByteResult Byte::rotate_right(bool carry_in) const {
   };
 }
 
-} // namespace irata::sim
+} // namespace irata::common::bytes

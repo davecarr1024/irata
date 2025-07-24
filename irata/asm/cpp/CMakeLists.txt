@@ -1,6 +1,9 @@
-set(ASM_GEN_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/irata_instructions.cpp)
-set(ASM_GEN_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/../asm.yaml)
+# Generate instructions source from asm.yaml.
 
+set(ASM_GEN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen)
+file(MAKE_DIRECTORY ${ASM_GEN_DIR})
+set(ASM_GEN_OUTPUT ${ASM_GEN_DIR}/instruction.cpp)
+set(ASM_GEN_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/../asm.yaml)
 add_custom_command(
   OUTPUT ${ASM_GEN_OUTPUT}
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate_cpp.py ${ASM_GEN_OUTPUT}
@@ -10,32 +13,23 @@ add_custom_command(
   BYPRODUCTS ${ASM_GEN_OUTPUT}
   COMMENT "Generating ${ASM_GEN_OUTPUT} from ${ASM_GEN_INPUT}"
 )
-
 add_custom_target(generate_asm_cpp DEPENDS ${ASM_GEN_OUTPUT})
 
-add_library(irata_asm
-    ${ASM_GEN_OUTPUT}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/instruction.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/instruction_set.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/irata/asm/instruction_set.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/irata/asm/instruction.hpp
-)
+# Build asm lib.
+
+file(GLOB_RECURSE SRCS CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE HDRS CONFIGURE_DEPENDS "include/*.hpp")
+add_library(irata_asm ${ASM_GEN_OUTPUT} ${SRCS} ${HDRS})
 add_dependencies(irata_asm generate_asm_cpp)
-
 target_include_directories(irata_asm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(irata_asm PUBLIC irata_common)
+target_link_libraries(irata_asm PRIVATE irata_build_flags)
 
-# Tests for irata_asm
+# Build tests.
 
 file(GLOB_RECURSE TEST_SRCS CONFIGURE_DEPENDS "test/*.cpp")
-
-add_executable(irata_asm_tests ${TEST_SRCS})
-
-add_dependencies(irata_asm_tests generate_asm_cpp)
-
-target_link_libraries(irata_asm_tests irata_asm gtest gmock gtest_main)
-
-target_include_directories(irata_asm_tests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-add_test(NAME asm_tests COMMAND irata_asm_tests)
+add_executable(asm_tests ${TEST_SRCS})
+add_dependencies(asm_tests generate_asm_cpp)
+target_link_libraries(asm_tests PUBLIC irata_asm irata_common gtest gmock gtest_main)
+target_link_libraries(asm_tests PRIVATE irata_build_flags)
+add_test(NAME asm_tests COMMAND asm_tests)

@@ -1,8 +1,8 @@
 #include <iomanip>
-#include <irata/sim/bytes/word.hpp>
+#include <irata/common/bytes/word.hpp>
 #include <utility>
 
-namespace irata::sim {
+namespace irata::common::bytes {
 
 Word::Word(uint16_t value) : value_(value) {}
 
@@ -51,4 +51,4 @@ Word Word::operator+(size_t other) const { return Word(value_ + other); }
 
 Word Word::operator-(size_t other) const { return Word(value_ - other); }
 
-} // namespace irata::sim
+} // namespace irata::common::bytes

@@ -1,11 +1,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <irata/sim/bytes/byte.hpp>
-#include <irata/sim/bytes/byte_result.hpp>
+#include <irata/common/bytes/byte.hpp>
+#include <irata/common/bytes/byte_result.hpp>
 #include <stdexcept>
 
-using namespace irata::sim;
 using ::testing::ElementsAre;
+
+namespace irata::common::bytes {
 
 TEST(ByteTest, DefaultConstructor) {
   const Byte byte;
@@ -249,3 +250,5 @@ TEST(ByteTest, ToString) {
   EXPECT_EQ(to_str(Byte::from_signed(-85)), "Byte(0xAB)");
   EXPECT_EQ(to_str(Byte::from_signed(85)), "Byte(0x55)");
 }
+
+} // namespace irata::common::bytes

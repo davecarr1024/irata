@@ -1,0 +1,26 @@
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace irata::common::strings {
+
+static const std::string_view WHITESPACE = " \t\n\r";
+
+std::string trim(std::string_view str, std::string_view chars = WHITESPACE);
+
+std::vector<std::string> split(std::string_view str,
+                               std::string_view delim = WHITESPACE);
+
+template <typename T>
+std::string join(const std::vector<T> &vec, std::string_view delim) {
+  std::ostringstream os;
+  std::string sep;
+  for (const auto &item : vec) {
+    os << sep << item;
+    sep = delim;
+  }
+  return os.str();
+}
+
+} // namespace irata::common::strings

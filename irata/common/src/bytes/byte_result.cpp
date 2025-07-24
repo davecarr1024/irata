@@ -1,6 +1,6 @@
-#include <irata/sim/bytes/byte_result.hpp>
+#include <irata/common/bytes/byte_result.hpp>
 
-namespace irata::sim {
+namespace irata::common::bytes {
 
 bool ByteResult::operator==(const ByteResult &rhs) const {
   return std::tie(result, carry, zero, negative, overflow, half_carry) ==
@@ -27,4 +27,4 @@ std::ostream &operator<<(std::ostream &os, const ByteResult &result) {
   return os << ">";
 }
 
-} // namespace irata::sim
+} // namespace irata::common::bytes

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <irata/sim/bytes/byte_result.hpp>
+#include <irata/common/bytes/byte_result.hpp>
 
-using namespace irata::sim;
+namespace irata::common::bytes {
 
 TEST(ByteResultTest, DefaultConstructor) {
   EXPECT_EQ(ByteResult{}, (ByteResult{.result = Byte::from_unsigned(0),
@@ -37,3 +37,5 @@ TEST(ByteResultTest, ToStr) {
                               .half_carry = true}),
             "<Byte(0x01) C Z N V H>");
 }
+
+} // namespace irata::common::bytes

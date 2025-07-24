@@ -1,0 +1,11 @@
+file(GLOB_RECURSE SRCS CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE HDRS CONFIGURE_DEPENDS "include/*.hpp")
+add_library(irata_common ${SRCS} ${HDRS})
+target_include_directories(irata_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(irata_common PRIVATE irata_build_flags)
+
+file(GLOB_RECURSE TEST_SRCS CONFIGURE_DEPENDS "test/*.cpp")
+add_executable(common_tests ${TEST_SRCS})
+target_link_libraries(common_tests PUBLIC irata_common gtest gmock gtest_main)
+target_link_libraries(common_tests PRIVATE irata_build_flags)
+add_test(NAME common_tests COMMAND common_tests)
