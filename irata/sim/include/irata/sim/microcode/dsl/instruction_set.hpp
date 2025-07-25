@@ -1,6 +1,8 @@
 #pragma once
 
 #include <irata/asm/instruction.hpp>
+#include <irata/sim/hdl/hdl.hpp>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -34,6 +36,20 @@ public:
 
   // Returns the instructions in the instruction set.
   const std::vector<std::unique_ptr<Instruction>> &instructions() const;
+
+  // Returns the instruction with the given instruction descriptor.
+  // If statuses are provided, the instruction must have the given statuses.
+  // If no instruction is found, throws an exception.
+  const Instruction &
+  get_instruction(const asm_::Instruction &descriptor,
+                  std::map<const hdl::StatusDecl *, bool> statuses = {}) const;
+
+  // Returns the instruction with the given name and addressing mode.
+  // If statuses are provided, the instruction must have the given statuses.
+  // If no instruction is found, throws an exception.
+  const Instruction &
+  get_instruction(std::string_view name, asm_::AddressingMode mode,
+                  std::map<const hdl::StatusDecl *, bool> statuses = {}) const;
 
 private:
   std::vector<std::unique_ptr<Instruction>> instructions_;

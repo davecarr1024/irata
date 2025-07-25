@@ -262,9 +262,9 @@ public:
         reset_("reset", *this), high_("high", *this), low_("low", *this) {}
 
   const WordBusDecl &bus() const { return bus_; }
-  const ControlDecl &write() const { return write_; }
-  const ControlDecl &read() const { return read_; }
-  const ControlDecl &reset() const { return reset_; }
+  const WriteControlDecl &write() const { return write_; }
+  const ReadControlDecl &read() const { return read_; }
+  const ProcessControlDecl &reset() const { return reset_; }
 
   const DisconnectedByteRegisterDecl &high() const { return high_; }
   const DisconnectedByteRegisterDecl &low() const { return low_; }

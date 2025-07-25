@@ -23,9 +23,6 @@ public:
   // Constructs a step from a DSL step.
   explicit Step(const dsl::Step &step);
 
-  // Merges this step with another step. The other step must be mergable.
-  Step merge(const Step &other) const;
-
   bool operator==(const Step &other) const;
   bool operator!=(const Step &other) const;
   bool operator<(const Step &other) const;

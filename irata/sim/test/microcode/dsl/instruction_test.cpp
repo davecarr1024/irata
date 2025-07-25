@@ -77,6 +77,14 @@ TEST_F(MicrocodeDslInstructionTest, CreateInstructionFromInstructionSet) {
   EXPECT_EQ(instruction->instruction_set(), &instruction_set_);
   EXPECT_EQ(instruction_set_.instructions().back().get(), instruction);
   EXPECT_THAT(instruction->statuses(), IsEmpty());
+  AssertInstructionEndsWithSteps(
+      *instruction, {
+                        {&hdl::irata().cpu().program_counter().write(),
+                         &hdl::irata().memory().address_register().read()},
+                        {&hdl::irata().memory().write(),
+                         &hdl::irata().cpu().controller().opcode().read()},
+                        {&hdl::irata().cpu().program_counter().increment()},
+                    });
 }
 
 TEST_F(MicrocodeDslInstructionTest, CreateInstructionFromInstruction) {

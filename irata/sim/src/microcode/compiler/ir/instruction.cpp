@@ -64,4 +64,8 @@ std::ostream &operator<<(std::ostream &os, const Instruction &instruction) {
   return os;
 }
 
+const std::map<const hdl::StatusDecl *, bool> &Instruction::statuses() const {
+  return statuses_;
+}
+
 } // namespace irata::sim::microcode::compiler::ir
