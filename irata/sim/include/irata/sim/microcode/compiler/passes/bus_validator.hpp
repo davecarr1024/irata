@@ -5,11 +5,14 @@
 
 namespace irata::sim::microcode::compiler::passes {
 
+// A pass that validates that each bus is written by exactly one control and
+// read by at least one control in each step that writes to or reads from that
+// bus.
+// Note that this allows for multiple buses to be written and read in the same
+// step, as long as each bus is written by exactly one control and read by at
+// least one control.
 class BusValidator : public Pass {
 public:
-  BusValidator() = default;
-  virtual ~BusValidator() = default;
-
   ir::InstructionSet run(const ir::InstructionSet &instruction_set) override;
 };
 
