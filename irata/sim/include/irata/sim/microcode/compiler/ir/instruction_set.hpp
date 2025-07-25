@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/sim/microcode/compiler/ir/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 #include <set>

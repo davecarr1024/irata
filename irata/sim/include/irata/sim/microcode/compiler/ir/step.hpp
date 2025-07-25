@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/sim/hdl/hdl.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
 #include <ostream>

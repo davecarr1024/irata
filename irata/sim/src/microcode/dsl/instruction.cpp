@@ -1,6 +1,7 @@
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
+#include <sstream>
 #include <stdexcept>
 
 namespace irata::sim::microcode::dsl {
@@ -50,13 +51,39 @@ const std::map<const hdl::StatusDecl *, bool> &Instruction::statuses() const {
   return statuses_;
 }
 
+namespace {
+
+void validate_hdl_components_in_same_tree(const hdl::ComponentDecl &a,
+                                          const hdl::ComponentDecl &b) {
+  if (a.root() != b.root()) {
+    std::ostringstream os;
+    os << "components must be in the same tree: " << a.path() << " and "
+       << b.path();
+    throw std::invalid_argument(os.str());
+  }
+}
+
+void validate_hdl_components_arent_the_same(const hdl::ComponentDecl &a,
+                                            const hdl::ComponentDecl &b) {
+  if (&a == &b) {
+    std::ostringstream os;
+    os << "components cannot be the same: " << a.path();
+    throw std::invalid_argument(os.str());
+  }
+}
+
+} // namespace
+
 Instruction *Instruction::copy(const hdl::ConnectedByteRegisterDecl &source,
                                const hdl::ConnectedByteRegisterDecl &dest) {
-  if (&source == &dest) {
-    throw std::invalid_argument("source and dest cannot be the same");
-  }
+  validate_hdl_components_in_same_tree(source, dest);
+  validate_hdl_components_arent_the_same(source, dest);
   if (&source.bus() != &dest.bus()) {
-    throw std::invalid_argument("source and dest must be on the same bus");
+    std::ostringstream os;
+    os << "source and dest must be on the same bus for copy from " << source
+       << " with bus " << source.bus() << " to " << dest << " with bus "
+       << dest.bus();
+    throw std::invalid_argument(os.str());
   }
   return create_step()
       ->with_control(source.write())
@@ -66,11 +93,14 @@ Instruction *Instruction::copy(const hdl::ConnectedByteRegisterDecl &source,
 
 Instruction *Instruction::copy(const hdl::ConnectedWordRegisterDecl &source,
                                const hdl::ConnectedWordRegisterDecl &dest) {
-  if (&source == &dest) {
-    throw std::invalid_argument("source and dest cannot be the same");
-  }
+  validate_hdl_components_in_same_tree(source, dest);
+  validate_hdl_components_arent_the_same(source, dest);
   if (&source.bus() != &dest.bus()) {
-    throw std::invalid_argument("source and dest must be on the same bus");
+    std::ostringstream os;
+    os << "source and dest must be on the same bus for copy from " << source
+       << " with bus " << source.bus() << " to " << dest << " with bus "
+       << dest.bus();
+    throw std::invalid_argument(os.str());
   }
   return create_step()
       ->with_control(source.write())
@@ -80,8 +110,13 @@ Instruction *Instruction::copy(const hdl::ConnectedWordRegisterDecl &source,
 
 Instruction *Instruction::copy(const hdl::MemoryDecl &source,
                                const hdl::ConnectedByteRegisterDecl &dest) {
+  validate_hdl_components_in_same_tree(source, dest);
   if (&source.data_bus() != &dest.bus()) {
-    throw std::invalid_argument("source and dest must be on the same bus");
+    std::ostringstream os;
+    os << "source and dest must be on the same bus for copy from " << source
+       << " with bus " << source.data_bus() << " to " << dest << " with bus "
+       << dest.bus();
+    throw std::invalid_argument(os.str());
   }
   return create_step()
       ->with_control(source.read())
@@ -91,8 +126,13 @@ Instruction *Instruction::copy(const hdl::MemoryDecl &source,
 
 Instruction *Instruction::copy(const hdl::ConnectedByteRegisterDecl &source,
                                const hdl::MemoryDecl &dest) {
+  validate_hdl_components_in_same_tree(source, dest);
   if (&source.bus() != &dest.data_bus()) {
-    throw std::invalid_argument("source and dest must be on the same bus");
+    std::ostringstream os;
+    os << "source and dest must be on the same bus for copy from " << source
+       << " with bus " << source.bus() << " to " << dest << " with bus "
+       << dest.data_bus();
+    throw std::invalid_argument(os.str());
   }
   return create_step()
       ->with_control(source.read())

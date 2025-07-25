@@ -102,33 +102,51 @@ protected:
 
 public:
   virtual TickPhase phase() const = 0;
+  virtual bool auto_clear() const = 0;
 };
 
 std::ostream &operator<<(std::ostream &os, const ControlDecl &control);
 
-template <TickPhase Phase> class ControlWithPhaseDecl : public ControlDecl {
+template <TickPhase Phase, bool AutoClear>
+struct IsValidControlConfig : std::false_type {};
+
+template <>
+struct IsValidControlConfig<TickPhase::Process, true> : std::true_type {};
+template <>
+struct IsValidControlConfig<TickPhase::Write, true> : std::true_type {};
+template <>
+struct IsValidControlConfig<TickPhase::Read, true> : std::true_type {};
+template <>
+struct IsValidControlConfig<TickPhase::Process, false> : std::true_type {};
+template <>
+struct IsValidControlConfig<TickPhase::Clear, false> : std::true_type {};
+
+template <TickPhase Phase, bool AutoClear>
+class TypedControlDecl : public ControlDecl {
 public:
-  ControlWithPhaseDecl(std::string_view name, const ComponentDecl &parent)
+  static_assert(IsValidControlConfig<Phase, AutoClear>::value,
+                "Invalid TickPhase + AutoClear control combination");
+
+  TypedControlDecl(std::string_view name, const ComponentDecl &parent)
       : ControlDecl(name, parent) {}
 
   TickPhase phase() const override { return Phase; }
 
-  static constexpr TickPhase phase_v = Phase;
+  bool auto_clear() const override { return AutoClear; }
 
-  static_assert(phase_v != TickPhase::Control,
-                "Control lines must not use TickPhase::Control — that phase is "
-                "reserved for controller output.");
+  static constexpr TickPhase phase_v = Phase;
+  static constexpr bool auto_clear_v = AutoClear;
 };
 
-using ProcessControlDecl = ControlWithPhaseDecl<TickPhase::Process>;
-using ClearControlDecl = ControlWithPhaseDecl<TickPhase::Clear>;
-
 template <TickPhase Phase>
-class ControlWithBusDecl : public ControlWithPhaseDecl<Phase> {
+class TypedControlWithBusDecl : public TypedControlDecl<Phase, true> {
 public:
-  ControlWithBusDecl(std::string_view name, const ComponentDecl &parent,
-                     const BusDecl &bus)
-      : ControlWithPhaseDecl<Phase>(name, parent), bus_(bus) {}
+  static_assert(Phase == TickPhase::Write || Phase == TickPhase::Read,
+                "Invalid TickPhase for TypedControlWithBusDecl");
+
+  TypedControlWithBusDecl(std::string_view name, const ComponentDecl &parent,
+                          const BusDecl &bus)
+      : TypedControlDecl<Phase, true>(name, parent), bus_(bus) {}
 
   const BusDecl &bus() const { return bus_; }
 
@@ -136,16 +154,30 @@ private:
   const BusDecl &bus_;
 };
 
-template <TickPhase Phase>
-inline std::ostream &operator<<(std::ostream &os,
-                                const ControlWithBusDecl<Phase> &control) {
-  os << "ControlWithBus(" << control.path() << ", phase=" << control.phase()
-     << ", bus=" << control.bus() << ")";
-  return os;
-}
+using WriteControlDecl = TypedControlWithBusDecl<TickPhase::Write>;
+using ReadControlDecl = TypedControlWithBusDecl<TickPhase::Read>;
+using ProcessControlDecl = TypedControlDecl<TickPhase::Process, true>;
 
-using WriteControlDecl = ControlWithBusDecl<TickPhase::Write>;
-using ReadControlDecl = ControlWithBusDecl<TickPhase::Read>;
+template <TickPhase Phase>
+class TypedStickyControlWithResetDecl : public TypedControlDecl<Phase, false> {
+public:
+  static_assert(Phase == TickPhase::Process || Phase == TickPhase::Clear,
+                "Invalid TickPhase for TypedStickyControlWithResetDecl");
+
+  TypedStickyControlWithResetDecl(std::string_view name,
+                                  const ComponentDecl &parent)
+      : TypedControlDecl<Phase, false>(name, parent), reset_("reset", *this) {}
+
+  const ProcessControlDecl &reset() const { return reset_; }
+
+private:
+  const ProcessControlDecl reset_;
+};
+
+using StickyProcessControlDecl =
+    TypedStickyControlWithResetDecl<TickPhase::Process>;
+using StickyClearControlDecl =
+    TypedStickyControlWithResetDecl<TickPhase::Clear>;
 
 //------------------------------------------------------------------------------
 // Status Signals
@@ -369,9 +401,6 @@ private:
 };
 
 // Singleton instance getter for the Irata root declaration.
-static const IrataDecl &irata() {
-  static const IrataDecl irata;
-  return irata;
-}
+const IrataDecl &irata();
 
 } // namespace irata::sim::hdl

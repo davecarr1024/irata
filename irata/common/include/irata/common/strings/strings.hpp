@@ -12,11 +12,11 @@ std::string trim(std::string_view str, std::string_view chars = WHITESPACE);
 std::vector<std::string> split(std::string_view str,
                                std::string_view delim = WHITESPACE);
 
-template <typename T>
-std::string join(const std::vector<T> &vec, std::string_view delim) {
+template <typename Range>
+std::string join(const Range &range, std::string_view delim) {
   std::ostringstream os;
   std::string sep;
-  for (const auto &item : vec) {
+  for (const auto &item : range) {
     os << sep << item;
     sep = delim;
   }

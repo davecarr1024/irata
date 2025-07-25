@@ -1,6 +1,8 @@
+#include <irata/common/strings/strings.hpp>
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
+#include <sstream>
 #include <stdexcept>
 
 namespace irata::sim::microcode::dsl {
@@ -23,19 +25,42 @@ Instruction *Step::create_instruction(const asm_::Instruction &descriptor) {
   return instruction_->create_instruction(descriptor);
 }
 
+namespace {
+
+void validate_hdl_components_in_same_tree(const hdl::ComponentDecl &a,
+                                          const hdl::ComponentDecl &b) {
+  if (a.root() != b.root()) {
+    std::ostringstream os;
+    os << "components must be in the same tree: " << a.path() << " and "
+       << b.path();
+    throw std::invalid_argument(os.str());
+  }
+}
+
+} // namespace
+
 Step *Step::with_control(const hdl::WriteControlDecl &control) {
+  if (!controls_.empty()) {
+    validate_hdl_components_in_same_tree(**controls_.begin(), control);
+  }
   controls_.insert(&control);
   write_controls_.insert(&control);
   return this;
 }
 
 Step *Step::with_control(const hdl::ReadControlDecl &control) {
+  if (!controls_.empty()) {
+    validate_hdl_components_in_same_tree(**controls_.begin(), control);
+  }
   controls_.insert(&control);
   read_controls_.insert(&control);
   return this;
 }
 
 Step *Step::with_control(const hdl::ControlDecl &control) {
+  if (!controls_.empty()) {
+    validate_hdl_components_in_same_tree(**controls_.begin(), control);
+  }
   controls_.insert(&control);
   return this;
 }
@@ -53,11 +78,8 @@ const std::set<const hdl::ReadControlDecl *> &Step::read_controls() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const Step &step) {
-  os << "Step(controls={";
-  for (const auto &control : step.controls()) {
-    os << *control << " ";
-  }
-  os << "})";
+  os << "Step(controls={" << common::strings::join(step.controls(), ", ")
+     << "})";
   return os;
 }
 

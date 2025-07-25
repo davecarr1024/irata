@@ -2,6 +2,11 @@
 
 namespace irata::sim::hdl {
 
+const IrataDecl &irata() {
+  static const IrataDecl irata_;
+  return irata_;
+}
+
 std::ostream &operator<<(std::ostream &os, TickPhase phase) {
   switch (phase) {
   case TickPhase::Control:

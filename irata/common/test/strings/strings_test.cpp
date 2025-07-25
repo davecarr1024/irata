@@ -25,9 +25,18 @@ TEST(StringsTest, Split) {
 }
 
 TEST(StringsTest, Join) {
-  EXPECT_EQ(join<std::string>({}, ""), "");
-  EXPECT_EQ(join<std::string>({"hello"}, ""), "hello");
-  EXPECT_EQ(join<std::string>({"hello", "world"}, " "), "hello world");
+  const std::vector<std::string> v = {"hello", "world"};
+  EXPECT_EQ(join(v, " "), "hello world");
+}
+
+TEST(StringsTest, JoinEmpty) {
+  const std::vector<std::string> v = {};
+  EXPECT_EQ(join(v, " "), "");
+}
+
+TEST(StringsTest, JoinSingle) {
+  const std::vector<std::string> v = {"hello"};
+  EXPECT_EQ(join(v, " "), "hello");
 }
 
 TEST(StringsTest, ToUpper) {
