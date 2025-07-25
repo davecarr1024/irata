@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/sim/microcode/compiler/passes/pass.hpp>
 
 namespace irata::sim::microcode::compiler::passes {
