@@ -1,10 +1,12 @@
-#include <irata/sim/microcode/compiler/stages/bus_validator.hpp>
+#include <irata/common/strings/strings.hpp>
+#include <irata/sim/microcode/compiler/passes/bus_validator.hpp>
 #include <map>
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
-namespace irata::sim::microcode::compiler::stages {
+namespace irata::sim::microcode::compiler::passes {
 
 namespace {
 
@@ -34,6 +36,23 @@ void validate(const ir::Step &step) {
          << step;
       throw std::invalid_argument(os.str());
     }
+    if (controls.write_controls.size() > 1) {
+      std::ostringstream os;
+      os << "Bus " << bus->path() << " is written by multiple controls in step "
+         << step << ": ";
+      std::vector<std::string> control_paths;
+      for (const auto &control : controls.write_controls) {
+        control_paths.push_back(control->path());
+      }
+      os << common::strings::join(control_paths, ", ");
+      throw std::invalid_argument(os.str());
+    }
+    if (controls.read_controls.size() == 0) {
+      std::ostringstream os;
+      os << "Bus " << bus->path() << " is written but not read in step "
+         << step;
+      throw std::invalid_argument(os.str());
+    }
   }
 }
 
@@ -57,4 +76,4 @@ BusValidator::run(const ir::InstructionSet &instruction_set) {
   return instruction_set;
 }
 
-} // namespace irata::sim::microcode::compiler::stages
+} // namespace irata::sim::microcode::compiler::passes
