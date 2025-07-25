@@ -104,7 +104,7 @@ Instruction *Instruction::copy(const hdl::ConnectedWordRegisterDecl &source,
   }
   return create_step()
       ->with_control(source.write())
-      ->with_control(source.read())
+      ->with_control(dest.read())
       ->instruction();
 }
 
@@ -119,8 +119,8 @@ Instruction *Instruction::copy(const hdl::MemoryDecl &source,
     throw std::invalid_argument(os.str());
   }
   return create_step()
-      ->with_control(source.read())
-      ->with_control(dest.write())
+      ->with_control(source.write())
+      ->with_control(dest.read())
       ->instruction();
 }
 
@@ -135,8 +135,8 @@ Instruction *Instruction::copy(const hdl::ConnectedByteRegisterDecl &source,
     throw std::invalid_argument(os.str());
   }
   return create_step()
-      ->with_control(source.read())
-      ->with_control(dest.write())
+      ->with_control(source.write())
+      ->with_control(dest.read())
       ->instruction();
 }
 

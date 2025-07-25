@@ -78,8 +78,11 @@ const std::set<const hdl::ReadControlDecl *> &Step::read_controls() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const Step &step) {
-  os << "Step(controls={" << common::strings::join(step.controls(), ", ")
-     << "})";
+  std::vector<std::string> control_paths;
+  for (const auto *control : step.controls()) {
+    control_paths.push_back(control->path());
+  }
+  os << "Step(controls={" << common::strings::join(control_paths, ", ") << "})";
   return os;
 }
 

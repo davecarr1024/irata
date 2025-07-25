@@ -5,6 +5,7 @@
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
+#include <stdexcept>
 
 using ::testing::Contains;
 using ::testing::IsEmpty;

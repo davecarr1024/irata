@@ -55,21 +55,29 @@ public:
   // Returns the status flags for the instruction.
   const std::map<const hdl::StatusDecl *, bool> &statuses() const;
 
+  // Copies the value from the source register to the destination register.
   Instruction *copy(const hdl::ConnectedByteRegisterDecl &source,
                     const hdl::ConnectedByteRegisterDecl &dest);
 
+  // Copies the value from the source register to the destination register.
   Instruction *copy(const hdl::ConnectedWordRegisterDecl &source,
                     const hdl::ConnectedWordRegisterDecl &dest);
 
+  // Copies the value from the source memory to the destination register.
   Instruction *copy(const hdl::MemoryDecl &source,
                     const hdl::ConnectedByteRegisterDecl &dest);
 
+  // Copies the value from the source register to the destination memory.
   Instruction *copy(const hdl::ConnectedByteRegisterDecl &source,
                     const hdl::MemoryDecl &dest);
 
+  // Reads the value from the memory at the address specified by the source
+  // register into the destination register.
   Instruction *read_memory(const hdl::ConnectedWordRegisterDecl &address_source,
                            const hdl::ConnectedByteRegisterDecl &data_dest);
 
+  // Read the value from the memory at the address in the program counter into
+  // the destination register.
   Instruction *
   read_memory_at_pc(const hdl::ConnectedByteRegisterDecl &data_dest);
 
