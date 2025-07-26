@@ -15,7 +15,7 @@ namespace irata::sim::microcode::table {
 struct Entry {
   // The declarative descriptor for the instruciton this entry belongs to.
   // This incldues the instruction's opcode.
-  const asm_::Instruction &instruction;
+  const asm_::Instruction instruction;
 
   // The step index for this entry.
   const Byte step_index;
@@ -26,10 +26,12 @@ struct Entry {
 
   // The controls that are asserted by this entry.
   const std::set<const hdl::ControlDecl *> controls;
+
+  bool operator==(const Entry &other) const;
+  bool operator!=(const Entry &other) const;
+  bool operator<(const Entry &other) const;
 };
 
-bool operator==(const Entry &lhs, const Entry &rhs);
-bool operator!=(const Entry &lhs, const Entry &rhs);
 std::ostream &operator<<(std::ostream &os, const Entry &entry);
 
 } // namespace irata::sim::microcode::table

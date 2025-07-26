@@ -28,6 +28,7 @@ public:
 
   bool operator==(const Byte &rhs) const;
   bool operator!=(const Byte &rhs) const;
+  bool operator<(const Byte &rhs) const;
 
   // Returns the value of the bit at the given index (0-7).
   bool bit(uint8_t index) const;

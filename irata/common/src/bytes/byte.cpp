@@ -17,6 +17,8 @@ bool Byte::operator==(const Byte &rhs) const { return value_ == rhs.value_; }
 
 bool Byte::operator!=(const Byte &rhs) const { return value_ != rhs.value_; }
 
+bool Byte::operator<(const Byte &rhs) const { return value_ < rhs.value_; }
+
 bool Byte::bit(uint8_t index) const {
   if (index >= 8) {
     throw std::out_of_range("index must be between 0 and 7");

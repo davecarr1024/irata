@@ -3,13 +3,19 @@
 
 namespace irata::sim::microcode::table {
 
-bool operator==(const Entry &lhs, const Entry &rhs) {
-  return std::tie(lhs.instruction, lhs.step_index, lhs.statuses,
-                  lhs.controls) ==
-         std::tie(rhs.instruction, rhs.step_index, rhs.statuses, rhs.controls);
+bool Entry::operator==(const Entry &other) const {
+  return std::tie(instruction, step_index, statuses, controls) ==
+         std::tie(other.instruction, other.step_index, other.statuses,
+                  other.controls);
 }
 
-bool operator!=(const Entry &lhs, const Entry &rhs) { return !(lhs == rhs); }
+bool Entry::operator!=(const Entry &other) const { return !(*this == other); }
+
+bool Entry::operator<(const Entry &other) const {
+  return std::tie(instruction, step_index, statuses, controls) <
+         std::tie(other.instruction, other.step_index, other.statuses,
+                  other.controls);
+}
 
 std::ostream &operator<<(std::ostream &os, const Entry &entry) {
   os << "Entry(" << entry.instruction << ", step_index=" << entry.step_index
