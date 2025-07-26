@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/sim/microcode/table/entry.hpp>
 #include <ostream>
 #include <set>

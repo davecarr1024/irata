@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/asm/instruction.hpp>
 #include <irata/sim/bytes/byte.hpp>
 #include <irata/sim/hdl/hdl.hpp>
