@@ -51,6 +51,19 @@ InstructionEncoder::InstructionEncoder(const microcode::table::Table &table)
 uint16_t InstructionEncoder::encode_address(uint8_t opcode,
                                             const CompleteStatuses &statuses,
                                             uint8_t step_index) const {
+  if (opcode >= (1 << num_opcode_bits())) {
+    std::ostringstream os;
+    os << "Opcode 0x" << std::hex << int(opcode) << " out of bounds 0x"
+       << std::hex << (1 << num_opcode_bits());
+    throw std::invalid_argument(os.str());
+  }
+  if (step_index >= (1 << num_step_index_bits())) {
+    std::ostringstream os;
+    os << "Step index 0x" << std::hex << int(step_index) << " out of bounds 0x"
+       << (1 << num_step_index_bits()) << " for opcode 0x" << std::hex
+       << int(opcode);
+    throw std::invalid_argument(os.str());
+  }
   return (opcode << (num_status_bits() + num_step_index_bits())) |
          (status_encoder_.encode(statuses) << num_step_index_bits()) |
          step_index;

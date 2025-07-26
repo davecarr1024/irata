@@ -141,6 +141,16 @@ TEST_F(InstructionEncoderTest, EncodeAddressWithEntry) {
               UnorderedElementsAre(0b0111110101));
 }
 
+TEST_F(InstructionEncoderTest, EncodeAddressWithInvalidOpcode) {
+  EXPECT_THROW(encoder.encode_address(0xFF, partial({}), 0x05),
+               std::invalid_argument);
+}
+
+TEST_F(InstructionEncoderTest, EncodeAddressWithInvalidStepIndex) {
+  EXPECT_THROW(encoder.encode_address(0x0F, partial({}), 0xFF),
+               std::invalid_argument);
+}
+
 TEST_F(InstructionEncoderTest, DecodeAddress) {
   for (uint8_t opcode = 0x00; opcode <= 0x0F; ++opcode) {
     for (uint8_t step_index = 0x00; step_index <= 0x05; ++step_index) {
