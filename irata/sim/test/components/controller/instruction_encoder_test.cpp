@@ -4,6 +4,7 @@
 #include <irata/sim/microcode/compiler/compiler.hpp>
 #include <stdexcept>
 
+using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAre;
 
@@ -30,9 +31,30 @@ protected:
   const microcode::table::Table table = {{entry}};
   // [opcode 4 bits][statuses 2 bits][step index 3 bits]
   const InstructionEncoder encoder = InstructionEncoder(table);
+
+  PartialStatuses partial(std::map<const hdl::StatusDecl *, bool> statuses) {
+    return PartialStatuses(statuses);
+  }
+
+  CompleteStatuses complete(std::map<const hdl::StatusDecl *, bool> statuses) {
+    return CompleteStatuses(encoder.status_encoder(), statuses);
+  }
 };
 
 } // namespace
+
+TEST_F(InstructionEncoderTest, TooManyAddressBits) {
+  // 8 opcode bits, 1 status bit, 8 step index bits = 17 bits
+  // This is too many bits to encode in a 16-bit address.
+  const microcode::table::Entry entry = {
+      .instruction = asm_::Instruction("instruction", Byte(0xFF),
+                                       asm_::AddressingMode::IMMEDIATE, ""),
+      .step_index = Byte(0xFF),
+      .statuses = {{&status1, false}},
+  };
+  const microcode::table::Table table = {{entry}};
+  EXPECT_THROW((InstructionEncoder(table)), std::invalid_argument);
+}
 
 TEST_F(InstructionEncoderTest, num_statuses) {
   EXPECT_EQ(encoder.num_statuses(), 2);
@@ -74,18 +96,20 @@ TEST_F(InstructionEncoderTest, EncodeAndDecodeIrata) {
   const auto table = microcode::compiler::Compiler::compile_irata();
   const InstructionEncoder encoder(table);
   for (const auto &entry : table.entries) {
-    const auto address = encoder.encode_address(entry);
-    const auto [opcode, statuses, step_index] = encoder.decode_address(address);
-    EXPECT_EQ(opcode, entry.instruction.opcode().unsigned_value());
-    EXPECT_EQ(statuses, entry.statuses);
-    EXPECT_EQ(step_index, entry.step_index.unsigned_value());
+    for (const auto &address : encoder.encode_address(entry)) {
+      const auto [opcode, statuses, step_index] =
+          encoder.decode_address(address);
+      EXPECT_EQ(opcode, entry.instruction.opcode().unsigned_value());
+      EXPECT_EQ(statuses.statuses(), entry.statuses);
+      EXPECT_EQ(step_index, entry.step_index.unsigned_value());
 
-    const auto value = encoder.encode_value(entry.controls);
-    EXPECT_EQ(encoder.decode_value(value), entry.controls);
+      const auto value = encoder.encode_value(entry.controls);
+      EXPECT_EQ(encoder.decode_value(value), entry.controls);
+    }
   }
 }
 
-TEST_F(InstructionEncoderTest, EncodeAddress) {
+TEST_F(InstructionEncoderTest, EncodeAddressWithCompleteStatus) {
   for (uint8_t opcode = 0x00; opcode <= 0x0F; ++opcode) {
     for (uint8_t step_index = 0x00; step_index <= 0x05; ++step_index) {
       for (bool status1_value : {false, true}) {
@@ -95,47 +119,47 @@ TEST_F(InstructionEncoderTest, EncodeAddress) {
           expected |= (status1_value ? 0b01 : 0b00) << 3;
           expected |= (status2_value ? 0b10 : 0b00) << 3;
           expected |= step_index;
-          EXPECT_EQ(encoder.encode_address(
-                        opcode,
-                        {{&status1, status1_value}, {&status2, status2_value}},
-                        step_index),
-                    expected);
+          EXPECT_EQ(
+              encoder.encode_address(opcode,
+                                     complete({{&status1, status1_value},
+                                               {&status2, status2_value}}),
+                                     step_index),
+              expected);
         }
       }
     }
   }
 }
 
-TEST_F(InstructionEncoderTest, EncodeAddressInstruction) {
-  for (uint8_t step_index = 0x00; step_index <= 0x05; ++step_index) {
-    for (bool status1_value : {false, true}) {
-      for (bool status2_value : {false, true}) {
-        uint32_t expected = 0x0000;
-        expected |= instruction.opcode().unsigned_value() << 5;
-        expected |= (status1_value ? 0b01 : 0b00) << 3;
-        expected |= (status2_value ? 0b10 : 0b00) << 3;
-        expected |= step_index;
-        EXPECT_EQ(encoder.encode_address(
-                      instruction,
-                      {{&status1, status1_value}, {&status2, status2_value}},
-                      step_index),
-                  expected);
-      }
-    }
-  }
+TEST_F(InstructionEncoderTest, EncodeAddressWithPartialStatus) {
+  EXPECT_THAT(encoder.encode_address(0x0F, partial({{&status1, false}}), 0x05),
+              UnorderedElementsAre(0b0111100101, 0b0111110101));
 }
 
-TEST_F(InstructionEncoderTest, EncodeAddressEntry) {
-  EXPECT_EQ(encoder.encode_address(entry), 0b0111110101);
+TEST_F(InstructionEncoderTest, EncodeAddressWithEntry) {
+  EXPECT_THAT(encoder.encode_address(entry),
+              UnorderedElementsAre(0b0111110101));
 }
 
 TEST_F(InstructionEncoderTest, DecodeAddress) {
-  for (uint32_t address = 0x0000; address <= 0x01FF; ++address) {
-    const auto [opcode, statuses, step_index] = encoder.decode_address(address);
-    EXPECT_EQ(opcode, (address >> 5) & 0b1111);
-    EXPECT_EQ(statuses.at(&status1), ((address >> 3) & 0b01) == 0b01);
-    EXPECT_EQ(statuses.at(&status2), ((address >> 3) & 0b10) == 0b10);
-    EXPECT_EQ(step_index, address & 0b111);
+  for (uint8_t opcode = 0x00; opcode <= 0x0F; ++opcode) {
+    for (uint8_t step_index = 0x00; step_index <= 0x05; ++step_index) {
+      for (bool status1_value : {false, true}) {
+        for (bool status2_value : {false, true}) {
+          uint32_t address = 0x0000;
+          address |= opcode << 5;
+          address |= (status1_value ? 0b01 : 0b00) << 3;
+          address |= (status2_value ? 0b10 : 0b00) << 3;
+          address |= step_index;
+          const auto [decoded_opcode, decoded_statuses, decoded_step_index] =
+              encoder.decode_address(address);
+          EXPECT_EQ(decoded_opcode, opcode);
+          EXPECT_EQ(decoded_step_index, step_index);
+          EXPECT_EQ(decoded_statuses, complete({{&status1, status1_value},
+                                                {&status2, status2_value}}));
+        }
+      }
+    }
   }
 }
 
@@ -144,6 +168,10 @@ TEST_F(InstructionEncoderTest, EncodeValue) {
   EXPECT_EQ(encoder.encode_value({&control1}), 0b01);
   EXPECT_EQ(encoder.encode_value({&control2}), 0b10);
   EXPECT_EQ(encoder.encode_value({&control1, &control2}), 0b11);
+}
+
+TEST_F(InstructionEncoderTest, EncodeValueFromEntry) {
+  EXPECT_EQ(encoder.encode_value(entry), 0b11);
 }
 
 TEST_F(InstructionEncoderTest, DecodeValue) {

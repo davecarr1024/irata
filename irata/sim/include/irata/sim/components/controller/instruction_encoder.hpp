@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <irata/asm/instruction.hpp>
+#include <irata/sim/components/controller/complete_statuses.hpp>
 #include <irata/sim/components/controller/control_encoder.hpp>
+#include <irata/sim/components/controller/partial_statuses.hpp>
 #include <irata/sim/components/controller/status_encoder.hpp>
 #include <irata/sim/hdl/hdl.hpp>
 #include <irata/sim/microcode/table/table.hpp>
@@ -27,41 +29,49 @@ public:
   InstructionEncoder(const InstructionEncoder &) = delete;
   InstructionEncoder &operator=(const InstructionEncoder &) = delete;
 
-  // Encodes the given instruction, statuses, and step index into an address.
-  uint32_t encode_address(const asm_::Instruction &instruction,
-                          std::map<const hdl::StatusDecl *, bool> statuses,
+  uint16_t encode_address(uint8_t opcode, const CompleteStatuses &statuses,
                           uint8_t step_index) const;
 
-  uint32_t encode_address(uint8_t opcode,
-                          std::map<const hdl::StatusDecl *, bool> statuses,
-                          uint8_t step_index) const;
+  std::vector<uint16_t> encode_address(uint8_t opcode,
+                                       const PartialStatuses &statuses,
+                                       uint8_t step_index) const;
 
-  // Encodes the given microcode table entry into an address.
-  uint32_t encode_address(const microcode::table::Entry &entry) const;
+  std::vector<uint16_t>
+  encode_address(const microcode::table::Entry &entry) const;
 
   // Decodes the given address into an opcode, statuses, and step index.
-  std::tuple<uint8_t, std::map<const hdl::StatusDecl *, bool>, uint8_t>
-  decode_address(uint32_t address) const;
+  std::tuple<uint8_t, CompleteStatuses, uint8_t>
+  decode_address(uint16_t address) const;
 
   // Encodes the given controls into a value.
   uint32_t
   encode_value(const std::set<const hdl::ControlDecl *> &controls) const;
 
+  // Encodes the given entry into a value.
+  uint32_t encode_value(const microcode::table::Entry &entry) const;
+
   // Decodes the given value into a set of controls.
   std::set<const hdl::ControlDecl *> decode_value(uint32_t value) const;
 
+  // The number of statuses that are used in the microcode table.
   size_t num_statuses() const;
 
+  // The number of bits that are used to encode the statuses.
   size_t num_status_bits() const;
 
+  // The number of controls that are used in the microcode table.
   size_t num_controls() const;
 
+  // The maximum opcode value in the microcode table.
   uint8_t max_opcode() const;
 
+  // The number of bits that are used to encode the opcode.
   size_t num_opcode_bits() const;
 
+  // The maximum step index value in the microcode table.
   size_t max_step_index() const;
 
+  // The number of bits that are used to encode the step index.
   size_t num_step_index_bits() const;
 
   // Returns the number of address bits in the instruction memory.
@@ -69,6 +79,12 @@ public:
 
   // Returns the number of value bits in the instruction memory.
   size_t num_value_bits() const;
+
+  // Returns the status encoder.
+  const StatusEncoder &status_encoder() const;
+
+  // Returns the control encoder.
+  const ControlEncoder &control_encoder() const;
 
 private:
   const StatusEncoder status_encoder_;

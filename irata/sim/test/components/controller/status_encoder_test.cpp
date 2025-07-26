@@ -1,5 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/components/controller/complete_statuses.hpp>
+#include <irata/sim/components/controller/partial_statuses.hpp>
 #include <irata/sim/components/controller/status_encoder.hpp>
 
 using ::testing::ElementsAre;
@@ -26,6 +28,14 @@ protected:
           },
       }};
   const StatusEncoder encoder = StatusEncoder(table);
+
+  PartialStatuses partial(std::map<const hdl::StatusDecl *, bool> statuses) {
+    return PartialStatuses(statuses);
+  }
+
+  CompleteStatuses complete(std::map<const hdl::StatusDecl *, bool> statuses) {
+    return CompleteStatuses(encoder, statuses);
+  }
 };
 
 } // namespace
@@ -50,66 +60,60 @@ TEST_F(StatusEncoderTest, TooManyStatuses) {
 
 TEST_F(StatusEncoderTest, NumStatuses) { EXPECT_EQ(encoder.num_statuses(), 2); }
 
-TEST_F(StatusEncoderTest, Encode) {
-  EXPECT_EQ(encoder.encode({{&status1, false}, {&status2, false}}), 0b00);
-  EXPECT_EQ(encoder.encode({{&status1, false}, {&status2, true}}), 0b10);
-  EXPECT_EQ(encoder.encode({{&status1, true}, {&status2, false}}), 0b01);
-  EXPECT_EQ(encoder.encode({{&status1, true}, {&status2, true}}), 0b11);
+TEST_F(StatusEncoderTest, Statuses) {
+  EXPECT_THAT(encoder.statuses(), UnorderedElementsAre(&status1, &status2));
 }
 
-TEST_F(StatusEncoderTest, EncodeMissingStatus) {
-  EXPECT_THROW(encoder.encode({}), std::invalid_argument);
-  EXPECT_THROW(encoder.encode({{&status1, false}}), std::invalid_argument);
-  EXPECT_THROW(encoder.encode({{&status2, false}}), std::invalid_argument);
+TEST_F(StatusEncoderTest, EncodeComplete) {
+  EXPECT_EQ(encoder.encode(complete({{&status1, false}, {&status2, false}})),
+            0b00);
+  EXPECT_EQ(encoder.encode(complete({{&status1, false}, {&status2, true}})),
+            0b10);
+  EXPECT_EQ(encoder.encode(complete({{&status1, true}, {&status2, false}})),
+            0b01);
+  EXPECT_EQ(encoder.encode(complete({{&status1, true}, {&status2, true}})),
+            0b11);
 }
 
-TEST_F(StatusEncoderTest, EncodeUnknownStatus) {
-  const hdl::StatusDecl unknown_status("unknown_status", hdl::irata());
-  EXPECT_THROW(encoder.encode({{&unknown_status, false}}),
-               std::invalid_argument);
+TEST_F(StatusEncoderTest, EncodePartial) {
+  EXPECT_THAT(encoder.encode(partial({})),
+              UnorderedElementsAre(0b00, 0b10, 0b01, 0b11));
+  EXPECT_THAT(encoder.encode(partial({{&status1, false}})),
+              UnorderedElementsAre(0b00, 0b10));
+  EXPECT_THAT(encoder.encode(partial({{&status1, true}})),
+              UnorderedElementsAre(0b01, 0b11));
+  EXPECT_THAT(encoder.encode(partial({{&status2, false}})),
+              UnorderedElementsAre(0b00, 0b01));
+  EXPECT_THAT(encoder.encode(partial({{&status2, true}})),
+              UnorderedElementsAre(0b10, 0b11));
+  EXPECT_THAT(encoder.encode(partial({{&status1, false}, {&status2, false}})),
+              UnorderedElementsAre(0b00));
+  EXPECT_THAT(encoder.encode(partial({{&status1, false}, {&status2, true}})),
+              UnorderedElementsAre(0b10));
+  EXPECT_THAT(encoder.encode(partial({{&status1, true}, {&status2, false}})),
+              UnorderedElementsAre(0b01));
+  EXPECT_THAT(encoder.encode(partial({{&status1, true}, {&status2, true}})),
+              UnorderedElementsAre(0b11));
 }
 
 TEST_F(StatusEncoderTest, Decode) {
-  EXPECT_THAT(encoder.decode(0b00),
-              ElementsAre(Pair(&status1, false), Pair(&status2, false)));
-  EXPECT_THAT(encoder.decode(0b10),
-              ElementsAre(Pair(&status1, false), Pair(&status2, true)));
-  EXPECT_THAT(encoder.decode(0b01),
-              ElementsAre(Pair(&status1, true), Pair(&status2, false)));
-  EXPECT_THAT(encoder.decode(0b11),
-              ElementsAre(Pair(&status1, true), Pair(&status2, true)));
+  EXPECT_EQ(encoder.decode(0b00),
+            complete({{&status1, false}, {&status2, false}}));
+  EXPECT_EQ(encoder.decode(0b10),
+            complete({{&status1, false}, {&status2, true}}));
+  EXPECT_EQ(encoder.decode(0b01),
+            complete({{&status1, true}, {&status2, false}}));
+  EXPECT_EQ(encoder.decode(0b11),
+            complete({{&status1, true}, {&status2, true}}));
 }
 
-TEST_F(StatusEncoderTest, PermuteStatuses) {
-  EXPECT_THAT(encoder.permute_statuses({}),
-              UnorderedElementsAre(
-                  ElementsAre(Pair(&status1, false), Pair(&status2, false)),
-                  ElementsAre(Pair(&status1, false), Pair(&status2, true)),
-                  ElementsAre(Pair(&status1, true), Pair(&status2, false)),
-                  ElementsAre(Pair(&status1, true), Pair(&status2, true))));
-  EXPECT_THAT(encoder.permute_statuses({{&status1, false}}),
-              UnorderedElementsAre(
-                  ElementsAre(Pair(&status1, false), Pair(&status2, false)),
-                  ElementsAre(Pair(&status1, false), Pair(&status2, true))));
-  EXPECT_THAT(encoder.permute_statuses({{&status2, false}}),
-              UnorderedElementsAre(
-                  ElementsAre(Pair(&status1, false), Pair(&status2, false)),
-                  ElementsAre(Pair(&status1, true), Pair(&status2, false))));
-  EXPECT_THAT(encoder.permute_statuses({{&status1, false}, {&status2, false}}),
-              UnorderedElementsAre(
-                  ElementsAre(Pair(&status1, false), Pair(&status2, false))));
-}
-
-TEST_F(StatusEncoderTest, PermuteAndEncodeStatuses) {
-  EXPECT_THAT(encoder.permute_and_encode_statuses({}),
-              UnorderedElementsAre(0b00, 0b10, 0b01, 0b11));
-  EXPECT_THAT(encoder.permute_and_encode_statuses({{&status1, false}}),
-              UnorderedElementsAre(0b00, 0b10));
-  EXPECT_THAT(encoder.permute_and_encode_statuses({{&status2, false}}),
-              UnorderedElementsAre(0b00, 0b01));
-  EXPECT_THAT(encoder.permute_and_encode_statuses(
-                  {{&status1, false}, {&status2, false}}),
-              UnorderedElementsAre(0b00));
+TEST_F(StatusEncoderTest, Permute) {
+  EXPECT_THAT(
+      encoder.permute(partial({})),
+      UnorderedElementsAre(complete({{&status1, false}, {&status2, false}}),
+                           complete({{&status1, false}, {&status2, true}}),
+                           complete({{&status1, true}, {&status2, false}}),
+                           complete({{&status1, true}, {&status2, true}})));
 }
 
 } // namespace irata::sim::components::controller

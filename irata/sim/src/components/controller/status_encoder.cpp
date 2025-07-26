@@ -1,3 +1,5 @@
+#include <irata/sim/components/controller/complete_statuses.hpp>
+#include <irata/sim/components/controller/partial_statuses.hpp>
 #include <irata/sim/components/controller/status_encoder.hpp>
 #include <sstream>
 #include <stdexcept>
@@ -37,16 +39,16 @@ StatusEncoder::StatusEncoder(const microcode::table::Table &table)
   }
 }
 
-uint8_t StatusEncoder::encode(
-    const std::map<const hdl::StatusDecl *, bool> &statuses) const {
+uint8_t StatusEncoder::encode(const CompleteStatuses &statuses) const {
+  const auto &status_values = statuses.statuses();
   // Throw an error if any statuses are not set.
   for (const auto &[status, _] : indices_) {
-    if (statuses.find(status) == statuses.end()) {
+    if (status_values.find(status) == status_values.end()) {
       throw std::invalid_argument("Missing status: " + status->path());
     }
   }
   uint8_t encoded_statuses = 0;
-  for (const auto &[status, value] : statuses) {
+  for (const auto &[status, value] : status_values) {
     if (const auto it = indices_.find(status); it != indices_.end()) {
       if (value) {
         encoded_statuses |= (1 << it->second);
@@ -60,51 +62,58 @@ uint8_t StatusEncoder::encode(
   return encoded_statuses;
 }
 
-std::map<const hdl::StatusDecl *, bool>
-StatusEncoder::decode(uint8_t encoded_statuses) const {
+std::vector<uint8_t>
+StatusEncoder::encode(const PartialStatuses &statuses) const {
+  std::vector<uint8_t> encoded_statuses;
+  for (const auto &permuted_statuses : permute(statuses)) {
+    encoded_statuses.push_back(encode(permuted_statuses));
+  }
+  return encoded_statuses;
+}
+
+CompleteStatuses StatusEncoder::decode(uint8_t encoded_statuses) const {
   std::map<const hdl::StatusDecl *, bool> statuses;
   for (const auto &[status, index] : indices_) {
     statuses[status] = (encoded_statuses & (1 << index)) != 0;
   }
-  return statuses;
+  return CompleteStatuses(*this, statuses);
 }
 
-std::vector<std::map<const hdl::StatusDecl *, bool>>
-StatusEncoder::permute_statuses(
-    const std::map<const hdl::StatusDecl *, bool> &partial_statuses) const {
+std::vector<CompleteStatuses>
+StatusEncoder::permute(const PartialStatuses &partial_statuses) const {
+  const auto &partial_status_values = partial_statuses.statuses();
 
   // Gather all known statuses
   std::vector<const hdl::StatusDecl *> unset_statuses;
   for (const auto &[status, _] : indices_) {
-    if (partial_statuses.find(status) == partial_statuses.end()) {
+    if (partial_status_values.find(status) == partial_status_values.end()) {
       unset_statuses.push_back(status);
     }
   }
 
   // Number of permutations = 2^N for N unset statuses
   size_t count = 1ULL << unset_statuses.size();
-  std::vector<std::map<const hdl::StatusDecl *, bool>> permutations;
+  std::vector<CompleteStatuses> permutations;
 
   for (size_t i = 0; i < count; ++i) {
-    std::map<const hdl::StatusDecl *, bool> full_status = partial_statuses;
+    std::map<const hdl::StatusDecl *, bool> full_status = partial_status_values;
     for (size_t bit = 0; bit < unset_statuses.size(); ++bit) {
       full_status[unset_statuses[bit]] = (i >> bit) & 1;
     }
-    permutations.push_back(std::move(full_status));
+    permutations.push_back(CompleteStatuses(*this, std::move(full_status)));
   }
 
   return permutations;
 }
 
-std::vector<uint8_t> StatusEncoder::permute_and_encode_statuses(
-    const std::map<const hdl::StatusDecl *, bool> &statuses) const {
-  std::vector<uint8_t> encoded_statuses;
-  for (const auto &permuted_statuses : permute_statuses(statuses)) {
-    encoded_statuses.push_back(encode(permuted_statuses));
-  }
-  return encoded_statuses;
-}
-
 size_t StatusEncoder::num_statuses() const { return indices_.size(); }
+
+std::set<const hdl::StatusDecl *> StatusEncoder::statuses() const {
+  std::set<const hdl::StatusDecl *> statuses;
+  for (const auto &[status, _] : indices_) {
+    statuses.insert(status);
+  }
+  return statuses;
+}
 
 } // namespace irata::sim::components::controller

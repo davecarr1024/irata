@@ -43,36 +43,37 @@ InstructionEncoder::InstructionEncoder(const microcode::table::Table &table)
       num_opcode_bits_(num_bits_to_represent(max_opcode_)),
       max_step_index_(get_max_step_index(table)),
       num_step_index_bits_(num_bits_to_represent(max_step_index_)) {
-  if (num_address_bits() > 32) {
+  if (num_address_bits() > 16) {
     throw std::invalid_argument("Too many address bits to encode");
   }
 }
 
-uint32_t InstructionEncoder::encode_address(
-    uint8_t opcode, std::map<const hdl::StatusDecl *, bool> statuses,
-    uint8_t step_index) const {
-  // [opcode][statuses][step_index]
+uint16_t InstructionEncoder::encode_address(uint8_t opcode,
+                                            const CompleteStatuses &statuses,
+                                            uint8_t step_index) const {
   return (opcode << (num_status_bits() + num_step_index_bits())) |
          (status_encoder_.encode(statuses) << num_step_index_bits()) |
          step_index;
 }
 
-uint32_t InstructionEncoder::encode_address(
-    const asm_::Instruction &instruction,
-    std::map<const hdl::StatusDecl *, bool> statuses,
-    uint8_t step_index) const {
-  return encode_address(instruction.opcode().unsigned_value(), statuses,
-                        step_index);
+std::vector<uint16_t> InstructionEncoder::encode_address(
+    uint8_t opcode, const PartialStatuses &statuses, uint8_t step_index) const {
+  std::vector<uint16_t> addresses;
+  for (const auto &complete_statuses : status_encoder_.permute(statuses)) {
+    addresses.push_back(encode_address(opcode, complete_statuses, step_index));
+  }
+  return addresses;
 }
 
-uint32_t
+std::vector<uint16_t>
 InstructionEncoder::encode_address(const microcode::table::Entry &entry) const {
-  return encode_address(entry.instruction, entry.statuses,
+  return encode_address(entry.instruction.opcode().unsigned_value(),
+                        PartialStatuses(entry.statuses),
                         entry.step_index.unsigned_value());
 }
 
-std::tuple<uint8_t, std::map<const hdl::StatusDecl *, bool>, uint8_t>
-InstructionEncoder::decode_address(uint32_t address) const {
+std::tuple<uint8_t, CompleteStatuses, uint8_t>
+InstructionEncoder::decode_address(uint16_t address) const {
   const uint8_t opcode =
       (address >> (num_status_bits() + num_step_index_bits())) & max_opcode();
   const uint8_t encoded_statuses =
@@ -85,6 +86,11 @@ InstructionEncoder::decode_address(uint32_t address) const {
 uint32_t InstructionEncoder::encode_value(
     const std::set<const hdl::ControlDecl *> &controls) const {
   return control_encoder_.encode(controls);
+}
+
+uint32_t
+InstructionEncoder::encode_value(const microcode::table::Entry &entry) const {
+  return encode_value(entry.controls);
 }
 
 std::set<const hdl::ControlDecl *>
@@ -118,6 +124,14 @@ size_t InstructionEncoder::max_step_index() const { return max_step_index_; }
 
 size_t InstructionEncoder::num_step_index_bits() const {
   return num_step_index_bits_;
+}
+
+const StatusEncoder &InstructionEncoder::status_encoder() const {
+  return status_encoder_;
+}
+
+const ControlEncoder &InstructionEncoder::control_encoder() const {
+  return control_encoder_;
 }
 
 } // namespace irata::sim::components::controller
