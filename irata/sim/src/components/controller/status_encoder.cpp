@@ -37,7 +37,7 @@ StatusEncoder::StatusEncoder(const microcode::table::Table &table)
   }
 }
 
-Byte StatusEncoder::encode(
+uint8_t StatusEncoder::encode(
     const std::map<const hdl::StatusDecl *, bool> &statuses) const {
   // Throw an error if any statuses are not set.
   for (const auto &[status, _] : indices_) {
@@ -57,14 +57,14 @@ Byte StatusEncoder::encode(
       throw std::invalid_argument(os.str());
     }
   }
-  return Byte(encoded_statuses);
+  return encoded_statuses;
 }
 
 std::map<const hdl::StatusDecl *, bool>
-StatusEncoder::decode(Byte encoded_statuses) const {
+StatusEncoder::decode(uint8_t encoded_statuses) const {
   std::map<const hdl::StatusDecl *, bool> statuses;
   for (const auto &[status, index] : indices_) {
-    statuses[status] = (encoded_statuses.unsigned_value() & (1 << index)) != 0;
+    statuses[status] = (encoded_statuses & (1 << index)) != 0;
   }
   return statuses;
 }
@@ -96,13 +96,15 @@ StatusEncoder::permute_statuses(
   return permutations;
 }
 
-std::vector<Byte> StatusEncoder::permute_and_encode_statuses(
+std::vector<uint8_t> StatusEncoder::permute_and_encode_statuses(
     const std::map<const hdl::StatusDecl *, bool> &statuses) const {
-  std::vector<Byte> encoded_statuses;
+  std::vector<uint8_t> encoded_statuses;
   for (const auto &permuted_statuses : permute_statuses(statuses)) {
     encoded_statuses.push_back(encode(permuted_statuses));
   }
   return encoded_statuses;
 }
+
+size_t StatusEncoder::num_statuses() const { return indices_.size(); }
 
 } // namespace irata::sim::components::controller

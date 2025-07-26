@@ -48,11 +48,13 @@ TEST_F(StatusEncoderTest, TooManyStatuses) {
   EXPECT_THROW((StatusEncoder(table)), std::invalid_argument);
 }
 
+TEST_F(StatusEncoderTest, NumStatuses) { EXPECT_EQ(encoder.num_statuses(), 2); }
+
 TEST_F(StatusEncoderTest, Encode) {
-  EXPECT_EQ(encoder.encode({{&status1, false}, {&status2, false}}), Byte(0b00));
-  EXPECT_EQ(encoder.encode({{&status1, false}, {&status2, true}}), Byte(0b10));
-  EXPECT_EQ(encoder.encode({{&status1, true}, {&status2, false}}), Byte(0b01));
-  EXPECT_EQ(encoder.encode({{&status1, true}, {&status2, true}}), Byte(0b11));
+  EXPECT_EQ(encoder.encode({{&status1, false}, {&status2, false}}), 0b00);
+  EXPECT_EQ(encoder.encode({{&status1, false}, {&status2, true}}), 0b10);
+  EXPECT_EQ(encoder.encode({{&status1, true}, {&status2, false}}), 0b01);
+  EXPECT_EQ(encoder.encode({{&status1, true}, {&status2, true}}), 0b11);
 }
 
 TEST_F(StatusEncoderTest, EncodeMissingStatus) {
@@ -61,14 +63,20 @@ TEST_F(StatusEncoderTest, EncodeMissingStatus) {
   EXPECT_THROW(encoder.encode({{&status2, false}}), std::invalid_argument);
 }
 
+TEST_F(StatusEncoderTest, EncodeUnknownStatus) {
+  const hdl::StatusDecl unknown_status("unknown_status", hdl::irata());
+  EXPECT_THROW(encoder.encode({{&unknown_status, false}}),
+               std::invalid_argument);
+}
+
 TEST_F(StatusEncoderTest, Decode) {
-  EXPECT_THAT(encoder.decode(Byte(0b00)),
+  EXPECT_THAT(encoder.decode(0b00),
               ElementsAre(Pair(&status1, false), Pair(&status2, false)));
-  EXPECT_THAT(encoder.decode(Byte(0b10)),
+  EXPECT_THAT(encoder.decode(0b10),
               ElementsAre(Pair(&status1, false), Pair(&status2, true)));
-  EXPECT_THAT(encoder.decode(Byte(0b01)),
+  EXPECT_THAT(encoder.decode(0b01),
               ElementsAre(Pair(&status1, true), Pair(&status2, false)));
-  EXPECT_THAT(encoder.decode(Byte(0b11)),
+  EXPECT_THAT(encoder.decode(0b11),
               ElementsAre(Pair(&status1, true), Pair(&status2, true)));
 }
 
@@ -93,16 +101,15 @@ TEST_F(StatusEncoderTest, PermuteStatuses) {
 }
 
 TEST_F(StatusEncoderTest, PermuteAndEncodeStatuses) {
-  EXPECT_THAT(
-      encoder.permute_and_encode_statuses({}),
-      UnorderedElementsAre(Byte(0b00), Byte(0b10), Byte(0b01), Byte(0b11)));
+  EXPECT_THAT(encoder.permute_and_encode_statuses({}),
+              UnorderedElementsAre(0b00, 0b10, 0b01, 0b11));
   EXPECT_THAT(encoder.permute_and_encode_statuses({{&status1, false}}),
-              UnorderedElementsAre(Byte(0b00), Byte(0b10)));
+              UnorderedElementsAre(0b00, 0b10));
   EXPECT_THAT(encoder.permute_and_encode_statuses({{&status2, false}}),
-              UnorderedElementsAre(Byte(0b00), Byte(0b01)));
+              UnorderedElementsAre(0b00, 0b01));
   EXPECT_THAT(encoder.permute_and_encode_statuses(
                   {{&status1, false}, {&status2, false}}),
-              UnorderedElementsAre(Byte(0b00)));
+              UnorderedElementsAre(0b00));
 }
 
 } // namespace irata::sim::components::controller

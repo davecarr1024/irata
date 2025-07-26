@@ -14,10 +14,11 @@ public:
 
   // Encodes the given statuses into a single byte.
   // Throws an exception if any of the statuses are unknown.
-  Byte encode(const std::map<const hdl::StatusDecl *, bool> &statuses) const;
+  uint8_t encode(const std::map<const hdl::StatusDecl *, bool> &statuses) const;
 
   // Decodes the given byte into a map of statuses.
-  std::map<const hdl::StatusDecl *, bool> decode(Byte encoded_statuses) const;
+  std::map<const hdl::StatusDecl *, bool>
+  decode(uint8_t encoded_statuses) const;
 
   // Permutes the given statuses by setting all statuses to true and false
   // if they are not already set.
@@ -25,8 +26,10 @@ public:
       const std::map<const hdl::StatusDecl *, bool> &statuses) const;
 
   // Permutes the given statuses and encodes them into a vector of bytes.
-  std::vector<Byte> permute_and_encode_statuses(
+  std::vector<uint8_t> permute_and_encode_statuses(
       const std::map<const hdl::StatusDecl *, bool> &statuses) const;
+
+  size_t num_statuses() const;
 
 private:
   const std::map<const hdl::StatusDecl *, size_t> indices_;
