@@ -35,4 +35,8 @@ Byte ROM::read(Word address) const {
   }
 }
 
+void ROM::write(Word address, Byte value) {
+  throw std::runtime_error("ROM " + path() + " is read-only");
+}
+
 } // namespace irata::sim::components::memory

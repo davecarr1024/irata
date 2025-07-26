@@ -30,7 +30,7 @@ public:
 
   // Writes the given byte to the given address.
   // To make a read-write module, override this method and the can_write method.
-  virtual void write(Word address, Byte value) {}
+  virtual void write(Word address, Byte value) = 0;
 
   // Returns true if the module can be written to.
   // Returns false by default.

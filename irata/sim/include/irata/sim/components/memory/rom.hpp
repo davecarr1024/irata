@@ -32,6 +32,9 @@ public:
   // Read only.
   bool can_write() const override { return false; }
 
+  // Throws an exception.
+  void write(Word address, Byte value) override;
+
 private:
   const size_t size_;
   const std::map<Word, Byte> data_;
