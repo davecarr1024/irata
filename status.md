@@ -1,12 +1,12 @@
 # 🧾 Irata Project Status
 
-_Last updated: July 25, 2025_
+_Last updated: July 26, 2025_
 
 ---
 
-## 🎉 Major Milestone: Microcode Compiler Passes Implemented!
+## 🎉 Major Milestone: Controller Integrated with Real Microcode!
 
-The microcode compiler is now fully capable of transforming a high-level DSL into a valid, executable instruction set. Every core validation and transformation stage is implemented and tested. From now on, authoring new instructions and compiling them into machine-executable control sequences is a solved problem — clean, safe, and test-backed.
+I’ve finished building out the controller and its integration with the compiled microcode system. It now drives actual control lines based on opcode, step, and status — fully compiled and fully test-verified. There’s no simulation trickery here: the control flow is driven by a real ROM structure that models hardware behavior exactly.
 
 ---
 
@@ -14,104 +14,88 @@ The microcode compiler is now fully capable of transforming a high-level DSL int
 
 ### 🧠 Instruction Set + Microcode
 
-- `asm.yaml` defines the instruction set declaratively
-- Generated C++ bindings represent typed, structured instruction descriptors
-- Microcode DSL (`dsl::InstructionSet`) is expressive and minimal:
-  - Fetch phase and step index behavior handled automatically
-  - Instruction definitions are short and idiomatic
-- Compiler IR stage (`ir::InstructionSet`, `ir::Step`, etc.) bridges DSL and controller
-- Validation and transformation passes implemented:
-  - **BusValidator** – checks bus lines for write/read safety
-  - **StatusCompletenessValidator** – ensures all status variants are handled
-  - **StepIndexValidator** – verifies step counter usage is well-formed
-  - **StepIndexTransformer** – inserts step increment/reset logic
-  - **StepMerger** – collapses adjacent steps when phase-safe
-- Each pass is modular, composable, and testable
-- Full unit test coverage with ASAN-enabled builds
+- The instruction set is defined declaratively in `asm.yaml`, compiled into strongly typed C++ descriptors.
+- The microcode DSL is expressive and clean, making it easy to write real instruction flows.
+- I’ve implemented a robust IR and a full pass pipeline:
+  - Validation passes for bus safety, step counter behavior, and status handling
+  - Transformation passes to simplify and merge steps safely
+- The result is a complete microcode table that can be directly loaded into the controller.
+- Compiler passes are modular, test-backed, and cleanly structured.
 
----
+### 🎯 Controller
 
-## 🎯 Controller (Refactor in Progress)
+- The controller is implemented as a compound component with no “magic” logic — it behaves like hardware.
+- Control signal decisions are made by reading a simulated ROM: a 16x16 address space driven by opcode, status, and step index.
+- It doesn’t peek at the instruction table or do any dynamic branching.
+- It’s just pure bit-driven address decoding, just like it would be on a real chip.
+- The controller exposes `tick_control()` which reads from the instruction memory and asserts control lines accordingly.
+- Status values are collected from the real component tree and matched against precompiled combinations from the microcode encoder.
+- The controller is fully tested with both branching and non-branching instructions, unknown opcode behavior, and status-driven control flows.
+- No special cases. No backdoors. Just clean, simulated hardware.
 
-- Legacy controller removed
-- New controller will:
-  - Accept compiled microcode from `InstructionSet`
-  - Use `(opcode, step, status)` as dispatch key
-  - Drive control lines per tick-phase logic
-  - Support multiple status variants and instruction flows
+### 🧰 Common Modules
 
----
+- All the core types — `Byte`, `Word`, buses, control lines, and statuses — are shared, lightweight, and fully unit-tested.
+- These form the glue between the compiler, DSL, and simulation.
 
-## 🧰 Common Module
+### 🧪 Testing
 
-- Shared definitions like `Byte`, `BitRange`, and control utilities
-- Lightweight string utilities with no third-party dependencies
-- Used across ASM, DSL, HDL, and simulation layers
-- Fully unit-tested and ASAN-compliant
-
----
-
-## 🧪 Testing
-
-- Every compiler pass has a dedicated test suite
-- Matchers assert both structure and intent (e.g. control lines present, step count, etc.)
 - Test coverage includes:
-  - DSL → IR translation
-  - IR → validated/optimized IR
-  - Instruction-level behavior across passes
-- CMake test infra supports sanitizers, test filters, and rapid feedback
+  - Compiler pipeline (DSL → IR → Encoded Table)
+  - InstructionEncoder and InstructionMemory behavior
+  - Full controller simulation with live control wires
+- Every failure gives readable, helpful errors.
+- ASAN/UBSAN and gtest/gmock used across the board.
 
 ---
 
 ## 🏗️ Actively In Progress
 
-- 🧠 Reviewing `Compiler` entry point and pass pipeline structure
-- 🧪 Unifying IR test harness for shared matcher infrastructure
-- 🎯 Beginning controller refactor to consume IR
-- 🛠️ Finishing off remaining DSL instruction definitions
+- 🧪 Tuning controller test coverage and exploring validation options
+- 🧠 Thinking through HDL-to-SIM verification strategies
+- 🛠️ Building out more real instructions in DSL for a full `irata::InstructionSet::irata()` set
+- 🧱 Starting to draft the top-level `CPU` component
 
 ---
 
 ## 💡 Design Wins
 
-- ✅ Compiler passes are **simple**, **focused**, and **predictable**
-- ✅ Full microcode transformation pipeline from authoring to emission
-- ✅ Validation is real — no more footguns or hand-wavy assumptions
-- ✅ IR layer allows easy inspection, mutation, and transformation
-- ✅ Every step of the compile path is traceable and testable
+- ✅ The controller doesn’t get “help” — it just decodes ROM based on register values
+- ✅ Opcode/step/status resolution works the same way it would in a hardware PLA
+- ✅ The test suite is readable, expressive, and realistic
+- ✅ Full isolation between compiler logic and simulation logic
+- ✅ I can write real instructions and trust they’ll do what I wrote
 
 ---
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Review and finalize `Compiler` API surface
-- [ ] Build `irata::InstructionSet::irata()` with real instruction coverage
-- [ ] Wire controller to consume compiled microcode table
-- [ ] Add pipeline orchestration logic (pass sequencing)
-- [ ] Begin building `CPU` component with register + control wiring
-- [ ] Implement top-level `IrataSystem` simulator skeleton
-- [ ] Build up boot and halt flows for test cartridges
+- [ ] Finish controller HDL verification strategy
+- [ ] Hook up PC and step counter into the CPU shell
+- [ ] Add boot and halt behaviors
+- [ ] Wire together top-level system test that ticks a real program
+- [ ] Continue expanding instruction set and test cartridges
 
 ---
 
 ## 🔮 Longer-Term Plans
 
-- 🧪 Build cartridge → CPU → halt system tests
-- 🔍 Visual tooling for inspecting control line output
-- 🛠️ Add editor-time validation for DSL definitions
-- 💾 Build basic assembler for bootstrapping real programs
-- 🤖 Consider step-recording or IR inspection for debugging
+- 🧠 DSL editor with validation and autocomplete
+- 🕹️ Bootable cartridges and interactive test programs
+- 💾 Assembler for compiling test programs into RAM
+- 🔍 Visual inspection tools for runtime control and bus state
+- 📜 Export logs or traces for analysis
 
 ---
 
 ## 🧠 Guiding Principles
 
-- Compiler IR is **truth**, but the DSL should be the **authoring interface**
-- Every compiler pass should be **idempotent**, **transparent**, and **justified**
-- Keep phases explicit and behavior predictable
-- Let C++'s type system carry the complexity
-- No guessing: everything validated, everything tested
+- Don’t fake hardware — simulate it as faithfully as possible
+- Every bit should flow from a source I wrote and can test
+- Errors should be meaningful and readable
+- The compiler and the simulator are two sides of the same coin — but they never cheat
+- Let the system stay transparent and traceable, even at scale
 
 ---
 
-🚀 **This is huge. You’ve moved from an expressive DSL to a complete, test-backed compiler pipeline. That’s a system-defining milestone — and it clears the path for real instructions, real CPU modeling, and a real machine. Keep pushing!**
+🚀 **I’ve got a real hardware-modeling controller running off real compiled microcode. This is a huge leap forward — I can now start modeling real instructions, ticking real programs, and layering in the rest of the system. The microcode subsystem is no longer just theoretical — it’s *working*. Let’s go!**
