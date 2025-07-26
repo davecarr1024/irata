@@ -1,11 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <irata/common/bytes/byte.hpp>
 #include <ostream>
 #include <set>
 #include <string>
 
 namespace irata::asm_ {
+
+using Byte = common::bytes::Byte;
 
 enum class AddressingMode {
   IMMEDIATE,
@@ -16,11 +19,11 @@ std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode);
 
 class Instruction {
 public:
-  Instruction(const std::string &name, uint8_t opcode,
-              AddressingMode addressing_mode, const std::string &description);
+  Instruction(std::string_view name, Byte opcode,
+              AddressingMode addressing_mode, std::string_view description);
 
   const std::string &name() const;
-  uint8_t opcode() const;
+  Byte opcode() const;
   AddressingMode addressing_mode() const;
   const std::string &description() const;
 
@@ -32,7 +35,7 @@ public:
 
 private:
   std::string name_;
-  uint8_t opcode_;
+  Byte opcode_;
   AddressingMode addressing_mode_;
   std::string description_;
 };

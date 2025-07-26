@@ -17,15 +17,15 @@ TEST(InstructionSetTest, GetInstructionByNameAndAddressingMode) {
       InstructionSet::irata().get_instruction("LDA", AddressingMode::IMMEDIATE);
   EXPECT_EQ(instruction.name(), "LDA");
   EXPECT_EQ(instruction.addressing_mode(), AddressingMode::IMMEDIATE);
-  EXPECT_EQ(instruction.opcode(), 0xA9);
+  EXPECT_EQ(instruction.opcode(), Byte(0xA9));
   EXPECT_EQ(instruction.description(), "Load accumulator from constant");
 }
 
 TEST(InstructionSetTest, GetInstructionByOpcode) {
-  const auto &instruction = InstructionSet::irata().get_instruction(0xA9);
+  const auto &instruction = InstructionSet::irata().get_instruction(Byte(0xA9));
   EXPECT_EQ(instruction.name(), "LDA");
   EXPECT_EQ(instruction.addressing_mode(), AddressingMode::IMMEDIATE);
-  EXPECT_EQ(instruction.opcode(), 0xA9);
+  EXPECT_EQ(instruction.opcode(), Byte(0xA9));
   EXPECT_EQ(instruction.description(), "Load accumulator from constant");
 }
 
@@ -36,7 +36,7 @@ TEST(InstructionSetTest, GetInstructionByNameAndAddressingModeNotFound) {
 }
 
 TEST(InstructionSetTest, GetInstructionByOpcodeNotFound) {
-  EXPECT_THROW(InstructionSet::irata().get_instruction(0xFF),
+  EXPECT_THROW(InstructionSet::irata().get_instruction(Byte(0xFF)),
                std::invalid_argument);
 }
 

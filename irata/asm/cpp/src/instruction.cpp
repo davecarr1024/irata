@@ -17,15 +17,15 @@ std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode) {
   return os;
 }
 
-Instruction::Instruction(const std::string &name, uint8_t opcode,
+Instruction::Instruction(std::string_view name, Byte opcode,
                          AddressingMode addressing_mode,
-                         const std::string &description)
+                         std::string_view description)
     : name_(name), opcode_(opcode), addressing_mode_(addressing_mode),
       description_(description) {}
 
 const std::string &Instruction::name() const { return name_; }
 
-uint8_t Instruction::opcode() const { return opcode_; }
+Byte Instruction::opcode() const { return opcode_; }
 
 AddressingMode Instruction::addressing_mode() const { return addressing_mode_; }
 

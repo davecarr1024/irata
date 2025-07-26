@@ -60,7 +60,7 @@ InstructionSet::get_instruction(std::string_view name,
   throw std::invalid_argument(os.str());
 }
 
-const Instruction &InstructionSet::get_instruction(uint8_t opcode) const {
+const Instruction &InstructionSet::get_instruction(Byte opcode) const {
   for (const auto &instruction : instructions_) {
     if (instruction.opcode() == opcode) {
       return instruction;

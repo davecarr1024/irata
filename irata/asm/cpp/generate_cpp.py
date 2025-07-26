@@ -18,7 +18,7 @@ def format_instruction(instruction) -> str:
     return f"""
         Instruction(
             "{instruction["name"]}",
-            {opcode_hex},
+            Byte({opcode_hex}),
             {format_addressing_mode(instruction["addressing_mode"])},
             "{instruction["description"]}"
         ),"""
@@ -35,9 +35,12 @@ def format_cpp(config) -> str:
 // Do not edit manually!
 
 #include <irata/asm/instruction.hpp>
+#include <irata/common/bytes/byte.hpp>
 #include <vector>
 
 namespace irata::asm_ {{
+
+using Byte = common::bytes::Byte;
 
 const std::set<Instruction>& Instruction::irata() {{
     static const std::set<Instruction> instruction_table = {{

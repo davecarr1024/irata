@@ -20,7 +20,7 @@ public:
 
   const Instruction &get_instruction(std::string_view name,
                                      AddressingMode addressing_mode) const;
-  const Instruction &get_instruction(uint8_t opcode) const;
+  const Instruction &get_instruction(Byte opcode) const;
 
 private:
   std::set<Instruction> instructions_;
