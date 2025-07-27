@@ -17,8 +17,8 @@ std::pair<Byte, Byte> Word::to_bytes() const {
 uint16_t Word::value() const { return value_; }
 
 std::ostream &operator<<(std::ostream &os, const Word &word) {
-  return os << "Word(0x" << std::uppercase << std::hex << std::setw(4)
-            << std::setfill('0') << static_cast<int>(word.value()) << ")";
+  return os << "0x" << std::uppercase << std::hex << std::setw(4)
+            << std::setfill('0') << static_cast<int>(word.value());
 }
 
 bool Word::operator==(const Word &other) const {

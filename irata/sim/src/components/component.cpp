@@ -174,4 +174,32 @@ std::vector<const Status *> Component::statuses() const {
   return result;
 }
 
+Component::Serializer::Serializer(std::ostream &os, size_t tabs)
+    : os_(os), tabs_(tabs) {}
+
+Component::Serializer Component::Serializer::with_tab() const {
+  return Serializer(os_, tabs_ + 1);
+}
+
+void Component::Serializer::output(std::string_view value) {
+  for (size_t i = 0; i < tabs_; ++i) {
+    os_ << "  ";
+  }
+  os_ << value << std::endl;
+}
+
+void Component::serialize_all(std::ostream &os) const {
+  Serializer serializer(os);
+  this->root()->serialize_traverse(serializer);
+}
+
+void Component::serialize_traverse(Serializer &serializer) const {
+  serialize(serializer);
+  for (const auto &[name, child] : children_) {
+    serializer.output(name);
+    auto child_serializer = serializer.with_tab();
+    child->serialize_traverse(child_serializer);
+  }
+}
+
 } // namespace irata::sim::components

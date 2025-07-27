@@ -27,15 +27,14 @@ TEST(ByteResultTest, ToStr) {
     os << result;
     return os.str();
   };
-  EXPECT_EQ(to_str(ByteResult{.result = Byte::from_unsigned(0)}),
-            "<Byte(0x00)>");
+  EXPECT_EQ(to_str(ByteResult{.result = Byte::from_unsigned(0)}), "<0x00>");
   EXPECT_EQ(to_str(ByteResult{.result = Byte::from_unsigned(1),
                               .carry = true,
                               .zero = true,
                               .negative = true,
                               .overflow = true,
                               .half_carry = true}),
-            "<Byte(0x01) C Z N V H>");
+            "<0x01 C Z N V H>");
 }
 
 } // namespace irata::common::bytes

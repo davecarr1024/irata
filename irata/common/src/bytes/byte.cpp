@@ -41,9 +41,8 @@ uint8_t Byte::unsigned_value() const { return value_; }
 int8_t Byte::signed_value() const { return static_cast<int8_t>(value_); }
 
 std::ostream &operator<<(std::ostream &os, const Byte &byte) {
-  return os << "Byte(0x" << std::uppercase << std::hex << std::setw(2)
-            << std::setfill('0') << static_cast<int>(byte.unsigned_value())
-            << ")";
+  return os << "0x" << std::uppercase << std::hex << std::setw(2)
+            << std::setfill('0') << static_cast<int>(byte.unsigned_value());
 }
 
 ByteResult Byte::add(Byte rhs, bool carry_in) const {

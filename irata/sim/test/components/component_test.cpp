@@ -188,4 +188,50 @@ TEST(ComponentTest, Log) {
                       "[tick_clear] /child: clear msg\n");
 }
 
+namespace {
+
+class ComponentWithSerializedProperty : public Component {
+public:
+  explicit ComponentWithSerializedProperty(int value, Byte byte_value,
+                                           Word word_value,
+                                           std::string_view name,
+                                           Component *parent = nullptr)
+      : Component(name, parent), value_(value), byte_value_(byte_value),
+        word_value_(word_value) {}
+
+protected:
+  void serialize(Serializer &serializer) const override {
+    serializer.property("value", value_);
+    serializer.property("byte_value", byte_value_);
+    serializer.property("word_value", word_value_);
+  }
+
+private:
+  const int value_;
+  const Byte byte_value_;
+  const Word word_value_;
+};
+
+} // namespace
+
+TEST(ComponentTest, Serialize) {
+  Component root("root");
+  Component parent("parent", &root);
+  ComponentWithSerializedProperty child1(1, Byte(0x12), Word(0xDEAD), "child1",
+                                         &parent);
+  ComponentWithSerializedProperty child2(2, Byte(0x32), Word(0xBEEF), "child2",
+                                         &parent);
+  std::ostringstream os;
+  root.serialize_all(os);
+  EXPECT_EQ(os.str(), "parent\n"
+                      "  child1\n"
+                      "    value: 1\n"
+                      "    byte_value: 0x12\n"
+                      "    word_value: 0xDEAD\n"
+                      "  child2\n"
+                      "    value: 2\n"
+                      "    byte_value: 0x32\n"
+                      "    word_value: 0xBEEF\n");
+}
+
 } // namespace irata::sim::components

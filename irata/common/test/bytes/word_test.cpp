@@ -32,8 +32,8 @@ TEST(WordTest, ToString) {
     os << word;
     return os.str();
   };
-  EXPECT_EQ(to_string(Word(0x1234)), "Word(0x1234)");
-  EXPECT_EQ(to_string(Word(0x0000)), "Word(0x0000)");
+  EXPECT_EQ(to_string(Word(0x1234)), "0x1234");
+  EXPECT_EQ(to_string(Word(0x0000)), "0x0000");
 }
 
 TEST(WordTest, Equal) {

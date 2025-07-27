@@ -64,6 +64,8 @@ protected:
   // Handle processing the register.
   void tick_process(Logger &logger) override;
 
+  void serialize(Serializer &serializer) const override;
+
 private:
   Byte value_;
   Bus<Byte> *const bus_;

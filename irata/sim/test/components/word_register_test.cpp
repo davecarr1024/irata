@@ -3,6 +3,7 @@
 #include <irata/sim/components/word_register.hpp>
 #include <stdexcept>
 
+using ::testing::HasSubstr;
 using ::testing::IsNull;
 using ::testing::NotNull;
 using ::testing::Optional;
@@ -181,6 +182,14 @@ TEST(WordRegisterTest, NoByteBusDoesNotCreateControls) {
   EXPECT_FALSE(a.low_register().has_read());
   EXPECT_EQ(a.low_register().read(), std::nullopt);
   EXPECT_THROW(a.low_register().set_read(true), std::logic_error);
+}
+
+TEST(WordRegisterTest, Serialize) {
+  WordRegister reg("register");
+  reg.set_value(Word(0x1234));
+  std::ostringstream os;
+  reg.serialize_all(os);
+  EXPECT_THAT(os.str(), HasSubstr("value: 0x1234\n"));
 }
 
 } // namespace irata::sim::components

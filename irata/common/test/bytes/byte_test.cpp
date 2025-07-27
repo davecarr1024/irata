@@ -245,10 +245,10 @@ TEST(ByteTest, ToString) {
     os << byte;
     return os.str();
   };
-  EXPECT_EQ(to_str(Byte::from_unsigned(0x00)), "Byte(0x00)");
-  EXPECT_EQ(to_str(Byte::from_unsigned(0xAB)), "Byte(0xAB)");
-  EXPECT_EQ(to_str(Byte::from_signed(-85)), "Byte(0xAB)");
-  EXPECT_EQ(to_str(Byte::from_signed(85)), "Byte(0x55)");
+  EXPECT_EQ(to_str(Byte::from_unsigned(0x00)), "0x00");
+  EXPECT_EQ(to_str(Byte::from_unsigned(0xAB)), "0xAB");
+  EXPECT_EQ(to_str(Byte::from_signed(-85)), "0xAB");
+  EXPECT_EQ(to_str(Byte::from_signed(85)), "0x55");
 }
 
 } // namespace irata::common::bytes

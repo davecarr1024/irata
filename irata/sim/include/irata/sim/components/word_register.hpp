@@ -85,6 +85,8 @@ protected:
   // Resets the register to zero if the reset control line is asserted.
   void tick_process(Logger &logger) override;
 
+  void serialize(Serializer &serializer) const override;
+
 private:
   Bus<Word> *const bus_;
   const std::unique_ptr<Control> read_;

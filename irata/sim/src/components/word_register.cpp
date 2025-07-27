@@ -94,4 +94,8 @@ Register &WordRegister::low_register() { return low_; }
 
 const Register &WordRegister::low_register() const { return low_; }
 
+void WordRegister::serialize(Serializer &serializer) const {
+  serializer.property("value", value());
+}
+
 } // namespace irata::sim::components

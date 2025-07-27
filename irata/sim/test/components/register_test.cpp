@@ -116,4 +116,13 @@ TEST(RegisterTest, ControlsNotCreatedWhenNotConnectedToBus) {
   EXPECT_THROW(reg.set_write(true), std::logic_error);
 }
 
+TEST(RegisterTest, Serialize) {
+  Register reg("reg");
+  reg.set_value(Byte::from_unsigned(0xAB));
+  std::ostringstream os;
+  reg.serialize_all(os);
+  EXPECT_EQ(os.str(), "value: 0xAB\n"
+                      "reset\n");
+}
+
 } // namespace irata::sim::components

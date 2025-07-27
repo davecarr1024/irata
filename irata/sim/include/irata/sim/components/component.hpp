@@ -1,11 +1,15 @@
 #pragma once
 
 #include <functional>
+#include <iomanip>
 #include <iostream>
+#include <irata/sim/bytes/byte.hpp>
+#include <irata/sim/bytes/word.hpp>
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 namespace irata::sim::components {
 
@@ -95,6 +99,8 @@ public:
     bool logged_ = false;
   };
 
+  void serialize_all(std::ostream &os) const;
+
 protected:
   // Set up any control lines that will be used this tick.
   virtual void tick_control(Logger &logger) {}
@@ -110,6 +116,29 @@ protected:
 
   // Clear any control lines and any other state that was set up this tick.
   virtual void tick_clear(Logger &logger) {}
+
+  class Serializer {
+  public:
+    explicit Serializer(std::ostream &os, size_t tabs = 0);
+    Serializer(const Serializer &) = delete;
+    Serializer &operator=(const Serializer &) = delete;
+
+    void output(std::string_view value);
+
+    template <typename T> void property(std::string_view name, const T &value) {
+      std::ostringstream os;
+      os << name << ": " << value;
+      output(os.str());
+    }
+
+    Serializer with_tab() const;
+
+  private:
+    std::ostream &os_;
+    const size_t tabs_;
+  };
+
+  virtual void serialize(Serializer &serializer) const {}
 
 private:
   // The name of the component.
@@ -135,6 +164,8 @@ private:
       child->traverse(func);
     }
   }
+
+  void serialize_traverse(Serializer &serializer) const;
 };
 
 std::ostream &operator<<(std::ostream &os, Component::TickPhase phase);

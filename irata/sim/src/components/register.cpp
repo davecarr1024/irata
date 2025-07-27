@@ -66,4 +66,8 @@ void Register::tick_process(Logger &logger) {
   }
 }
 
+void Register::serialize(Serializer &serializer) const {
+  serializer.property("value", value());
+}
+
 } // namespace irata::sim::components

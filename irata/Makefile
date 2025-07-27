@@ -9,8 +9,8 @@ build: configure
 	cmake --build build
 
 test: build
-	ctest --test-dir build --output-on-failure
-
+	for test in $$(find ./build -type f -executable -name '*test*'); do $$test || exit 1; done
+				
 format: configure
 	find sim \( -name '*.cpp' -o -name '*.hpp' \) -exec clang-format -i {} +
 
