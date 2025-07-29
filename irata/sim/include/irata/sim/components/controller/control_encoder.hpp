@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/hdl/control_decl.hpp>
 #include <irata/sim/microcode/table/table.hpp>
 #include <set>
 

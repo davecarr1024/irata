@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/sim/hdl/component_decl.hpp>
 
 namespace irata::sim::hdl {

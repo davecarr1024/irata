@@ -3,6 +3,7 @@
 #include <irata/sim/components/controller/complete_statuses.hpp>
 #include <irata/sim/components/controller/partial_statuses.hpp>
 #include <irata/sim/components/controller/status_encoder.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 
 using ::testing::ElementsAre;
 using ::testing::Pair;

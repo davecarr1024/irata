@@ -1,6 +1,6 @@
 #pragma once
 
-#include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/hdl/status_decl.hpp>
 #include <map>
 
 namespace irata::sim::components::controller {

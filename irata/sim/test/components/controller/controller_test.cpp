@@ -4,7 +4,7 @@
 #include <irata/sim/components/control.hpp>
 #include <irata/sim/components/controller/controller.hpp>
 #include <irata/sim/components/status.hpp>
-#include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 #include <irata/sim/microcode/table/table.hpp>
 #include <stdexcept>
 

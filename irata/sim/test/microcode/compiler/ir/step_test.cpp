@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/hdl/irata_decl.hpp>
 #include <irata/sim/microcode/compiler/ir/step.hpp>
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>

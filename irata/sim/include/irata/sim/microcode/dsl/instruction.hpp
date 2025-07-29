@@ -1,6 +1,6 @@
 #include <irata/asm/instruction.hpp>
 #include <irata/sim/hdl/component_with_bus_decl.hpp>
-#include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/hdl/status_decl.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
 #include <map>
 #include <memory>

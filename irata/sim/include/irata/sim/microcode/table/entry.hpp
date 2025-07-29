@@ -2,7 +2,8 @@
 
 #include <irata/asm/instruction.hpp>
 #include <irata/sim/bytes/byte.hpp>
-#include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/hdl/control_decl.hpp>
+#include <irata/sim/hdl/status_decl.hpp>
 #include <map>
 #include <set>
 #include <string>

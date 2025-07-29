@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <irata/asm/instruction.hpp>
 #include <irata/asm/instruction_set.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 #include <irata/sim/microcode/compiler/ir/instruction.hpp>
 #include <irata/sim/microcode/compiler/ir/instruction_set.hpp>
 #include <irata/sim/microcode/compiler/passes/step_index_transformer.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <irata/asm/instruction.hpp>
-#include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/hdl/status_decl.hpp>
 #include <map>
 #include <memory>
 #include <vector>

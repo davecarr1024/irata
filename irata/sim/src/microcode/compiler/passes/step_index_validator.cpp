@@ -1,3 +1,4 @@
+#include <irata/sim/hdl/irata_decl.hpp>
 #include <irata/sim/microcode/compiler/passes/step_index_validator.hpp>
 #include <sstream>
 #include <stdexcept>

@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <irata/sim/components/controller/complete_statuses.hpp>
 #include <irata/sim/components/controller/status_encoder.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 #include <irata/sim/microcode/table/entry.hpp>
 #include <irata/sim/microcode/table/table.hpp>
 #include <stdexcept>

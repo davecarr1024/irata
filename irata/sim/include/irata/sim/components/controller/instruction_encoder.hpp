@@ -6,7 +6,6 @@
 #include <irata/sim/components/controller/control_encoder.hpp>
 #include <irata/sim/components/controller/partial_statuses.hpp>
 #include <irata/sim/components/controller/status_encoder.hpp>
-#include <irata/sim/hdl/hdl.hpp>
 #include <irata/sim/microcode/table/table.hpp>
 #include <map>
 #include <set>

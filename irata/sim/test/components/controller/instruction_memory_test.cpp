@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <irata/sim/components/controller/instruction_memory.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 #include <stdexcept>
 
 using ::testing::UnorderedElementsAre;

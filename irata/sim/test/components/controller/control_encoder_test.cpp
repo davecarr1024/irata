@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <irata/sim/components/controller/control_encoder.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 
 using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAre;
