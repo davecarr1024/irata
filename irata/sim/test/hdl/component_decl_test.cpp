@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/components/fake_component.hpp>
 #include <irata/sim/hdl/component_decl.hpp>
 
 namespace irata::sim::hdl {
@@ -43,6 +44,30 @@ TEST_F(ComponentDeclTest, Path) {
 TEST_F(ComponentDeclTest, Root) {
   EXPECT_EQ(irata.root(), &irata);
   EXPECT_EQ(cpu.root(), &irata);
+}
+
+TEST_F(ComponentDeclTest, ToString) {
+  const auto to_string = [](const ComponentDecl &component) {
+    std::ostringstream os;
+    os << component;
+    return os.str();
+  };
+  EXPECT_EQ(to_string(irata), "Irata(/)");
+  EXPECT_EQ(to_string(cpu), "Cpu(/cpu)");
+}
+
+TEST_F(ComponentDeclTest, VerifyNull) {
+  EXPECT_THROW(irata.verify(nullptr), std::invalid_argument);
+}
+
+TEST_F(ComponentDeclTest, VerifyTypeMismatch) {
+  const components::FakeComponent component(ComponentType::Cpu, "cpu");
+  EXPECT_THROW(irata.verify(&component), std::invalid_argument);
+}
+
+TEST_F(ComponentDeclTest, Verify) {
+  const components::FakeComponent component(ComponentType::Irata, "irata");
+  EXPECT_NO_THROW(irata.verify(&component));
 }
 
 } // namespace irata::sim::hdl
