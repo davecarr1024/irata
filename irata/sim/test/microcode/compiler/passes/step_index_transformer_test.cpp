@@ -24,7 +24,7 @@ protected:
   const hdl::ProcessControlDecl &reset_control_ =
       hdl::irata().cpu().controller().step_counter().reset();
   const hdl::ProcessControlDecl &other_control_ =
-      hdl::irata().cpu().program_counter().increment();
+      hdl::irata().cpu().pc().increment();
   const asm_::Instruction &instruction_descriptor_ =
       asm_::InstructionSet::irata().get_instruction(
           "lda", asm_::AddressingMode::IMMEDIATE);

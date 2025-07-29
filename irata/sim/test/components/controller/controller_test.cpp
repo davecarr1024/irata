@@ -58,8 +58,8 @@ protected:
   // Don't set controls to autoclear so they can be inspected after a tick.
   // Note that this is not a realistic use case for a control.
   // Note that this means the controls need to be manually cleared.
-  Control control1 = Control("control1", &root, false);
-  Control control2 = Control("control2", &root, false);
+  Control control1 = Control("control1", hdl::TickPhase::Process, &root, false);
+  Control control2 = Control("control2", hdl::TickPhase::Process, &root, false);
 };
 
 } // namespace

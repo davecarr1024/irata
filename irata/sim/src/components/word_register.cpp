@@ -6,12 +6,14 @@ namespace irata::sim::components {
 WordRegister::WordRegister(std::string_view name, Bus<Word> *bus,
                            Bus<Byte> *byte_bus, Component *parent)
     : Component(name, parent), bus_(bus),
-      read_(bus_ != nullptr ? std::make_unique<Control>("read", this)
-                            : nullptr),
-      write_(bus_ != nullptr ? std::make_unique<Control>("write", this)
+      read_(bus_ != nullptr
+                ? std::make_unique<Control>("read", hdl::TickPhase::Read, this)
+                : nullptr),
+      write_(bus_ != nullptr ? std::make_unique<Control>(
+                                   "write", hdl::TickPhase::Write, this)
                              : nullptr),
-      reset_("reset", this), high_("high", byte_bus, this),
-      low_("low", byte_bus, this) {}
+      reset_("reset", hdl::TickPhase::Process, this),
+      high_("high", byte_bus, this), low_("low", byte_bus, this) {}
 
 Word WordRegister::value() const { return Word::from_bytes(high(), low()); }
 

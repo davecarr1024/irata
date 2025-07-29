@@ -31,11 +31,9 @@ TEST_F(MicrocodeIrStepTest, ConstructFromDsl) {
 
 TEST_F(MicrocodeIrStepTest, ConstructFromControls) {
   const hdl::ProcessControlDecl &process_control =
-      hdl::irata().cpu().program_counter().increment();
-  const hdl::WriteControlDecl &write_control =
-      hdl::irata().cpu().program_counter().write();
-  const hdl::ReadControlDecl &read_control =
-      hdl::irata().cpu().program_counter().read();
+      hdl::irata().cpu().pc().increment();
+  const hdl::WriteControlDecl &write_control = hdl::irata().cpu().pc().write();
+  const hdl::ReadControlDecl &read_control = hdl::irata().cpu().pc().read();
   Step ir_step({&process_control, &write_control, &read_control},
                {&write_control}, {&read_control});
   EXPECT_THAT(

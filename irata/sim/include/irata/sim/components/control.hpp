@@ -1,6 +1,7 @@
 #pragma once
 
 #include <irata/sim/components/component.hpp>
+#include <irata/sim/hdl/tick_phase.hpp>
 #include <optional>
 
 namespace irata::sim::components {
@@ -10,11 +11,19 @@ namespace irata::sim::components {
 // the tick. If auto_clear is false, the control line will not be cleared at the
 // end of the tick and a clear child control line will be created for explicit
 // clearing.
-class Control : public Component {
+class Control final : public Component {
 public:
-  explicit Control(std::string_view name, Component *parent = nullptr,
-                   bool auto_clear = true);
-  virtual ~Control() = default;
+  explicit Control(std::string_view name, hdl::TickPhase phase,
+                   Component *parent = nullptr, bool auto_clear = true);
+
+  // Does this control line auto-clear at the end of the tick?
+  // If not, a clear child control line will be created for explicit clearing.
+  // If yes, the control line will be cleared at the end of the tick.
+  bool auto_clear() const;
+
+  // Returns the phase of the control line.
+  // The control value can only be accessed during this phase.
+  hdl::TickPhase phase() const;
 
   // Returns the value of the control line.
   bool value() const;
@@ -36,12 +45,14 @@ public:
   std::vector<Control *> controls() override;
 
 private:
+  // The phase of the control line.
+  const hdl::TickPhase phase_;
   // The value of the control line.
   bool value_;
   // Whether the control line should be cleared at the end of the tick.
-  bool auto_clear_;
+  const bool auto_clear_;
   // The clear control line, if any.
-  std::unique_ptr<Control> clear_;
+  const std::unique_ptr<Control> clear_;
 };
 
 } // namespace irata::sim::components

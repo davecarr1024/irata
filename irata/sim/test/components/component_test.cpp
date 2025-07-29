@@ -181,11 +181,11 @@ TEST(ComponentTest, Log) {
   EXPECT_CALL(child, tick_clear(::testing::_))
       .WillOnce([&](Component::Logger &logger) { logger << "clear msg"; });
   root.tick(os);
-  EXPECT_EQ(os.str(), "[tick_control] /child: control msg\n"
-                      "[tick_write] /child: write msg\n"
-                      "[tick_read] /child: read msg\n"
-                      "[tick_process] /child: process msg\n"
-                      "[tick_clear] /child: clear msg\n");
+  EXPECT_EQ(os.str(), "[Control] /child: control msg\n"
+                      "[Write] /child: write msg\n"
+                      "[Read] /child: read msg\n"
+                      "[Process] /child: process msg\n"
+                      "[Clear] /child: clear msg\n");
 }
 
 namespace {

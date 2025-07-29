@@ -34,6 +34,35 @@ protected:
     EXPECT_EQ(actual_controls, expected_controls);
   }
 
+  const hdl::StatusDecl status = {"status", hdl::irata()};
+
+  const hdl::TypedComponentDecl<hdl::ComponentType::Irata> different_tree_root =
+      {"different_tree_root"};
+  const hdl::ByteBusDecl different_tree_data_bus = {"different_tree_bus",
+                                                    different_tree_root};
+  const hdl::WordBusDecl different_tree_address_bus = {"different_tree_bus",
+                                                       different_tree_root};
+  const hdl::MemoryDecl different_tree_memory = {
+      "different_tree_memory", different_tree_root, different_tree_address_bus,
+      different_tree_data_bus};
+  const hdl::ConnectedByteRegisterDecl different_tree_byte_register = {
+      "different_tree_byte_register", different_tree_root,
+      different_tree_data_bus};
+  const hdl::ConnectedWordRegisterDecl different_tree_word_register = {
+      "different_tree_word_register", different_tree_root,
+      different_tree_address_bus};
+
+  const hdl::ByteBusDecl different_byte_bus = {"different_byte_bus",
+                                               hdl::irata()};
+  const hdl::WordBusDecl different_word_bus = {"different_word_bus",
+                                               hdl::irata()};
+  const hdl::ConnectedByteRegisterDecl different_bus_byte_register = {
+      "different_bus_byte_register", hdl::irata(), different_byte_bus};
+  const hdl::ConnectedWordRegisterDecl different_bus_word_register = {
+      "different_bus_word_register", hdl::irata(), different_word_bus};
+  const hdl::MemoryDecl different_memory = {
+      "different_memory", hdl::irata(), different_word_bus, different_byte_bus};
+
 private:
   static void tail_control_paths(const Instruction &instruction, size_t count,
                                  std::vector<std::set<std::string>> &result) {
@@ -79,11 +108,11 @@ TEST_F(MicrocodeDslInstructionTest, CreateInstructionFromInstructionSet) {
   EXPECT_THAT(instruction->statuses(), IsEmpty());
   AssertInstructionEndsWithSteps(
       *instruction, {
-                        {&hdl::irata().cpu().program_counter().write(),
-                         &hdl::irata().memory().address_register().read()},
+                        {&hdl::irata().cpu().pc().write(),
+                         &hdl::irata().memory().address().read()},
                         {&hdl::irata().memory().write(),
                          &hdl::irata().cpu().controller().opcode().read()},
-                        {&hdl::irata().cpu().program_counter().increment()},
+                        {&hdl::irata().cpu().pc().increment()},
                     });
 }
 
@@ -108,7 +137,6 @@ TEST_F(MicrocodeDslInstructionTest, CreateStep) {
 }
 
 TEST_F(MicrocodeDslInstructionTest, WithStatus) {
-  const hdl::StatusDecl &status = hdl::irata().cpu().status_analyzer().zero();
   auto *instruction =
       instruction_set_.create_instruction(instruction_descriptor_);
   instruction->with_status(status, true);
@@ -117,7 +145,6 @@ TEST_F(MicrocodeDslInstructionTest, WithStatus) {
 }
 
 TEST_F(MicrocodeDslInstructionTest, WithStatusConflict) {
-  const hdl::StatusDecl &status = hdl::irata().cpu().status_analyzer().zero();
   auto *instruction =
       instruction_set_.create_instruction(instruction_descriptor_);
   instruction->with_status(status, true);
@@ -151,14 +178,9 @@ TEST_F(MicrocodeDslInstructionTest, CopyByteRegisterToByteRegisterSame) {
 
 TEST_F(MicrocodeDslInstructionTest,
        CopyByteRegisterToByteRegisterDifferentTree) {
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::ByteBusDecl different_tree_bus("different_tree_bus",
-                                            different_tree_root);
-  const hdl::ConnectedByteRegisterDecl different_tree_register(
-      "different_tree_register", different_tree_root, different_tree_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
-        ->copy(hdl::irata().cpu().a(), different_tree_register);
+        ->copy(hdl::irata().cpu().a(), different_tree_byte_register);
     FAIL() << "Expected std::invalid_argument";
   } catch (const std::invalid_argument &e) {
     EXPECT_THAT(e.what(), HasSubstr("components must be in the same tree"));
@@ -167,12 +189,9 @@ TEST_F(MicrocodeDslInstructionTest,
 
 TEST_F(MicrocodeDslInstructionTest,
        CopyByteRegisterToByteRegisterDifferentBus) {
-  const hdl::ByteBusDecl different_bus("different_bus", hdl::irata());
-  const hdl::ConnectedByteRegisterDecl different_register(
-      "different_register", hdl::irata(), different_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
-        ->copy(hdl::irata().cpu().a(), different_register);
+        ->copy(hdl::irata().cpu().a(), different_bus_byte_register);
     FAIL() << "Expected std::invalid_argument";
   } catch (const std::invalid_argument &e) {
     EXPECT_THAT(e.what(), HasSubstr("source and dest must be on the same bus"));
@@ -182,18 +201,16 @@ TEST_F(MicrocodeDslInstructionTest,
 TEST_F(MicrocodeDslInstructionTest, CopyWordRegisterToWordRegister) {
   auto *instruction =
       instruction_set_.create_instruction(instruction_descriptor_)
-          ->copy(hdl::irata().cpu().program_counter(),
-                 hdl::irata().memory().address_register());
-  AssertInstructionEndsWithSteps(
-      *instruction, {{&hdl::irata().cpu().program_counter().write(),
-                      &hdl::irata().memory().address_register().read()}});
+          ->copy(hdl::irata().cpu().pc(), hdl::irata().memory().address());
+  AssertInstructionEndsWithSteps(*instruction,
+                                 {{&hdl::irata().cpu().pc().write(),
+                                   &hdl::irata().memory().address().read()}});
 }
 
 TEST_F(MicrocodeDslInstructionTest, CopyWordRegisterToWordRegisterSame) {
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
-        ->copy(hdl::irata().cpu().program_counter(),
-               hdl::irata().cpu().program_counter());
+        ->copy(hdl::irata().cpu().pc(), hdl::irata().cpu().pc());
     FAIL() << "Expected std::invalid_argument";
   } catch (const std::invalid_argument &e) {
     EXPECT_THAT(e.what(), HasSubstr("components cannot be the same"));
@@ -202,14 +219,9 @@ TEST_F(MicrocodeDslInstructionTest, CopyWordRegisterToWordRegisterSame) {
 
 TEST_F(MicrocodeDslInstructionTest,
        CopyWordRegisterToWordRegisterDifferentTree) {
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::WordBusDecl different_tree_bus("different_tree_bus",
-                                            different_tree_root);
-  const hdl::ConnectedWordRegisterDecl different_tree_register(
-      "different_tree_register", different_tree_root, different_tree_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
-        ->copy(hdl::irata().cpu().program_counter(), different_tree_register);
+        ->copy(hdl::irata().cpu().pc(), different_tree_word_register);
     FAIL() << "Expected std::invalid_argument";
   } catch (const std::invalid_argument &e) {
     EXPECT_THAT(e.what(), HasSubstr("components must be in the same tree"));
@@ -218,12 +230,9 @@ TEST_F(MicrocodeDslInstructionTest,
 
 TEST_F(MicrocodeDslInstructionTest,
        CopyWordRegisterToWordRegisterDifferentBus) {
-  const hdl::WordBusDecl different_bus("different_bus", hdl::irata());
-  const hdl::ConnectedWordRegisterDecl different_register(
-      "different_register", hdl::irata(), different_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
-        ->copy(hdl::irata().cpu().program_counter(), different_register);
+        ->copy(hdl::irata().cpu().pc(), different_bus_word_register);
     FAIL() << "Expected std::invalid_argument";
   } catch (const std::invalid_argument &e) {
     EXPECT_THAT(e.what(), HasSubstr("source and dest must be on the same bus"));
@@ -241,14 +250,6 @@ TEST_F(MicrocodeDslInstructionTest, CopyMemoryToByteRegister) {
 }
 
 TEST_F(MicrocodeDslInstructionTest, CopyMemoryToByteRegisterDifferentTree) {
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::ByteBusDecl different_tree_data_bus("different_tree_bus",
-                                                 different_tree_root);
-  const hdl::WordBusDecl different_tree_address_bus("different_tree_bus",
-                                                    different_tree_root);
-  const hdl::MemoryDecl different_tree_memory(
-      "different_tree_memory", different_tree_root, different_tree_address_bus,
-      different_tree_data_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
         ->copy(different_tree_memory, hdl::irata().cpu().a());
@@ -259,10 +260,6 @@ TEST_F(MicrocodeDslInstructionTest, CopyMemoryToByteRegisterDifferentTree) {
 }
 
 TEST_F(MicrocodeDslInstructionTest, CopyMemoryToByteRegisterDifferentBus) {
-  const hdl::ByteBusDecl different_bus("different_bus", hdl::irata());
-  const hdl::MemoryDecl different_memory("different_memory", hdl::irata(),
-                                         hdl::irata().address_bus(),
-                                         different_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
         ->copy(different_memory, hdl::irata().cpu().a());
@@ -283,14 +280,6 @@ TEST_F(MicrocodeDslInstructionTest, CopyByteRegisterToMemory) {
 }
 
 TEST_F(MicrocodeDslInstructionTest, CopyByteRegisterToMemoryDifferentTree) {
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::ByteBusDecl different_tree_data_bus("different_tree_bus",
-                                                 different_tree_root);
-  const hdl::WordBusDecl different_tree_address_bus("different_tree_bus",
-                                                    different_tree_root);
-  const hdl::MemoryDecl different_tree_memory(
-      "different_tree_memory", different_tree_root, different_tree_address_bus,
-      different_tree_data_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
         ->copy(hdl::irata().cpu().a(), different_tree_memory);
@@ -301,10 +290,6 @@ TEST_F(MicrocodeDslInstructionTest, CopyByteRegisterToMemoryDifferentTree) {
 }
 
 TEST_F(MicrocodeDslInstructionTest, CopyByteRegisterToMemoryDifferentBus) {
-  const hdl::ByteBusDecl different_bus("different_bus", hdl::irata());
-  const hdl::MemoryDecl different_memory("different_memory", hdl::irata(),
-                                         hdl::irata().address_bus(),
-                                         different_bus);
   try {
     instruction_set_.create_instruction(instruction_descriptor_)
         ->copy(hdl::irata().cpu().a(), different_memory);
@@ -317,12 +302,11 @@ TEST_F(MicrocodeDslInstructionTest, CopyByteRegisterToMemoryDifferentBus) {
 TEST_F(MicrocodeDslInstructionTest, ReadMemory) {
   auto *instruction =
       instruction_set_.create_instruction(instruction_descriptor_)
-          ->read_memory(hdl::irata().cpu().program_counter(),
-                        hdl::irata().cpu().a());
+          ->read_memory(hdl::irata().cpu().pc(), hdl::irata().cpu().a());
   AssertInstructionEndsWithSteps(
       *instruction,
-      {{&hdl::irata().cpu().program_counter().write(),
-        &hdl::irata().memory().address_register().read()},
+      {{&hdl::irata().cpu().pc().write(),
+        &hdl::irata().memory().address().read()},
        {&hdl::irata().memory().write(), &hdl::irata().cpu().a().read()}});
 }
 
@@ -332,10 +316,10 @@ TEST_F(MicrocodeDslInstructionTest, ReadMemoryAtPc) {
           ->read_memory_at_pc(hdl::irata().cpu().a());
   AssertInstructionEndsWithSteps(
       *instruction,
-      {{&hdl::irata().cpu().program_counter().write(),
-        &hdl::irata().memory().address_register().read()},
+      {{&hdl::irata().cpu().pc().write(),
+        &hdl::irata().memory().address().read()},
        {&hdl::irata().memory().write(), &hdl::irata().cpu().a().read()},
-       {&hdl::irata().cpu().program_counter().increment()}});
+       {&hdl::irata().cpu().pc().increment()}});
 }
 
 } // namespace irata::sim::microcode::dsl

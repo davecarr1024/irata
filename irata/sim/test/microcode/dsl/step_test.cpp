@@ -23,6 +23,17 @@ protected:
           "lda", asm_::AddressingMode::IMMEDIATE);
   Instruction *instruction_ =
       instruction_set_.create_instruction(instruction_descriptor_);
+
+  const hdl::TypedComponentDecl<hdl::ComponentType::Irata> different_tree_root =
+      {"different_tree_root"};
+  const hdl::ProcessControlDecl different_tree_process_control = {
+      "different_tree_process_control", different_tree_root};
+  const hdl::ByteBusDecl different_tree_bus = {"different_tree_bus",
+                                               different_tree_root};
+  const hdl::WriteControlDecl different_tree_write_control = {
+      "different_tree_write_control", different_tree_root, different_tree_bus};
+  const hdl::ReadControlDecl different_tree_read_control = {
+      "different_tree_read_control", different_tree_root, different_tree_bus};
 };
 
 } // namespace
@@ -38,8 +49,7 @@ TEST_F(MicrocodeDslStepTest, Empty) {
 }
 
 TEST_F(MicrocodeDslStepTest, WithControl) {
-  const hdl::ProcessControlDecl &control =
-      hdl::irata().cpu().program_counter().increment();
+  const hdl::ProcessControlDecl &control = hdl::irata().cpu().pc().increment();
   auto *step = instruction_->create_step()->with_control(control);
   EXPECT_THAT(step->controls(), UnorderedElementsAre(&control));
   EXPECT_THAT(step->write_controls(), IsEmpty());
@@ -84,38 +94,25 @@ TEST_F(MicrocodeDslStepTest, NullInstruction) {
 
 TEST_F(MicrocodeDslStepTest, WithControlDifferentTree) {
   const hdl::ProcessControlDecl &same_tree_control =
-      hdl::irata().cpu().program_counter().increment();
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::ProcessControlDecl different_tree_control("different_tree_control",
-                                                       different_tree_root);
+      hdl::irata().cpu().pc().increment();
   auto *step = instruction_->create_step()->with_control(same_tree_control);
-  EXPECT_THROW(step->with_control(different_tree_control),
+  EXPECT_THROW(step->with_control(different_tree_process_control),
                std::invalid_argument);
 }
 
 TEST_F(MicrocodeDslStepTest, WithWriteControlDifferentTree) {
   const hdl::ProcessControlDecl &same_tree_control =
-      hdl::irata().cpu().program_counter().increment();
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::ByteBusDecl different_tree_bus("different_tree_bus",
-                                            different_tree_root);
-  const hdl::WriteControlDecl different_tree_control(
-      "different_tree_control", different_tree_root, different_tree_bus);
+      hdl::irata().cpu().pc().increment();
   auto *step = instruction_->create_step()->with_control(same_tree_control);
-  EXPECT_THROW(step->with_control(different_tree_control),
+  EXPECT_THROW(step->with_control(different_tree_write_control),
                std::invalid_argument);
 }
 
 TEST_F(MicrocodeDslStepTest, WithReadControlDifferentTree) {
   const hdl::ProcessControlDecl &same_tree_control =
-      hdl::irata().cpu().program_counter().increment();
-  const hdl::ComponentDecl different_tree_root("different_tree_root", nullptr);
-  const hdl::ByteBusDecl different_tree_bus("different_tree_bus",
-                                            different_tree_root);
-  const hdl::ReadControlDecl different_tree_control(
-      "different_tree_control", different_tree_root, different_tree_bus);
+      hdl::irata().cpu().pc().increment();
   auto *step = instruction_->create_step()->with_control(same_tree_control);
-  EXPECT_THROW(step->with_control(different_tree_control),
+  EXPECT_THROW(step->with_control(different_tree_read_control),
                std::invalid_argument);
 }
 

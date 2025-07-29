@@ -5,6 +5,8 @@
 #include <iostream>
 #include <irata/sim/bytes/byte.hpp>
 #include <irata/sim/bytes/word.hpp>
+#include <irata/sim/hdl/component_type.hpp>
+#include <irata/sim/hdl/tick_phase.hpp>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -29,6 +31,10 @@ public:
   Component(Component &&) = delete;
   Component &operator=(const Component &) = delete;
   Component &operator=(Component &&) = delete;
+
+  virtual hdl::ComponentType type() const {
+    return hdl::ComponentType::Unknown;
+  }
 
   // Returns the name of the component.
   std::string name() const;
@@ -70,17 +76,9 @@ public:
   virtual std::vector<Status *> statuses();
   std::vector<const Status *> statuses() const;
 
-  enum class TickPhase {
-    Control,
-    Write,
-    Read,
-    Process,
-    Clear,
-  };
-
   class Logger {
   public:
-    explicit Logger(std::ostream &output, TickPhase tick_phase);
+    explicit Logger(std::ostream &output, hdl::TickPhase tick_phase);
     ~Logger();
 
     Logger &for_component(const Component *component);
@@ -93,7 +91,7 @@ public:
 
   private:
     std::ostringstream os_;
-    TickPhase tick_phase_;
+    hdl::TickPhase tick_phase_;
     const Component *component_ = nullptr;
     std::ostream &output_;
     bool logged_ = false;
@@ -167,7 +165,5 @@ private:
 
   void serialize_traverse(Serializer &serializer) const;
 };
-
-std::ostream &operator<<(std::ostream &os, Component::TickPhase phase);
 
 } // namespace irata::sim::components

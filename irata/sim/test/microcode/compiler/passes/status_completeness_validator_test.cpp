@@ -29,6 +29,7 @@ protected:
           "lda", asm_::AddressingMode::IMMEDIATE);
 
   StatusCompletenessValidator validator_;
+  const hdl::StatusDecl status = {"status", hdl::irata()};
 };
 
 } // namespace
@@ -44,26 +45,25 @@ TEST_F(StatusCompletenessValidatorTest, NoStatuses) {
 
 TEST_F(StatusCompletenessValidatorTest, SingleStatus) {
   instruction_set_.create_instruction(instruction_descriptor_)
-      ->with_status(hdl::irata().cpu().status_analyzer().zero(), true);
+      ->with_status(status, true);
   EXPECT_THROW(validate(), std::invalid_argument);
 }
 
 TEST_F(StatusCompletenessValidatorTest, CompleteStatuses) {
   instruction_set_.create_instruction(instruction_descriptor_)
-      ->with_status(hdl::irata().cpu().status_analyzer().zero(), true);
+      ->with_status(status, true);
   instruction_set_.create_instruction(instruction_descriptor_)
-      ->with_status(hdl::irata().cpu().status_analyzer().zero(), false);
-  EXPECT_THAT(
-      instruction_set_.instructions(),
-      ::testing::UnorderedElementsAre(
-          ::testing::Pointee(::testing::Property(
-              "statuses", &dsl::Instruction::statuses,
-              ::testing::UnorderedElementsAre(::testing::Pair(
-                  &hdl::irata().cpu().status_analyzer().zero(), false)))),
-          ::testing::Pointee(::testing::Property(
-              "statuses", &dsl::Instruction::statuses,
-              ::testing::UnorderedElementsAre(::testing::Pair(
-                  &hdl::irata().cpu().status_analyzer().zero(), true))))));
+      ->with_status(status, false);
+  EXPECT_THAT(instruction_set_.instructions(),
+              ::testing::UnorderedElementsAre(
+                  ::testing::Pointee(::testing::Property(
+                      "statuses", &dsl::Instruction::statuses,
+                      ::testing::UnorderedElementsAre(
+                          ::testing::Pair(&status, false)))),
+                  ::testing::Pointee(::testing::Property(
+                      "statuses", &dsl::Instruction::statuses,
+                      ::testing::UnorderedElementsAre(
+                          ::testing::Pair(&status, true))))));
   EXPECT_NO_THROW(validate());
 }
 

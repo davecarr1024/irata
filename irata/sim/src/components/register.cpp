@@ -6,9 +6,12 @@ namespace irata::sim::components {
 
 Register::Register(std::string_view name, Bus<Byte> *bus, Component *parent)
     : Component(name, parent), value_(Byte::from_unsigned(0)), bus_(bus),
-      write_(bus ? std::make_unique<Control>("write", this) : nullptr),
-      read_(bus ? std::make_unique<Control>("read", this) : nullptr),
-      reset_("reset", this) {}
+      write_(
+          bus ? std::make_unique<Control>("write", hdl::TickPhase::Write, this)
+              : nullptr),
+      read_(bus ? std::make_unique<Control>("read", hdl::TickPhase::Read, this)
+                : nullptr),
+      reset_("reset", hdl::TickPhase::Process, this) {}
 
 Byte Register::value() const { return value_; }
 

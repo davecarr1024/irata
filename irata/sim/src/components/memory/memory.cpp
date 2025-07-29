@@ -24,8 +24,9 @@ Memory::Memory(std::string_view name,
                Bus<Word> &address_bus, Bus<Byte> &data_bus, Component *parent)
     : Component(name, parent), address_bus_(address_bus), data_bus_(data_bus),
       regions_(std::move(regions)),
-      address_("address", &address_bus_, nullptr, this), write_("write", this),
-      read_("read", this) {
+      address_("address", &address_bus_, nullptr, this),
+      write_("write", hdl::TickPhase::Write, this),
+      read_("read", hdl::TickPhase::Read, this) {
   // Throw an exception if any regions are null.
   for (const auto &region : regions_) {
     if (region == nullptr) {

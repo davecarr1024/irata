@@ -4,8 +4,8 @@ namespace irata::sim::components {
 
 WordCounter::WordCounter(std::string_view name, Bus<Word> *bus,
                          Bus<Byte> *byte_bus, Component *parent)
-    : WordRegister(name, bus, byte_bus, parent), increment_("increment", this) {
-}
+    : WordRegister(name, bus, byte_bus, parent),
+      increment_("increment", hdl::TickPhase::Process, this) {}
 
 bool WordCounter::increment() const { return increment_.value(); }
 

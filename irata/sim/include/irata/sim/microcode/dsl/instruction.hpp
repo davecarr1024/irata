@@ -1,5 +1,7 @@
 #include <irata/asm/instruction.hpp>
+#include <irata/sim/hdl/component_with_bus_decl.hpp>
 #include <irata/sim/hdl/hdl.hpp>
+#include <irata/sim/microcode/dsl/step.hpp>
 #include <map>
 #include <memory>
 #include <vector>
@@ -55,37 +57,54 @@ public:
   // Returns the status flags for the instruction.
   const std::map<const hdl::StatusDecl *, bool> &statuses() const;
 
-  // Copies the value from the source register to the destination register.
-  Instruction *copy(const hdl::ConnectedByteRegisterDecl &source,
-                    const hdl::ConnectedByteRegisterDecl &dest);
-
-  // Copies the value from the source register to the destination register.
-  Instruction *copy(const hdl::ConnectedWordRegisterDecl &source,
-                    const hdl::ConnectedWordRegisterDecl &dest);
-
-  // Copies the value from the source memory to the destination register.
-  Instruction *copy(const hdl::MemoryDecl &source,
-                    const hdl::ConnectedByteRegisterDecl &dest);
-
-  // Copies the value from the source register to the destination memory.
-  Instruction *copy(const hdl::ConnectedByteRegisterDecl &source,
-                    const hdl::MemoryDecl &dest);
+  // Copy data from one bus-connected component to another.
+  template <typename Bus>
+  Instruction *copy(const hdl::ComponentWithBusDecl<Bus> &source,
+                    const hdl::ComponentWithBusDecl<Bus> &dest) {
+    validate_hdl_components_arent_the_same(source, dest);
+    validate_hdl_components_in_same_tree(source, dest);
+    validate_hdl_components_have_same_bus(source, dest);
+    return create_step()
+        ->with_control(source.write())
+        ->with_control(dest.read())
+        ->instruction();
+  }
 
   // Reads the value from the memory at the address specified by the source
   // register into the destination register.
-  Instruction *read_memory(const hdl::ConnectedWordRegisterDecl &address_source,
-                           const hdl::ConnectedByteRegisterDecl &data_dest);
+  Instruction *read_memory(const hdl::ComponentWithWordBusDecl &address_source,
+                           const hdl::ComponentWithByteBusDecl &data_dest);
 
   // Read the value from the memory at the address in the program counter into
   // the destination register.
   Instruction *
-  read_memory_at_pc(const hdl::ConnectedByteRegisterDecl &data_dest);
+  read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
 
 private:
   const asm_::Instruction &descriptor_;
   InstructionSet *const instruction_set_;
   std::vector<std::unique_ptr<Step>> steps_;
   std::map<const hdl::StatusDecl *, bool> statuses_;
+
+  static void validate_hdl_components_in_same_tree(const hdl::ComponentDecl &a,
+                                                   const hdl::ComponentDecl &b);
+
+  static void
+  validate_hdl_components_arent_the_same(const hdl::ComponentDecl &a,
+                                         const hdl::ComponentDecl &b);
+
+  template <typename Bus>
+  static void validate_hdl_components_have_same_bus(
+      const hdl::ComponentWithBusDecl<Bus> &a,
+      const hdl::ComponentWithBusDecl<Bus> &b) {
+    if (&a.bus() != &b.bus()) {
+      std::ostringstream os;
+      os << "source and dest must be on the same bus: source " << a
+         << " is connected to bus " << a.bus() << " but dest " << b
+         << " is connected to bus " << b.bus();
+      throw std::invalid_argument(os.str());
+    }
+  }
 };
 
 } // namespace irata::sim::microcode::dsl

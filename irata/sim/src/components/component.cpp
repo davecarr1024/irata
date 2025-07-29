@@ -88,7 +88,7 @@ Component *Component::root() {
 
 void Component::tick(std::ostream &log_output) {
   auto *root = this->root();
-  auto traverse_phase = [&](TickPhase tick_phase,
+  auto traverse_phase = [&](hdl::TickPhase tick_phase,
                             void (Component::*tick_fn)(Logger &)) {
     root->traverse([&](Component *component) {
       Logger logger(log_output, tick_phase);
@@ -96,14 +96,14 @@ void Component::tick(std::ostream &log_output) {
     });
   };
 
-  traverse_phase(TickPhase::Control, &Component::tick_control);
-  traverse_phase(TickPhase::Write, &Component::tick_write);
-  traverse_phase(TickPhase::Read, &Component::tick_read);
-  traverse_phase(TickPhase::Process, &Component::tick_process);
-  traverse_phase(TickPhase::Clear, &Component::tick_clear);
+  traverse_phase(hdl::TickPhase::Control, &Component::tick_control);
+  traverse_phase(hdl::TickPhase::Write, &Component::tick_write);
+  traverse_phase(hdl::TickPhase::Read, &Component::tick_read);
+  traverse_phase(hdl::TickPhase::Process, &Component::tick_process);
+  traverse_phase(hdl::TickPhase::Clear, &Component::tick_clear);
 }
 
-Component::Logger::Logger(std::ostream &output, TickPhase tick_phase)
+Component::Logger::Logger(std::ostream &output, hdl::TickPhase tick_phase)
     : output_(output), tick_phase_(tick_phase) {}
 
 Component::Logger::~Logger() {
@@ -121,21 +121,6 @@ Component::Logger &
 Component::Logger::for_component(const Component *component) {
   component_ = component;
   return *this;
-}
-
-std::ostream &operator<<(std::ostream &os, Component::TickPhase phase) {
-  switch (phase) {
-  case Component::TickPhase::Control:
-    return os << "tick_control";
-  case Component::TickPhase::Write:
-    return os << "tick_write";
-  case Component::TickPhase::Read:
-    return os << "tick_read";
-  case Component::TickPhase::Process:
-    return os << "tick_process";
-  case Component::TickPhase::Clear:
-    return os << "tick_clear";
-  }
 }
 
 std::vector<Control *> Component::controls() {

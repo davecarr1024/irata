@@ -31,6 +31,8 @@ protected:
   template <typename Matcher> auto StepHasReadControls(Matcher matcher) {
     return Property("read_controls", &Step::read_controls, matcher);
   }
+
+  const hdl::StatusDecl status = hdl::StatusDecl("status", hdl::irata());
 };
 
 } // namespace
@@ -56,11 +58,10 @@ TEST_F(MicrocodeIrInstructionTest, ConstructDirectly) {
           "lda", asm_::AddressingMode::IMMEDIATE);
   const std::vector<Step> steps = {Step(
       {
-          &hdl::irata().cpu().program_counter().increment(),
+          &hdl::irata().cpu().pc().increment(),
       },
       {}, {})};
-  const std::map<const hdl::StatusDecl *, bool> statuses = {
-      {&hdl::irata().cpu().status_analyzer().zero(), true}};
+  const std::map<const hdl::StatusDecl *, bool> statuses = {{&status, true}};
   Instruction ir_instruction(descriptor, steps, statuses);
   EXPECT_EQ(ir_instruction.descriptor(), descriptor);
   EXPECT_EQ(ir_instruction.steps(), steps);

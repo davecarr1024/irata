@@ -20,7 +20,7 @@ protected:
   const hdl::WriteControlDecl &write_control_ = hdl::irata().cpu().a().write();
   const hdl::ReadControlDecl &read_control_ = hdl::irata().cpu().a().read();
   const hdl::ProcessControlDecl &process_control_ =
-      hdl::irata().cpu().program_counter().increment();
+      hdl::irata().cpu().pc().increment();
   const asm_::Instruction &instruction_descriptor_ =
       asm_::InstructionSet::irata().get_instruction(
           "lda", asm_::AddressingMode::IMMEDIATE);

@@ -2,10 +2,24 @@
 
 namespace irata::sim::components {
 
-Control::Control(std::string_view name, Component *parent, bool auto_clear)
-    : Component(name, parent), value_(false), auto_clear_(auto_clear),
+Control::Control(std::string_view name, hdl::TickPhase phase, Component *parent,
+                 bool auto_clear)
+    : Component(name, parent), phase_(phase), value_(false),
+      auto_clear_(auto_clear),
       clear_(auto_clear_ ? nullptr
-                         : std::make_unique<Control>("clear", this, true)) {}
+                         : std::make_unique<Control>(
+                               "clear", hdl::TickPhase::Process, this, true)) {
+  if (!((auto_clear_ &&
+         (phase_ == hdl::TickPhase::Write || phase_ == hdl::TickPhase::Read ||
+          phase_ == hdl::TickPhase::Process)) ||
+        (!auto_clear_ && (phase_ == hdl::TickPhase::Process ||
+                          phase_ == hdl::TickPhase::Clear)))) {
+    std::ostringstream os;
+    os << "Control " << path() << " has invalid phase " << phase_
+       << " and auto_clear " << auto_clear_;
+    throw std::invalid_argument(os.str());
+  }
+}
 
 bool Control::value() const { return value_; }
 
@@ -40,5 +54,9 @@ std::vector<Control *> Control::controls() {
   controls.push_back(this);
   return controls;
 }
+
+hdl::TickPhase Control::phase() const { return phase_; }
+
+bool Control::auto_clear() const { return auto_clear_; }
 
 } // namespace irata::sim::components

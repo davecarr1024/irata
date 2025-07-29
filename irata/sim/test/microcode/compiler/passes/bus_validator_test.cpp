@@ -39,9 +39,9 @@ protected:
   const hdl::ReadControlDecl &read_control_2_ = hdl::irata().cpu().x().read();
 
   const hdl::WriteControlDecl &different_bus_write_control_ =
-      hdl::irata().cpu().program_counter().write();
+      hdl::irata().cpu().pc().write();
   const hdl::ReadControlDecl &different_bus_read_control_ =
-      hdl::irata().cpu().program_counter().read();
+      hdl::irata().cpu().pc().read();
 };
 
 } // namespace
