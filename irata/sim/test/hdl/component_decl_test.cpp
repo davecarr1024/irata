@@ -9,8 +9,8 @@ namespace {
 
 class ComponentDeclTest : public ::testing::Test {
 protected:
-  const TypedComponentDecl<ComponentType::Irata> irata =
-      TypedComponentDecl<ComponentType::Irata>("irata");
+  const ComponentWithTypeDecl<ComponentType::Irata> irata =
+      ComponentWithTypeDecl<ComponentType::Irata>("irata");
   const ComponentWithParentDecl<ComponentType::Cpu> cpu =
       ComponentWithParentDecl<ComponentType::Cpu>("cpu", irata);
 };
@@ -24,7 +24,7 @@ TEST_F(ComponentDeclTest, Name) {
 
 TEST_F(ComponentDeclTest, Type) {
   EXPECT_EQ(irata.type(), ComponentType::Irata);
-  static_assert(TypedComponentDecl<ComponentType::Irata>::type_v ==
+  static_assert(ComponentWithTypeDecl<ComponentType::Irata>::type_v ==
                 ComponentType::Irata);
   EXPECT_EQ(cpu.type(), ComponentType::Cpu);
   static_assert(ComponentWithParentDecl<ComponentType::Cpu>::type_v ==

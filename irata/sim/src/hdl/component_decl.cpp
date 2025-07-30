@@ -25,4 +25,39 @@ std::ostream &operator<<(std::ostream &os, const ComponentDecl &component) {
   return os << component.type() << "(" << component.path() << ")";
 }
 
+void ComponentDecl::verify(const components::Component *component) const {
+  if (component == nullptr) {
+    std::ostringstream os;
+    os << "hdl component " << *this
+       << " failed to find a corresponding sim component";
+    throw std::invalid_argument(os.str());
+  }
+  if (component->type() != type()) {
+    std::ostringstream os;
+    os << "hdl component " << *this << " has type " << type()
+       << " but sim component " << component->path() << " has type "
+       << component->type();
+    throw std::invalid_argument(os.str());
+  }
+}
+
+void ComponentDecl::verify_child(const ComponentDecl &child,
+                                 const components::Component *component) const {
+  // This shouldn't happen since this is called in verify() using child
+  // components of the caller.
+  if (child.parent() != this) {
+    throw std::logic_error("trying to validate child " + child.path() + " of " +
+                           path() + " but child.parent != this");
+  }
+  // This shouldn't happen since this is called in verify() after the base
+  // class verifies that the component is not null.
+  if (component == nullptr) {
+    throw std::logic_error("trying to validate child " + child.path() + " of " +
+                           path() + " but component == nullptr");
+  }
+  // Note that child can return a nullptr, which is handled in verify() with a
+  // not found error.
+  child.verify(component->child(child.name()));
+}
+
 } // namespace irata::sim::hdl

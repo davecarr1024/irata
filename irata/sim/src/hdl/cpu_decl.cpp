@@ -5,9 +5,10 @@ namespace irata::sim::hdl {
 CpuDecl::CpuDecl(const ComponentDecl &parent, const WordBusDecl &address_bus,
                  const ByteBusDecl &data_bus)
     : ComponentWithParentDecl<ComponentType::Cpu>("cpu", parent),
-      TypedComponentDecl<ComponentType::Cpu>("cpu"), address_bus_(address_bus),
-      data_bus_(data_bus), a_("a", *this, data_bus_), x_("x", *this, data_bus_),
-      y_("y", *this, data_bus_), pc_("pc", *this, address_bus_, data_bus_),
+      ComponentWithTypeDecl<ComponentType::Cpu>("cpu"),
+      address_bus_(address_bus), data_bus_(data_bus), a_("a", *this, data_bus_),
+      x_("x", *this, data_bus_), y_("y", *this, data_bus_),
+      pc_("pc", *this, address_bus_, data_bus_),
       controller_("controller", *this, data_bus_) {}
 
 void CpuDecl::verify(const components::Component *component) const {

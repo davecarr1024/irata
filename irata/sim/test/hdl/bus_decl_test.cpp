@@ -8,7 +8,7 @@ namespace {
 
 class BusDeclTest : public ::testing::Test {
 public:
-  const TypedComponentDecl<ComponentType::Irata> irata = {"irata"};
+  const ComponentWithTypeDecl<ComponentType::Irata> irata = {"irata"};
   const ByteBusDecl data_bus = {"data_bus", irata};
   const WordBusDecl address_bus = {"address_bus", irata};
   const BusDecl *data_bus_ptr = &data_bus;

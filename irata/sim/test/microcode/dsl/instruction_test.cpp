@@ -38,8 +38,8 @@ protected:
 
   const hdl::StatusDecl status = {"status", hdl::irata()};
 
-  const hdl::TypedComponentDecl<hdl::ComponentType::Irata> different_tree_root =
-      {"different_tree_root"};
+  const hdl::ComponentWithTypeDecl<hdl::ComponentType::Irata>
+      different_tree_root = {"different_tree_root"};
   const hdl::ByteBusDecl different_tree_data_bus = {"different_tree_bus",
                                                     different_tree_root};
   const hdl::WordBusDecl different_tree_address_bus = {"different_tree_bus",

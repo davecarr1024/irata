@@ -25,8 +25,8 @@ protected:
   Instruction *instruction_ =
       instruction_set_.create_instruction(instruction_descriptor_);
 
-  const hdl::TypedComponentDecl<hdl::ComponentType::Irata> different_tree_root =
-      {"different_tree_root"};
+  const hdl::ComponentWithTypeDecl<hdl::ComponentType::Irata>
+      different_tree_root = {"different_tree_root"};
   const hdl::ProcessControlDecl different_tree_process_control = {
       "different_tree_process_control", different_tree_root};
   const hdl::ByteBusDecl different_tree_bus = {"different_tree_bus",

@@ -56,7 +56,7 @@ public:
   DisconnectedByteRegisterDecl(std::string_view name,
                                const ComponentDecl &parent)
       : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-        TypedComponentDecl<ComponentType::Register>(name) {}
+        ComponentWithTypeDecl<ComponentType::Register>(name) {}
 
   void verify(const components::Component *component) const override final {
     ComponentWithParentDecl<ComponentType::Register>::verify(component);
@@ -72,7 +72,7 @@ public:
   ConnectedByteRegisterDecl(std::string_view name, const ComponentDecl &parent,
                             const ByteBusDecl &bus)
       : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-        TypedComponentDecl<ComponentType::Register>(name),
+        ComponentWithTypeDecl<ComponentType::Register>(name),
         ComponentWithByteBusDecl(bus), RegisterWithByteBusDecl(bus) {}
 
   void verify(const components::Component *component) const override final {
@@ -92,7 +92,7 @@ public:
                                          const ComponentDecl &parent,
                                          const ByteBusDecl &bus)
       : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-        TypedComponentDecl<ComponentType::Register>(name),
+        ComponentWithTypeDecl<ComponentType::Register>(name),
         ComponentWithByteBusDecl(bus), RegisterWithByteBusDecl(bus) {}
 
   void verify(const components::Component *component) const override final {
@@ -111,7 +111,7 @@ public:
   ConnectedWordRegisterDecl(std::string_view name, const ComponentDecl &parent,
                             const WordBusDecl &bus)
       : ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
-        TypedComponentDecl<ComponentType::WordRegister>(name),
+        ComponentWithTypeDecl<ComponentType::WordRegister>(name),
         ComponentWithWordBusDecl(bus), RegisterWithWordBusDecl(bus),
         low_("low", *this), high_("high", *this) {}
 
@@ -142,7 +142,7 @@ public:
                      const WordBusDecl &address_bus,
                      const ByteBusDecl &data_bus)
       : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-        TypedComponentDecl<ComponentType::Register>(name),
+        ComponentWithTypeDecl<ComponentType::Register>(name),
         ComponentWithWordBusDecl(address_bus),
         RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
         high_("high", *this, data_bus) {}

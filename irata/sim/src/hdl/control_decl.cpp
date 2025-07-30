@@ -41,7 +41,7 @@ WriteControlDecl::WriteControlDecl(std::string_view name,
                                    const ComponentDecl &parent,
                                    const BusDecl &bus)
     : ComponentWithParentDecl<ComponentType::Control>(name, parent),
-      TypedComponentDecl<ComponentType::Control>(name),
+      ComponentWithTypeDecl<ComponentType::Control>(name),
       ControlWithBusDecl(bus) {}
 
 void WriteControlDecl::verify(const components::Component *component) const {
@@ -53,7 +53,7 @@ ReadControlDecl::ReadControlDecl(std::string_view name,
                                  const ComponentDecl &parent,
                                  const BusDecl &bus)
     : ComponentWithParentDecl<ComponentType::Control>(name, parent),
-      TypedComponentDecl<ComponentType::Control>(name),
+      ComponentWithTypeDecl<ComponentType::Control>(name),
       ControlWithBusDecl(bus) {}
 
 void ReadControlDecl::verify(const components::Component *component) const {
@@ -64,7 +64,7 @@ void ReadControlDecl::verify(const components::Component *component) const {
 ProcessControlDecl::ProcessControlDecl(std::string_view name,
                                        const ComponentDecl &parent)
     : ComponentWithParentDecl<ComponentType::Control>(name, parent),
-      TypedComponentDecl<ComponentType::Control>(name) {}
+      ComponentWithTypeDecl<ComponentType::Control>(name) {}
 
 void ProcessControlDecl::verify(const components::Component *component) const {
   ComponentWithParentDecl<ComponentType::Control>::verify(component);
@@ -74,7 +74,7 @@ void ProcessControlDecl::verify(const components::Component *component) const {
 PersistentProcessControlDecl::PersistentProcessControlDecl(
     std::string_view name, const ComponentDecl &parent)
     : ComponentWithParentDecl<ComponentType::Control>(name, parent),
-      TypedComponentDecl<ComponentType::Control>(name) {}
+      ComponentWithTypeDecl<ComponentType::Control>(name) {}
 
 void PersistentProcessControlDecl::verify(
     const components::Component *component) const {
@@ -85,7 +85,7 @@ void PersistentProcessControlDecl::verify(
 PersistentClearControlDecl::PersistentClearControlDecl(
     std::string_view name, const ComponentDecl &parent)
     : ComponentWithParentDecl<ComponentType::Control>(name, parent),
-      TypedComponentDecl<ComponentType::Control>(name) {}
+      ComponentWithTypeDecl<ComponentType::Control>(name) {}
 
 void PersistentClearControlDecl::verify(
     const components::Component *component) const {

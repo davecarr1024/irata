@@ -23,7 +23,7 @@ public:
 
   TypedBusDecl(std::string_view name, const ComponentDecl &parent)
       : ComponentWithParentDecl<Type>(name, parent),
-        TypedComponentDecl<Type>(name) {}
+        ComponentWithTypeDecl<Type>(name) {}
 };
 
 using ByteBusDecl = TypedBusDecl<Byte, ComponentType::ByteBus>;

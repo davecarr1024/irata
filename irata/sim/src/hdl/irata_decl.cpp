@@ -3,13 +3,13 @@
 namespace irata::sim::hdl {
 
 IrataDecl::IrataDecl()
-    : TypedComponentDecl<ComponentType::Irata>("irata"),
+    : ComponentWithTypeDecl<ComponentType::Irata>("irata"),
       address_bus_("address_bus", *this), data_bus_("data_bus", *this),
       memory_("memory", *this, address_bus_, data_bus_),
       cpu_(*this, address_bus_, data_bus_) {}
 
 void IrataDecl::verify(const components::Component *component) const {
-  TypedComponentDecl<ComponentType::Irata>::verify(component);
+  ComponentWithTypeDecl<ComponentType::Irata>::verify(component);
   verify_child(address_bus_, component);
   verify_child(data_bus_, component);
   verify_child(memory_, component);

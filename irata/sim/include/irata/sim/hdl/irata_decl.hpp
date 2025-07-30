@@ -7,7 +7,7 @@
 
 namespace irata::sim::hdl {
 
-class IrataDecl final : public TypedComponentDecl<ComponentType::Irata> {
+class IrataDecl final : public ComponentWithTypeDecl<ComponentType::Irata> {
 public:
   explicit IrataDecl();
 
