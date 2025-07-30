@@ -1,102 +1,69 @@
-# Irata
+# 🎮 Irata
 
-**Irata** is a handcrafted 8-bit virtual computer system, built from scratch with deliberate design and retro charm. Inspired by classic machines like the Atari 2600, Commodore 64, and NES, Irata is a full-stack simulation platform — complete with compiler, assembler, interpreter, and signal-level simulator — designed for exploration, clarity, and joy.
+**Irata** is a handcrafted 8-bit virtual computer system — a personal exploration of retro hardware design, compiler internals, and full-stack simulation. Inspired by machines like the Atari 2600 and Commodore 64, Irata is not just a project, but a philosophy: clarity, modularity, and joy in building every layer yourself.
 
-The name comes from "Atari" spelled backwards, pronounced "errata", reflecting its nostalgic inspiration and inverted, homebrew spirit.
-
----
-
-## ✨ What Is Irata?
-
-Irata is a complete, from-the-ground-up virtual computer, designed to be:
-
-- **Understandable** – every layer is readable and teachable
-- **Modular** – clean interfaces between components
-- **Hackable** – meant for play, learning, and reimagination
-- **Expressive** – favoring clarity and delight over raw performance
-
-You can write programs in a custom C-like language, compile them into bytecode, run them in a fast interpreter, or simulate the hardware signals cycle-by-cycle.
+The name comes from "Atari" spelled backwards, pronounced "errata" — reflecting its nostalgic roots and playful, homebrew inversion.
 
 ---
 
-## 🧱 Project Structure
+## 🧠 What Is Irata?
 
-| Module         | Description |
-|----------------|-------------|
-| `irata-c`      | High-level systems language compiler (C-like, statically typed) |
-| `irata-asm`    | Shared bytecode and assembly interface for the Irata system |
-| `irata-vm`     | Fast bytecode interpreter for testing programs |
-| `irata-sim`    | Tick-based, signal-level simulator of the Irata hardware - codename chuu |
-| `irata-cart`   | Cartridge format and loader |
-| `irata-test`   | Test harnesses and golden test validation |
-| `irata-docs`   | Auto-generated reference documentation |
-| `cmd/`         | CLI tools (`chuu`, `irc`, etc.) |
+At its heart, Irata is a complete virtual computer platform with:
 
----
+- A custom C-like systems language
+- A 6502-inspired assembly layer
+- A fast interpreter for execution
+- A signal-level hardware simulator
+- A cartridge format and loading system
 
-## 🔩 Core Components
-
-### Irata-C
-A small, statically typed systems language with:
-
-- `u8`, `u16`, `bool`, and `struct` types
-- Explicit memory and reference handling
-- Braced syntax and function calls
-- Designed to compile to Irata Assembly
-
-### Irata Assembly
-A 6502-inspired ISA with potential ergonomic extensions. It is:
-
-- The compilation target of Irata-C
-- A standalone low-level language
-- The interface for tooling, debugging, and system code
-
-### Irata Virtual Computer
-A simulated hardware platform with:
-
-- Memory-mapped I/O
-- 64KB address space
-- Cartridge-based program loading
-- Optional graphics and peripheral expansions
+It is designed not for performance, but for **understanding** — where every instruction, signal, and tick is inspectable and teachable.
 
 ---
 
-## ⚙️ chuu: Signal-Level Simulator
+## ✨ Project Philosophy
 
-**chuu** is the tick-based, clock-cycle-accurate simulator of Irata’s internals. Inspired by the `flip` project, it features:
+Irata is built on a few core beliefs:
 
-- Real microcoded control lines
-- Bus-based communication between components
-- Register- and byte-level signal simulation
-- Named component tree for inspection and debugging
-
-Chuu is designed to:
-- Run real programs, not toy snippets
-- Mirror hardware accurately down to micro-op sequencing
-- Make every internal signal visible and testable
+- **Vertical craftsmanship** — Build the whole stack, know what each piece does  
+- **Playful clarity** — Prioritize readability, creativity, and clean interfaces  
+- **Tactile simulation** — Make hardware feel physical, even in code  
+- **Modular composition** — Design systems that can grow, split, and recombine  
+- **Whimsy encouraged** — It’s a fake console with real heart
 
 ---
 
-## 🛠 Goals
+## 🎯 Goals
 
-- ✅ Define Irata-C MVP and backend
-- ✅ Build fast VM interpreter for running bytecode
-- ✅ Create signal-level simulation via `chuu`
-- ✅ Support cartridge loading and memory-mapped devices
-- ✅ Run full Irata-C programs on the virtual machine
-- ⏳ Develop debugging tools and visual interfaces
-
----
-
-## 🧪 Philosophy
-
-> "Irata is a love letter to hardware, 90s anime, and the joy of making every layer of a system yourself."
-
-The project values:
-- Personal craftsmanship over public polish
-- Clear, composable modules
-- Versioned and inspectable artifacts
-- Play, whimsy, and vertical feature slices
+- Create a vertically integrated 8-bit computer system
+- Explore compiler design through a simple systems language
+- Simulate hardware using bus-level, microcoded control flow
+- Support writing, loading, and executing real programs end-to-end
+- Build tools for inspecting, visualizing, and understanding the system
 
 ---
 
+## 📚 Who It's For
+
+This project is for you if:
+- You’ve ever wanted to write a game for a console that doesn’t exist
+- You enjoy reading signal waveforms more than marketing docs
+- You believe software can be joyful, deliberate, and beautifully weird
+
+---
+
+## 🧪 Current Modules
+
+Irata is (or will be) implemented in modular components, including:
+
+- A custom C-like compiler
+- A 6502-inspired assembler
+- A signal-level simulator (`chuu`)
+- CLI tools and test harnesses
+- A growing set of programs, tests, and cartridges
+
+---
+
+## 📄 License
+
+MIT License  
+Personal project — contributions welcome but not expected.
