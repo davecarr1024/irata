@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/components/fake_component.hpp>
 #include <irata/sim/hdl/bus_decl.hpp>
 
 namespace irata::sim::hdl {
@@ -50,6 +51,11 @@ TEST_F(BusDeclTest, Root) {
   EXPECT_EQ(address_bus.root(), &irata);
   EXPECT_EQ(data_bus_ptr->root(), &irata);
   EXPECT_EQ(address_bus_ptr->root(), &irata);
+}
+
+TEST_F(BusDeclTest, ByteBusVerify) {
+  const components::FakeComponent component(ComponentType::ByteBus, "data_bus");
+  const ByteBusDecl byte_bus("data_bus", irata);
 }
 
 } // namespace irata::sim::hdl

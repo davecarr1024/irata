@@ -8,25 +8,19 @@ namespace irata::sim::hdl {
 
 class BusDecl : public virtual ComponentDecl {};
 
-template <typename DataType, ComponentType Type>
-struct IsValidBus : std::false_type {};
-template <> struct IsValidBus<Byte, ComponentType::ByteBus> : std::true_type {};
-template <> struct IsValidBus<Word, ComponentType::WordBus> : std::true_type {};
+template <typename DataType>
+class BusWithDataTypeDecl : public virtual BusDecl {};
 
-template <typename DataType, ComponentType Type>
-class TypedBusDecl final : public BusDecl,
-                           public ComponentWithParentDecl<Type> {
+class ByteBusDecl : public ComponentWithParentDecl<ComponentType::ByteBus>,
+                    public BusWithDataTypeDecl<Byte> {
 public:
-  static_assert(IsValidBus<DataType, Type>::value, "Invalid bus type");
-
-  static constexpr ComponentType type_v = Type;
-
-  TypedBusDecl(std::string_view name, const ComponentDecl &parent)
-      : ComponentWithParentDecl<Type>(name, parent),
-        ComponentWithTypeDecl<Type>(name) {}
+  ByteBusDecl(std::string_view name, const ComponentDecl &parent);
 };
 
-using ByteBusDecl = TypedBusDecl<Byte, ComponentType::ByteBus>;
-using WordBusDecl = TypedBusDecl<Word, ComponentType::WordBus>;
+class WordBusDecl : public ComponentWithParentDecl<ComponentType::WordBus>,
+                    public BusWithDataTypeDecl<Word> {
+public:
+  WordBusDecl(std::string_view name, const ComponentDecl &parent);
+};
 
 } // namespace irata::sim::hdl
