@@ -1,6 +1,8 @@
+Here’s the updated status.md in raw Markdown, ready to copy and paste:
+
 # 🧾 Irata Project Status
 
-_Last updated: July 29, 2025_
+_Last updated: August 2, 2025_
 
 ---
 
@@ -21,6 +23,8 @@ I’ve finished a full refactor of the HDL subsystem into clean, mixin-based dec
 - I split HDL headers cleanly and removed the old `hdl.hpp` monolith
 - I introduced a generic `ComponentWithBus` template to unify all bus-connected components under one shared interface
 - Verification logic is structured and extensible per-component — each mixin declares its own `verify()` logic that walks and validates children
+- Added fake components and fake component declarations for test isolation
+- Unit tests now verify `ComponentDecl`, `BusDecl`, and full parent-child relationships including mismatches and hierarchy validation
 
 ### 🧠 DSL + Microcode Integration
 
@@ -40,18 +44,20 @@ I’ve finished a full refactor of the HDL subsystem into clean, mixin-based dec
 ## 🧪 Testing
 
 - Test suite now includes:
-  - Standalone HDL component tests (with more coming)
-  - Control line behavior
+  - Standalone HDL component tests (including fakes)
+  - `ComponentDecl` and `BusDecl` verification logic
   - DSL microcode execution
   - Instruction encoder validation
   - Controller ROM decoding
+- Fake components allow testing HDL logic without full sim integration
+- Tests ensure structural correctness and fail loudly on mismatch or misuse
 
 ---
 
 ## 🏗️ Actively In Progress
 
-- 🔥 Removing the legacy `hdl.hpp` and updating all includes to new modular headers
 - ✅ Finalizing HDL `verify()` unit tests for core components
+- 🔥 Removing the legacy `hdl.hpp` and updating all includes to new modular headers
 - 🔁 Refactoring sim-side `Control` and `Register` to use mixin-style structure like the HDL
 - 🧱 Adding `CPU` and `Irata` shell components to the sim side
 - 🔎 Adding `type()` overrides to all sim components to support HDL-based verification
@@ -71,12 +77,11 @@ I’ve finished a full refactor of the HDL subsystem into clean, mixin-based dec
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Remove `hdl.hpp` completely
-- [ ] Finish and test HDL verification pass
-- [ ] Add type annotations and verify all sim components against HDL
-- [ ] Add `Irata` as sim root and wire up a bootable CPU shell
-- [ ] Start executing real instruction flows through the whole pipeline
-- [ ] Begin work on assembler and test ROM runner
+- [ ] Finish HDL unit tests (wrap them up now)
+- [ ] Save HDL progress and shift gears to keep momentum
+- [ ] Start building assembler logic and test ROM runner
+- [ ] Add YAML-based instruction definitions for small test programs
+- [ ] Wire up CPU boot path and tick through first instructions
 
 ---
 
@@ -101,3 +106,4 @@ I’ve finished a full refactor of the HDL subsystem into clean, mixin-based dec
 ---
 
 🚀 **The HDL is solid. The sim is verifiable. The instructions are real. I can now tick a modeled CPU through a real control cycle based entirely on declared structure and compiled microcode. I’m almost to the point of running real programs. It’s happening.**
+
