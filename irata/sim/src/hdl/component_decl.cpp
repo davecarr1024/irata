@@ -39,6 +39,13 @@ void ComponentDecl::verify(const components::Component *component) const {
        << component->type();
     throw std::invalid_argument(os.str());
   }
+  if (component->path() != path()) {
+    std::ostringstream os;
+    os << "hdl component " << *this << " has path " << path() << " but sim "
+       << "component " << component->path() << " has path "
+       << component->path();
+    throw std::invalid_argument(os.str());
+  }
 }
 
 void ComponentDecl::verify_child(const ComponentDecl &child,

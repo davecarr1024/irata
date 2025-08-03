@@ -53,9 +53,46 @@ TEST_F(BusDeclTest, Root) {
   EXPECT_EQ(address_bus_ptr->root(), &irata);
 }
 
+TEST_F(BusDeclTest, ByteBusVerifyWrongType) {
+  components::FakeComponent fake_irata(ComponentType::Irata, "irata");
+  components::FakeComponent component(ComponentType::Cpu, "data_bus",
+                                      &fake_irata);
+  EXPECT_THROW(data_bus.verify(&component), std::invalid_argument);
+}
+
+TEST_F(BusDeclTest, ByteBusVerifyWrongName) {
+  components::FakeComponent fake_irata(ComponentType::Irata, "irata");
+  components::FakeComponent component(ComponentType::ByteBus,
+                                      "a_different_name", &fake_irata);
+  EXPECT_THROW(data_bus.verify(&component), std::invalid_argument);
+}
+
 TEST_F(BusDeclTest, ByteBusVerify) {
-  const components::FakeComponent component(ComponentType::ByteBus, "data_bus");
-  const ByteBusDecl byte_bus("data_bus", irata);
+  components::FakeComponent fake_irata(ComponentType::Irata, "irata");
+  components::FakeComponent component(ComponentType::ByteBus, "data_bus",
+                                      &fake_irata);
+  EXPECT_NO_THROW(data_bus.verify(&component));
+}
+
+TEST_F(BusDeclTest, WordBusVerifyWrongType) {
+  components::FakeComponent fake_irata(ComponentType::Irata, "irata");
+  components::FakeComponent component(ComponentType::Cpu, "address_bus",
+                                      &fake_irata);
+  EXPECT_THROW(address_bus.verify(&component), std::invalid_argument);
+}
+
+TEST_F(BusDeclTest, WordBusVerifyWrongName) {
+  components::FakeComponent fake_irata(ComponentType::Irata, "irata");
+  components::FakeComponent component(ComponentType::WordBus,
+                                      "a_different_name", &fake_irata);
+  EXPECT_THROW(address_bus.verify(&component), std::invalid_argument);
+}
+
+TEST_F(BusDeclTest, WordBusVerify) {
+  components::FakeComponent fake_irata(ComponentType::Irata, "irata");
+  components::FakeComponent component(ComponentType::WordBus, "address_bus",
+                                      &fake_irata);
+  EXPECT_NO_THROW(address_bus.verify(&component));
 }
 
 } // namespace irata::sim::hdl
