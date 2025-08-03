@@ -84,18 +84,18 @@ public:
 
   bool auto_clear() const override final { return false; }
 
-  const ProcessControlDecl &reset() const { return reset_; }
+  const ProcessControlDecl &reset() const { return clear_; }
 
   void verify(const components::Component *component) const override {
     ControlDecl::verify(component);
-    verify_child(reset_, component);
+    verify_child(clear_, component);
   }
 
 protected:
-  ControlWithAutoClearDecl() : reset_("reset", *this) {}
+  ControlWithAutoClearDecl() : clear_("clear", *this) {}
 
 private:
-  const ProcessControlDecl reset_;
+  const ProcessControlDecl clear_;
 };
 
 class PersistentProcessControlDecl final

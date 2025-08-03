@@ -44,6 +44,8 @@ public:
   // Returns a list of all controls in the component tree.
   std::vector<Control *> controls() override;
 
+  hdl::ComponentType type() const override final;
+
 private:
   // The phase of the control line.
   const hdl::TickPhase phase_;

@@ -59,4 +59,6 @@ hdl::TickPhase Control::phase() const { return phase_; }
 
 bool Control::auto_clear() const { return auto_clear_; }
 
+hdl::ComponentType Control::type() const { return hdl::ComponentType::Control; }
+
 } // namespace irata::sim::components
