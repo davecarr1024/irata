@@ -97,6 +97,11 @@ private:
 
 } // namespace
 
+TEST_F(MemoryTest, Type) {
+  auto memory = this->memory({});
+  EXPECT_EQ(memory.type(), hdl::ComponentType::Memory);
+}
+
 TEST_F(MemoryTest, Constructor) {
   std::vector<std::unique_ptr<Region>> regions;
   regions.emplace_back(ram(0x1000, Word(0x0000)));

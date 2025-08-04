@@ -48,6 +48,8 @@ Memory::Memory(std::string_view name,
   }
 }
 
+hdl::ComponentType Memory::type() const { return hdl::ComponentType::Memory; }
+
 const std::vector<std::unique_ptr<Region>> &Memory::regions() const {
   return regions_;
 }

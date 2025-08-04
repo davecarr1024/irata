@@ -33,6 +33,8 @@ public:
                   Component *parent = nullptr);
   virtual ~Memory() = default;
 
+  hdl::ComponentType type() const override;
+
   // Returns the regions of this memory component.
   const std::vector<std::unique_ptr<Region>> &regions() const;
 

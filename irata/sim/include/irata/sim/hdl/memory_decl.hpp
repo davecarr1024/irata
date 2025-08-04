@@ -8,23 +8,21 @@
 
 namespace irata::sim::hdl {
 
+// A memory is a component that stores bytes, made up of mapped regions that can
+// be read-only or read-write.
+// It is connected to a word bus for the address and a byte bus for the data.
 class MemoryDecl final : public ComponentWithParentDecl<ComponentType::Memory>,
                          public virtual ComponentWithByteBusDecl {
 public:
   MemoryDecl(const std::string &name, const ComponentDecl &parent,
-             const WordBusDecl &address_bus, const ByteBusDecl &data_bus)
-      : ComponentWithParentDecl(name, parent),
-        ComponentWithTypeDecl<ComponentType::Memory>(name),
-        ComponentWithByteBusDecl(data_bus),
-        address_(ConnectedWordRegisterDecl("address", *this, address_bus)) {}
+             const WordBusDecl &address_bus, const ByteBusDecl &data_bus);
 
-  const ConnectedWordRegisterDecl &address() const { return address_; }
+  // A word register that is connected to the address bus.
+  // It is used to store the address of the memory region to read from or write
+  // to.
+  const ConnectedWordRegisterDecl &address() const;
 
-  void verify(const components::Component *component) const override final {
-    ComponentWithParentDecl::verify(component);
-    ComponentWithByteBusDecl::verify(component);
-    verify_child(address_, component);
-  }
+  void verify(const components::Component *component) const override final;
 
 private:
   const ConnectedWordRegisterDecl address_;
