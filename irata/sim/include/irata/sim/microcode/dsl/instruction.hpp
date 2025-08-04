@@ -80,8 +80,13 @@ public:
   Instruction *
   read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
 
+  int stage() const;
+
+  Instruction *next_stage();
+
 private:
   const asm_::Instruction &descriptor_;
+  int stage_ = 0;
   InstructionSet *const instruction_set_;
   std::vector<std::unique_ptr<Step>> steps_;
   std::map<const hdl::StatusDecl *, bool> statuses_;

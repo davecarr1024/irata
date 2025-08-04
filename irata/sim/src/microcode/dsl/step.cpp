@@ -7,7 +7,8 @@
 
 namespace irata::sim::microcode::dsl {
 
-Step::Step(Instruction *instruction) : instruction_(instruction) {
+Step::Step(Instruction *instruction, int stage)
+    : instruction_(instruction), stage_(stage) {
   if (instruction == nullptr) {
     throw std::invalid_argument("instruction cannot be null");
   }
@@ -18,6 +19,8 @@ Instruction *Step::instruction() const { return instruction_; }
 InstructionSet *Step::instruction_set() const {
   return instruction_->instruction_set();
 }
+
+int Step::stage() const { return stage_; }
 
 Step *Step::create_step() { return instruction_->create_step(); }
 

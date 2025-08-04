@@ -15,7 +15,7 @@ ir::Step transform(const ir::Step &step, bool last) {
   std::set<const hdl::ControlDecl *> transformed_controls = step.controls();
   transformed_controls.insert(&control);
   return ir::Step(transformed_controls, step.write_controls(),
-                  step.read_controls());
+                  step.read_controls(), step.stage());
 }
 
 ir::Instruction transform(const ir::Instruction &instruction) {

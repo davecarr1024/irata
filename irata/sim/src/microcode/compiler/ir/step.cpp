@@ -6,10 +6,10 @@ namespace irata::sim::microcode::compiler::ir {
 
 Step::Step(std::set<const hdl::ControlDecl *> controls,
            std::set<const hdl::WriteControlDecl *> write_controls,
-           std::set<const hdl::ReadControlDecl *> read_controls)
+           std::set<const hdl::ReadControlDecl *> read_controls, int stage)
     : controls_(std::move(controls)),
       write_controls_(std::move(write_controls)),
-      read_controls_(std::move(read_controls)) {
+      read_controls_(std::move(read_controls)), stage_(stage) {
   for (const auto &control : controls_) {
     if (control == nullptr) {
       throw std::invalid_argument("Control cannot be null");
@@ -40,18 +40,21 @@ Step::Step(std::set<const hdl::ControlDecl *> controls,
 }
 
 Step::Step(const dsl::Step &step)
-    : Step(step.controls(), step.write_controls(), step.read_controls()) {}
+    : Step(step.controls(), step.write_controls(), step.read_controls(),
+           step.stage()) {}
 
 bool Step::operator==(const Step &other) const {
-  return std::tie(controls_, write_controls_, read_controls_) ==
-         std::tie(other.controls_, other.write_controls_, other.read_controls_);
+  return std::tie(controls_, write_controls_, read_controls_, stage_) ==
+         std::tie(other.controls_, other.write_controls_, other.read_controls_,
+                  other.stage_);
 }
 
 bool Step::operator!=(const Step &other) const { return !(*this == other); }
 
 bool Step::operator<(const Step &other) const {
-  return std::tie(controls_, write_controls_, read_controls_) <
-         std::tie(other.controls_, other.write_controls_, other.read_controls_);
+  return std::tie(controls_, write_controls_, read_controls_, stage_) <
+         std::tie(other.controls_, other.write_controls_, other.read_controls_,
+                  other.stage_);
 }
 
 std::ostream &operator<<(std::ostream &os, const Step &step) {
@@ -75,5 +78,7 @@ const std::set<const hdl::WriteControlDecl *> &Step::write_controls() const {
 const std::set<const hdl::ReadControlDecl *> &Step::read_controls() const {
   return read_controls_;
 }
+
+int Step::stage() const { return stage_; }
 
 } // namespace irata::sim::microcode::compiler::ir

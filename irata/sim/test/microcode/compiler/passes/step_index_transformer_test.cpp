@@ -38,7 +38,7 @@ protected:
       std::vector<std::set<const hdl::ControlDecl *>> controls) {
     std::vector<ir::Step> steps;
     for (const auto &control_set : controls) {
-      steps.push_back(ir::Step(control_set, {}, {}));
+      steps.push_back(ir::Step(control_set, {}, {}, 0));
     }
     return ir::Instruction(instruction_descriptor_, steps, {});
   }

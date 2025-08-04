@@ -47,6 +47,14 @@ TEST_F(MicrocodeDslStepTest, Empty) {
   EXPECT_EQ(step->instruction(), instruction_);
   EXPECT_EQ(step->instruction_set(), &instruction_set_);
   EXPECT_EQ(instruction_->steps().back().get(), step);
+  EXPECT_EQ(step->stage(), 1);
+}
+
+TEST_F(MicrocodeDslStepTest, NextStage) {
+  auto *step1 = instruction_->create_step();
+  auto *step2 = instruction_->next_stage()->create_step();
+  EXPECT_EQ(step1->stage(), 1);
+  EXPECT_EQ(step2->stage(), 2);
 }
 
 TEST_F(MicrocodeDslStepTest, WithControl) {
@@ -90,7 +98,7 @@ TEST_F(MicrocodeDslStepTest, CreateInstruction) {
 }
 
 TEST_F(MicrocodeDslStepTest, NullInstruction) {
-  EXPECT_THROW(Step(nullptr), std::invalid_argument);
+  EXPECT_THROW(Step(nullptr, 0), std::invalid_argument);
 }
 
 TEST_F(MicrocodeDslStepTest, WithControlDifferentTree) {

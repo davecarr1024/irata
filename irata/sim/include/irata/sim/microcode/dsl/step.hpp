@@ -15,7 +15,7 @@ public:
   // Constructs a new step with the given instruction and instruction set.
   // The step is owned by the instruction set.
   // This should only be called by Instruction::create_step.
-  Step(Instruction *instruction);
+  Step(Instruction *instruction, int stage);
 
   Step(const Step &) = delete;
   Step &operator=(const Step &) = delete;
@@ -25,6 +25,10 @@ public:
 
   // Returns the instruction set that owns this step.
   InstructionSet *instruction_set() const;
+
+  // The instruction stage that this step is part of.
+  // Instruction stages are sets of steps that can be merged.
+  int stage() const;
 
   // Creates a new step that is owned by the same instruction as this step.
   Step *create_step();
@@ -52,6 +56,7 @@ public:
 
 private:
   Instruction *const instruction_;
+  const int stage_;
   std::set<const hdl::ControlDecl *> controls_;
   std::set<const hdl::WriteControlDecl *> write_controls_;
   std::set<const hdl::ReadControlDecl *> read_controls_;

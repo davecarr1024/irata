@@ -18,7 +18,7 @@ public:
   // The write controls and read controls must be a subset of the controls.
   Step(std::set<const hdl::ControlDecl *> controls,
        std::set<const hdl::WriteControlDecl *> write_controls,
-       std::set<const hdl::ReadControlDecl *> read_controls);
+       std::set<const hdl::ReadControlDecl *> read_controls, int stage);
 
   // Constructs a step from a DSL step.
   explicit Step(const dsl::Step &step);
@@ -38,10 +38,15 @@ public:
   // This is a subset of the controls in this step.
   const std::set<const hdl::ReadControlDecl *> &read_controls() const;
 
+  // Returns the stage of this step.
+  // Instruction stages are sets of steps that can be merged.
+  int stage() const;
+
 private:
   std::set<const hdl::ControlDecl *> controls_;
   std::set<const hdl::WriteControlDecl *> write_controls_;
   std::set<const hdl::ReadControlDecl *> read_controls_;
+  int stage_;
 };
 
 std::ostream &operator<<(std::ostream &os, const Step &step);

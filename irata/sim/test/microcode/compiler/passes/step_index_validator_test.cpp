@@ -48,22 +48,23 @@ TEST_F(StepIndexValidatorTest, EmptyInstruction) {
 }
 
 TEST_F(StepIndexValidatorTest, OneStepWithReset) {
-  ir::InstructionSet instruction_set({ir::Instruction(
-      instruction_descriptor_, {ir::Step({&reset_step_index_}, {}, {})}, {})});
+  ir::InstructionSet instruction_set(
+      {ir::Instruction(instruction_descriptor_,
+                       {ir::Step({&reset_step_index_}, {}, {}, 0)}, {})});
   EXPECT_NO_THROW(validate(instruction_set));
 }
 
 TEST_F(StepIndexValidatorTest, OneStepWithoutReset) {
-  ir::InstructionSet instruction_set(
-      {ir::Instruction(instruction_descriptor_, {ir::Step({}, {}, {})}, {})});
+  ir::InstructionSet instruction_set({ir::Instruction(
+      instruction_descriptor_, {ir::Step({}, {}, {}, 0)}, {})});
   EXPECT_THROW(validate(instruction_set), std::invalid_argument);
 }
 
 TEST_F(StepIndexValidatorTest, TwoStepsWithIncrementAndReset) {
   ir::InstructionSet instruction_set(
       {ir::Instruction(instruction_descriptor_,
-                       {ir::Step({&increment_step_index_}, {}, {}),
-                        ir::Step({&reset_step_index_}, {}, {})},
+                       {ir::Step({&increment_step_index_}, {}, {}, 0),
+                        ir::Step({&reset_step_index_}, {}, {}, 0)},
                        {})});
   EXPECT_NO_THROW(validate(instruction_set));
 }
@@ -71,14 +72,16 @@ TEST_F(StepIndexValidatorTest, TwoStepsWithIncrementAndReset) {
 TEST_F(StepIndexValidatorTest, TwoStepsWithIncrementWithoutReset) {
   ir::InstructionSet instruction_set({ir::Instruction(
       instruction_descriptor_,
-      {ir::Step({&increment_step_index_}, {}, {}), ir::Step({}, {}, {})}, {})});
+      {ir::Step({&increment_step_index_}, {}, {}, 0), ir::Step({}, {}, {}, 0)},
+      {})});
   EXPECT_THROW(validate(instruction_set), std::invalid_argument);
 }
 
 TEST_F(StepIndexValidatorTest, TwoStepsWithoutIncrementWithReset) {
   ir::InstructionSet instruction_set({ir::Instruction(
       instruction_descriptor_,
-      {ir::Step({}, {}, {}), ir::Step({&reset_step_index_}, {}, {})}, {})});
+      {ir::Step({}, {}, {}, 0), ir::Step({&reset_step_index_}, {}, {}, 0)},
+      {})});
   EXPECT_THROW(validate(instruction_set), std::invalid_argument);
 }
 

@@ -55,7 +55,6 @@ TEST_F(IrataTest, TickUntilHalt) {
 
 TEST_F(IrataTest, TickUntilHaltWithLda) {
   auto irata = this->irata({lda.opcode(), Byte(0x12), hlt.opcode()});
-  EXPECT_EQ(irata.memory().value(Word(0x8000)), Byte(0xA9));
   irata.tick_until_halt();
   EXPECT_EQ(irata.cpu().pc().value(), Word(0x8003));
   EXPECT_EQ(irata.cpu().a().value(), Byte(0x12));

@@ -28,6 +28,7 @@ TEST_F(MicrocodeIrStepTest, ConstructFromDsl) {
   EXPECT_EQ(ir_step.controls(), dsl_step_.controls());
   EXPECT_EQ(ir_step.write_controls(), dsl_step_.write_controls());
   EXPECT_EQ(ir_step.read_controls(), dsl_step_.read_controls());
+  EXPECT_EQ(ir_step.stage(), dsl_step_.stage());
 }
 
 TEST_F(MicrocodeIrStepTest, ConstructFromControls) {
@@ -36,12 +37,13 @@ TEST_F(MicrocodeIrStepTest, ConstructFromControls) {
   const hdl::WriteControlDecl &write_control = hdl::irata().cpu().pc().write();
   const hdl::ReadControlDecl &read_control = hdl::irata().cpu().pc().read();
   Step ir_step({&process_control, &write_control, &read_control},
-               {&write_control}, {&read_control});
+               {&write_control}, {&read_control}, 0);
   EXPECT_THAT(
       ir_step.controls(),
       UnorderedElementsAre(&process_control, &write_control, &read_control));
   EXPECT_THAT(ir_step.write_controls(), UnorderedElementsAre(&write_control));
   EXPECT_THAT(ir_step.read_controls(), UnorderedElementsAre(&read_control));
+  EXPECT_EQ(ir_step.stage(), 0);
 }
 
 TEST_F(MicrocodeIrStepTest, Equality) {

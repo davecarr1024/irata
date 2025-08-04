@@ -45,7 +45,8 @@ protected:
           read_controls.insert(read_control);
         }
       }
-      steps.push_back(ir::Step(control_set, write_controls, read_controls));
+      steps.push_back(
+          ir::Step(control_set, write_controls, read_controls, /*stage=*/0));
     }
     return ir::Instruction(instruction_descriptor_, steps, {});
   }
@@ -128,6 +129,41 @@ TEST_F(StepMergerTest, NonMergableSteps) {
                     StepHasWriteControls(UnorderedElementsAre(&write_control_)),
                     StepHasReadControls(
                         UnorderedElementsAre(&read_control_)))))))));
+}
+
+TEST_F(StepMergerTest, DoesntMergeStepsInDifferentStages) {
+  std::vector<ir::Step> steps;
+  {
+    std::set<const hdl::ControlDecl *> controls = {&write_control_,
+                                                   &read_control_};
+    std::set<const hdl::WriteControlDecl *> write_controls = {&write_control_};
+    std::set<const hdl::ReadControlDecl *> read_controls = {&read_control_};
+    steps.emplace_back(controls, write_controls, read_controls,
+                       /*stage=*/0);
+  }
+  {
+    std::set<const hdl::ControlDecl *> controls = {&process_control_};
+    std::set<const hdl::WriteControlDecl *> write_controls;
+    std::set<const hdl::ReadControlDecl *> read_controls;
+    steps.emplace_back(controls, write_controls, read_controls,
+                       /*stage=*/1); // Different stage!
+  }
+
+  const ir::Instruction instruction(instruction_descriptor_, steps, {});
+  const ir::InstructionSet instruction_set({instruction});
+
+  EXPECT_THAT(
+      transform(instruction_set),
+      InstructionSetHasInstructions(UnorderedElementsAre(AllOf(
+          InstructionHasDescriptor(instruction_descriptor_),
+          InstructionHasSteps(ElementsAre(
+              AllOf(StepHasControls(
+                        UnorderedElementsAre(&write_control_, &read_control_)),
+                    StepHasWriteControls(UnorderedElementsAre(&write_control_)),
+                    StepHasReadControls(UnorderedElementsAre(&read_control_))),
+              AllOf(StepHasControls(UnorderedElementsAre(&process_control_)),
+                    StepHasWriteControls(IsEmpty()),
+                    StepHasReadControls(IsEmpty()))))))));
 }
 
 } // namespace irata::sim::microcode::compiler::passes

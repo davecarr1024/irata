@@ -17,6 +17,7 @@ InstructionSet::create_instruction(const asm_::Instruction &descriptor) {
           .get();
   instruction =
       instruction->read_memory_at_pc(hdl::irata().cpu().controller().opcode());
+  instruction = instruction->next_stage();
   return instruction;
 }
 

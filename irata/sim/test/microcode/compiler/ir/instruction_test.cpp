@@ -61,7 +61,7 @@ TEST_F(MicrocodeIrInstructionTest, ConstructDirectly) {
       {
           &hdl::irata().cpu().pc().increment(),
       },
-      {}, {})};
+      {}, {}, 0)};
   const std::map<const hdl::StatusDecl *, bool> statuses = {{&status, true}};
   Instruction ir_instruction(descriptor, steps, statuses);
   EXPECT_EQ(ir_instruction.descriptor(), descriptor);

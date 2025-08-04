@@ -27,7 +27,7 @@ Instruction::create_instruction(const asm_::Instruction &instruction) {
 }
 
 Step *Instruction::create_step() {
-  return steps_.emplace_back(std::make_unique<Step>(this)).get();
+  return steps_.emplace_back(std::make_unique<Step>(this, stage_)).get();
 }
 
 const std::vector<std::unique_ptr<Step>> &Instruction::steps() const {
@@ -87,6 +87,13 @@ Instruction::read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest) {
       ->create_step()
       ->with_control(hdl::irata().cpu().pc().increment())
       ->instruction();
+}
+
+int Instruction::stage() const { return stage_; }
+
+Instruction *Instruction::next_stage() {
+  stage_++;
+  return this;
 }
 
 } // namespace irata::sim::microcode::dsl

@@ -21,7 +21,7 @@ hdl::TickPhase max_phase(const ir::Step &step) {
 }
 
 bool can_merge(const ir::Step &lhs, const ir::Step &rhs) {
-  return max_phase(lhs) <= min_phase(rhs);
+  return max_phase(lhs) <= min_phase(rhs) && lhs.stage() == rhs.stage();
 }
 
 ir::Step merge(const ir::Step &lhs, const ir::Step &rhs) {
@@ -32,7 +32,7 @@ ir::Step merge(const ir::Step &lhs, const ir::Step &rhs) {
                         rhs.write_controls().end());
   std::set<const hdl::ReadControlDecl *> read_controls = lhs.read_controls();
   read_controls.insert(rhs.read_controls().begin(), rhs.read_controls().end());
-  return ir::Step(controls, write_controls, read_controls);
+  return ir::Step(controls, write_controls, read_controls, lhs.stage());
 }
 
 ir::Instruction transform(const ir::Instruction &instruction) {
