@@ -1,8 +1,9 @@
-Here’s the updated status.md in raw Markdown, ready to copy and paste:
+Absolutely — here’s your updated `status.md` in raw Markdown with everything you just accomplished and what’s coming next:
 
+```markdown
 # 🧾 Irata Project Status
 
-_Last updated: August 2, 2025_
+_Last updated: August 3, 2025_
 
 ---
 
@@ -57,41 +58,29 @@ I’ve finished a full refactor of the HDL subsystem into clean, mixin-based dec
 ## 🏗️ Actively In Progress
 
 - ✅ Finalizing HDL `verify()` unit tests for core components
-- 🔥 Removing the legacy `hdl.hpp` and updating all includes to new modular headers
 - 🔁 Refactoring sim-side `Control` and `Register` to use mixin-style structure like the HDL
 - 🧱 Adding `CPU` and `Irata` shell components to the sim side
 - 🔎 Adding `type()` overrides to all sim components to support HDL-based verification
-- 🔧 Building the `SimVerifier` that walks the sim tree and checks it against the HDL structure
-
----
-
-## 💡 Design Wins
-
-- ✅ Mixins are simple, expressive, and cover all behavioral contracts cleanly
-- ✅ Buses are type-safe and there are no ambiguities about what connects where
-- ✅ Microcode DSL uses structural relationships, not hardcoded names
-- ✅ Sim structure is now inspectable, testable, and cross-verifiable from HDL
-- ✅ The whole thing feels real — not like an emulated toy, but like a modeled machine
 
 ---
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Finish HDL unit tests (wrap them up now)
-- [ ] Save HDL progress and shift gears to keep momentum
-- [ ] Start building assembler logic and test ROM runner
-- [ ] Add YAML-based instruction definitions for small test programs
-- [ ] Wire up CPU boot path and tick through first instructions
+- [ ] Add `ControllerDecl` and `MemoryDecl` tests
+- [ ] Implement sim-side CPU and Irata using HDL-defined structure
+- [ ] Verify full sim tree in `IrataDeclTest`
+- [ ] Build minimal `sim_runner` that loads a test cartridge and runs ticks
+- [ ] Output serialized simulator state for golden test comparison
 
 ---
 
 ## 🔮 Longer-Term Plans
 
 - 🧠 Expand instruction set and ROM cartridge support
-- 🔧 Add support for runtime logging and simulation replay
-- 💾 Build assembler and test programs in YAML/DSL
-- 🎛️ Expose control wires and runtime bus state for debugging
-- 🖥️ Maybe a GUI for visualization down the line
+- 💾 Add assembler pipeline and support for YAML-defined test ROMs
+- 🔧 Improve sim runtime introspection for wires and buses
+- 🐞 Add debugger or step-through support
+- 🖥️ (Optional) Build GUI visualizer for educational value
 
 ---
 
@@ -106,4 +95,4 @@ I’ve finished a full refactor of the HDL subsystem into clean, mixin-based dec
 ---
 
 🚀 **The HDL is solid. The sim is verifiable. The instructions are real. I can now tick a modeled CPU through a real control cycle based entirely on declared structure and compiled microcode. I’m almost to the point of running real programs. It’s happening.**
-
+```
