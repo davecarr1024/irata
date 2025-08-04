@@ -1,5 +1,6 @@
 #include <irata/sim/microcode/compiler/compiler.hpp>
 #include <irata/sim/microcode/compiler/passes/bus_validator.hpp>
+#include <irata/sim/microcode/compiler/passes/fetch_stage_validator.hpp>
 #include <irata/sim/microcode/compiler/passes/instruction_coverage_validator.hpp>
 #include <irata/sim/microcode/compiler/passes/status_completeness_validator.hpp>
 #include <irata/sim/microcode/compiler/passes/step_index_transformer.hpp>
@@ -54,7 +55,7 @@ Compiler::compile(const dsl::InstructionSet &instruction_set) const {
 
 const Compiler &Compiler::irata() {
   std::vector<std::unique_ptr<passes::Pass>> passes;
-
+  passes.push_back(std::make_unique<passes::FetchStageValidator>());
   passes.push_back(std::make_unique<passes::BusValidator>());
   passes.push_back(std::make_unique<passes::StatusCompletenessValidator>());
   passes.push_back(passes::InstructionCoverageValidator::irata());
@@ -65,6 +66,7 @@ const Compiler &Compiler::irata() {
   passes.push_back(std::make_unique<passes::StatusCompletenessValidator>());
   passes.push_back(std::make_unique<passes::StepIndexValidator>());
   passes.push_back(passes::InstructionCoverageValidator::irata());
+  passes.push_back(std::make_unique<passes::FetchStageValidator>());
   static const Compiler compiler(std::move(passes));
   return compiler;
 }
