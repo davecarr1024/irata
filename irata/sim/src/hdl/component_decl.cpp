@@ -46,6 +46,8 @@ void ComponentDecl::verify(const components::Component *component) const {
        << component->path();
     throw std::invalid_argument(os.str());
   }
+  std::cout << *this << " verified sim component " << component->path()
+            << std::endl;
 }
 
 void ComponentDecl::verify_child(const ComponentDecl &child,

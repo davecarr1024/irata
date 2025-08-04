@@ -6,29 +6,22 @@
 
 namespace irata::sim::hdl {
 
+// A controller is a component that executes instructions.
+// It has a step counter and an opcode register, and it executes instructions
+// from an instruction memory based on the opcode and step counter.
 class ControllerDecl final
     : public ComponentWithParentDecl<ComponentType::Controller> {
 public:
   ControllerDecl(const std::string &name, const ComponentDecl &parent,
-                 const ByteBusDecl &data_bus)
-      : ComponentWithParentDecl<ComponentType::Controller>(name, parent),
-        ComponentWithTypeDecl<ComponentType::Controller>(name),
-        data_bus_(data_bus), step_counter_("step_counter", *this, data_bus),
-        opcode_("opcode", *this, data_bus) {}
+                 const ByteBusDecl &data_bus);
 
-  const ByteBusDecl &data_bus() const { return data_bus_; }
+  const ByteBusDecl &data_bus() const;
 
-  const IncrementableConnectedByteRegisterDecl &step_counter() const {
-    return step_counter_;
-  }
+  const IncrementableConnectedByteRegisterDecl &step_counter() const;
 
-  const ConnectedByteRegisterDecl &opcode() const { return opcode_; }
+  const ConnectedByteRegisterDecl &opcode() const;
 
-  void verify(const components::Component *component) const override final {
-    ComponentWithParentDecl<ComponentType::Controller>::verify(component);
-    verify_child(step_counter_, component);
-    verify_child(opcode_, component);
-  }
+  void verify(const components::Component *component) const override final;
 
 private:
   const ByteBusDecl &data_bus_;

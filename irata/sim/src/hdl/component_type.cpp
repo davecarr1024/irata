@@ -22,6 +22,8 @@ std::ostream &operator<<(std::ostream &os, ComponentType type) {
     return os << "Control";
   case ComponentType::Status:
     return os << "Status";
+  case ComponentType::Controller:
+    return os << "Controller";
   default:
     return os << "Unknown";
   }

@@ -20,6 +20,7 @@ TEST(ComponentTypeTest, ToString) {
   EXPECT_EQ(to_string(ComponentType::WordBus), "WordBus");
   EXPECT_EQ(to_string(ComponentType::Control), "Control");
   EXPECT_EQ(to_string(ComponentType::Status), "Status");
+  EXPECT_EQ(to_string(ComponentType::Controller), "Controller");
 }
 
 } // namespace irata::sim::hdl

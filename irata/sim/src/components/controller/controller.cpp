@@ -91,4 +91,8 @@ void Controller::set_control_values(
   }
 }
 
+hdl::ComponentType Controller::type() const {
+  return hdl::ComponentType::Controller;
+}
+
 } // namespace irata::sim::components::controller

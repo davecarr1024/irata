@@ -64,6 +64,10 @@ protected:
 
 } // namespace
 
+TEST_F(ControllerTest, Type) {
+  EXPECT_EQ(controller.type(), hdl::ComponentType::Controller);
+}
+
 TEST_F(ControllerTest, UnknownOpcode) {
   EXPECT_FALSE(control1.value());
   EXPECT_FALSE(control2.value());

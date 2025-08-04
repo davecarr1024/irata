@@ -27,6 +27,7 @@ void ControlDecl::verify(const components::Component *component) const {
        << (auto_clear() ? "true" : "false");
     throw std::invalid_argument(os.str());
   }
+  std::cout << *this << ": verified control " << control->path() << std::endl;
 }
 
 std::ostream &operator<<(std::ostream &os, const ControlDecl &control) {

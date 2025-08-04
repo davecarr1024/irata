@@ -19,6 +19,8 @@ public:
              std::string_view name = "controller", Component *parent = nullptr);
   virtual ~Controller() = default;
 
+  hdl::ComponentType type() const override;
+
   const InstructionMemory &instruction_memory() const;
   InstructionMemory &instruction_memory();
 
