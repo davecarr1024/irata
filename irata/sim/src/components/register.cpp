@@ -73,4 +73,8 @@ void Register::serialize(Serializer &serializer) const {
   serializer.property("value", value());
 }
 
+hdl::ComponentType Register::type() const {
+  return hdl::ComponentType::Register;
+}
+
 } // namespace irata::sim::components

@@ -19,6 +19,12 @@ TEST(RegisterTest, Value) {
   EXPECT_EQ(reg.value(), Byte::from_unsigned(0xAB));
 }
 
+TEST(RegisterTest, Type) {
+  Bus<Byte> bus("bus");
+  Register reg("reg", &bus, &bus);
+  EXPECT_EQ(reg.type(), hdl::ComponentType::Register);
+}
+
 TEST(RegisterTest, Idle) {
   Bus<Byte> bus("bus");
   Register reg("reg", &bus, &bus);

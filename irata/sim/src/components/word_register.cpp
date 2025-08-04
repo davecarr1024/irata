@@ -100,4 +100,8 @@ void WordRegister::serialize(Serializer &serializer) const {
   serializer.property("value", value());
 }
 
+hdl::ComponentType WordRegister::type() const {
+  return hdl::ComponentType::WordRegister;
+}
+
 } // namespace irata::sim::components

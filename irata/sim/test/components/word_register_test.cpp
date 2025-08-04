@@ -10,6 +10,11 @@ using ::testing::Optional;
 
 namespace irata::sim::components {
 
+TEST(WordRegisterTest, Type) {
+  WordRegister reg("register");
+  EXPECT_EQ(reg.type(), hdl::ComponentType::WordRegister);
+}
+
 TEST(WordRegisterTest, SetValue) {
   WordRegister reg("register");
   EXPECT_EQ(reg.value(), Word(0));

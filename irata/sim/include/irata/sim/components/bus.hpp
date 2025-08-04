@@ -30,4 +30,7 @@ private:
   std::optional<std::string> setter_;
 };
 
+using ByteBus = Bus<Byte>;
+using WordBus = Bus<Word>;
+
 } // namespace irata::sim::components
