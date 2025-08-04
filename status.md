@@ -1,12 +1,12 @@
 # 🧾 Irata Project Status
 
-_Last updated: August 3, 2025_
+_Last updated: August 4, 2025_
 
 ---
 
-## 🎉 Major Milestone: Full-System Simulation Tick Verified!
+## 🎉 Major Milestone: Fetch Logic Fixed, Safe Merging Restored!
 
-The full `Irata` component — the entire computer — now ticks end to end using real microcode, real buses, and real hardware modeling. I verified that the system halts correctly when loaded with just a HLT instruction at address `0x8000`, and that the PC updates as expected. This is the first time the whole machine has run a "program" — and it worked!
+The microcode compiler now supports safe step merging by introducing **stage-aware logic** in the DSL and IR. A new `FetchStageValidator` enforces that **all instructions begin with the same canonical fetch-decode prefix**, regardless of opcode. With this fix, full-system simulation now runs reliably with step merging *enabled* — and instruction execution is rock solid.
 
 ---
 
@@ -23,44 +23,41 @@ The full `Irata` component — the entire computer — now ticks end to end usin
 ### ⚙️ Microcode + Execution
 
 - Microcode is compiled from a clean YAML DSL
-- The system properly performs fetch-decode-execute cycles:
-  - PC to address
-  - Memory read
-  - Opcode register update
-  - Execution of instruction logic
-- HLT runs successfully from real microcode
-- Disabling step merging avoids fetch-decode corruption, so LDA also works now
+- The DSL now supports **explicit stage annotations** to group control steps (e.g., `stage: 0` for fetch)
+- The compiler now respects stage boundaries during step merging
+- A new validator ensures all instructions share an identical stage 0
+- Execution proceeds correctly even if `opcode` is initially garbage
+- ✅ HLT halts at 0x8001  
+- ✅ LDA immediate loads 0x12 and halts at 0x8003  
+- ✅ Step merging is now safely enabled and passing tests
 
-### 🧪 TickUntilHalt Test Cases Passing
+### 🧪 Compiler Safety
 
-- ✅ HLT halts at 0x8001
-- ✅ LDA immediate loads correct value and halts at 0x8003
-- 🚨 Step merging caused controller corruption due to lack of stage boundaries — currently disabled
-
----
-
-## ⚠️ Known Issue: Step Merging Bug
-
-- Step merging currently causes invalid controller behavior due to merging fetch logic from unrelated instructions (like HLT) into the prefix of other opcodes
-- Fix idea: introduce **`stage`** field in DSL steps (e.g., `fetch`, `decode`, `execute`) to restrict merging across conceptual boundaries
+- `FetchStageValidator` runs both **before and after merging**, enforcing that fetch logic is preserved
+- Full unit test coverage for:
+  - Mismatched control lines
+  - Unequal stage 0 lengths
+  - Truncated or extended fetch sequences
+- Compiler will now fail hard on any structural inconsistency across instruction fetch stages
 
 ---
 
 ## 🛠️ In Progress
 
-- 🧩 `irata_test.cpp` now tests full instruction programs tick-by-tick
-- 🛑 Disabled step merging in compiler to ensure correctness
-- 🧪 Starting to build more test programs to verify the controller and system behavior
+- 🧩 `irata_test.cpp` verifies multi-instruction programs tick-by-tick
+- ✅ Step merging is re-enabled and protected by stage-based invariants
+- 🧪 Continuing to expand test programs and microcode coverage
+- 🧪 Planning more instruction additions: `STA`, `JMP`, `BRK`, etc.
 
 ---
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Introduce `stage` concept to control step merging boundaries
-- [ ] Re-enable and safely test step merging with stage-aware logic
-- [ ] Add more basic instructions (`STA`, `JMP`, etc.) and verify correctness
-- [ ] Finalize sim CPU internals using HDL-style declarations
-- [ ] Start assembler prototype to compile programs from minimal syntax + YAML opcodes
+- [ ] Add more basic instructions and validate stage structure
+- [ ] Build minimal assembler prototype from `.irata-c` to `irata-asm`
+- [ ] Explore exporting microcode step traces for visualization
+- [ ] Add richer HALT diagnostics and programmatic tick observers
+- [ ] Begin defining memory-mapped devices and screen output
 
 ---
 
@@ -70,6 +67,7 @@ The full `Irata` component — the entire computer — now ticks end to end usin
 - 🐍 Begin Python-side `irata/asm/py` support for reusable instruction definition loading
 - 📦 Use editable `pip` install and unify Python tooling via root Makefile
 - 🧰 Add `sim_runner` to load ROMs and dump serialized machine state for test harnesses
+- 🔬 Write test that runs real `.irata` bytecode through controller-only trace
 
 ---
 
@@ -77,8 +75,8 @@ The full `Irata` component — the entire computer — now ticks end to end usin
 
 > "Declare the machine. Simulate the intent. Test every wire."
 
-This project is finally what I wanted it to be — a structure where nothing is hand-waved, and where everything that's true in the HDL is testably true in the simulation. And it runs real programs.
+Every layer of Irata now has a structural and testable contract. DSL logic, compiler passes, instruction fetch, and execution are all verified. There are no shortcuts — only wires and truth.
 
 ---
 
-🔥 **This was a huge milestone. The computer ran. And it was beautiful.**
+🔥 **The machine runs. The fetch is pure. The compiler has teeth. It’s beautiful.**
