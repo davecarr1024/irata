@@ -51,8 +51,29 @@ TEST_F(FetchStageValidatorTest, InstructionsWithDifferentFetchStage) {
   EXPECT_THROW(validator.run(instruction_set), std::invalid_argument);
 }
 
-TEST_F(FetchStageValidatorTest, DifferentLaterStagesOk) {
-  ir::Step step1({&control1}, {}, {}, 1);
+TEST_F(FetchStageValidatorTest, InstructionsWithSmallerFetchStage) {
+  ir::Step step1({&control1}, {}, {}, 0);
+  ir::Step step2({&control2}, {}, {}, 0);
+  ir::Step step3({&control3}, {}, {}, 0);
+  ir::Instruction instruction1(descriptor, {step1, step2}, {});
+  ir::Instruction instruction2(descriptor, {step1}, {});
+  ir::InstructionSet instruction_set({instruction1, instruction2});
+  EXPECT_THROW(validator.run(instruction_set), std::invalid_argument);
+}
+
+TEST_F(FetchStageValidatorTest, InstructionsWithLargerFetchStage) {
+  ir::Step step1({&control1}, {}, {}, 0);
+  ir::Step step2({&control2}, {}, {}, 0);
+  ir::Step step3({&control3}, {}, {}, 0);
+  ir::Instruction instruction1(descriptor, {step1, step2}, {});
+  ir::Instruction instruction2(descriptor, {step1, step2, step3}, {});
+  ir::InstructionSet instruction_set({instruction1, instruction2});
+  EXPECT_THROW(validator.run(instruction_set), std::invalid_argument);
+}
+
+TEST_F(FetchStageValidatorTest,
+       InstructionsWithSameFetchStageButDifferentLaterStages) {
+  ir::Step step1({&control1}, {}, {}, 0);
   ir::Step step2({&control2}, {}, {}, 1);
   ir::Step step3({&control3}, {}, {}, 1);
   ir::Instruction instruction1(descriptor, {step1, step2}, {});

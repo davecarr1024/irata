@@ -18,6 +18,7 @@ ir::InstructionSet convert_input(const dsl::InstructionSet &instruction_set) {
 
 table::Table convert_output(const ir::InstructionSet &instruction_set) {
   std::vector<table::Entry> entries;
+  std::set<Byte> opcodes;
   for (const auto &instruction : instruction_set.instructions()) {
     for (size_t step_index = 0; step_index < instruction.steps().size();
          ++step_index) {
@@ -28,6 +29,7 @@ table::Table convert_output(const ir::InstructionSet &instruction_set) {
           .statuses = instruction.statuses(),
           .controls = step.controls(),
       });
+      opcodes.insert(instruction.descriptor().opcode());
     }
   }
   return table::Table{std::set<table::Entry>(entries.begin(), entries.end())};
