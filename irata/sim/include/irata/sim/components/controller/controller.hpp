@@ -15,9 +15,13 @@ namespace irata::sim::components::controller {
 
 class Controller : public Component {
 public:
-  Controller(const microcode::table::Table &table, Bus<Byte> &data_bus,
+  Controller(const microcode::table::Table &table, ByteBus &data_bus,
              std::string_view name = "controller", Component *parent = nullptr);
   virtual ~Controller() = default;
+
+  static Controller irata(ByteBus &data_bus,
+                          std::string_view name = "controller",
+                          Component *parent = nullptr);
 
   hdl::ComponentType type() const override;
 

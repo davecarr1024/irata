@@ -26,9 +26,9 @@ protected:
 } // namespace
 
 TEST_F(ControllerDeclTest, ControllerDecl_Validate) {
-  components::controller::Controller controller_component(
-      microcode::compiler::Compiler::compile_irata(), data_bus, "controller",
-      &irata_component);
+  components::controller::Controller controller_component =
+      components::controller::Controller::irata(data_bus, "controller",
+                                                &irata_component);
   EXPECT_NO_THROW(controller_decl.verify(&controller_component));
 }
 

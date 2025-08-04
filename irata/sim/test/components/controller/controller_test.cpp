@@ -68,6 +68,10 @@ TEST_F(ControllerTest, Type) {
   EXPECT_EQ(controller.type(), hdl::ComponentType::Controller);
 }
 
+TEST_F(ControllerTest, Irata) {
+  EXPECT_NO_THROW(Controller::irata(bus, "irata_controller", &root));
+}
+
 TEST_F(ControllerTest, UnknownOpcode) {
   EXPECT_FALSE(control1.value());
   EXPECT_FALSE(control2.value());

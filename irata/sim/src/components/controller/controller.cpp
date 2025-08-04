@@ -1,6 +1,7 @@
 #include <irata/sim/components/controller/complete_statuses.hpp>
 #include <irata/sim/components/controller/controller.hpp>
 #include <irata/sim/components/status.hpp>
+#include <irata/sim/microcode/compiler/compiler.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -13,6 +14,12 @@ Controller::Controller(const microcode::table::Table &table,
       instruction_memory_(table, "instruction_memory", this),
       opcode_("opcode", &data_bus, this),
       step_counter_("step_counter", &data_bus, this) {}
+
+Controller Controller::irata(ByteBus &data_bus, std::string_view name,
+                             Component *parent) {
+  return Controller(microcode::compiler::Compiler::compile_irata(), data_bus,
+                    name, parent);
+}
 
 const InstructionMemory &Controller::instruction_memory() const {
   return instruction_memory_;
