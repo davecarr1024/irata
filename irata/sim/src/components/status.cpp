@@ -15,4 +15,6 @@ std::vector<Status *> Status::statuses() {
   return statuses;
 }
 
+hdl::ComponentType Status::type() const { return hdl::ComponentType::Status; }
+
 } // namespace irata::sim::components

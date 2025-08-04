@@ -24,4 +24,9 @@ TEST(StatusTest, GetStatuses) {
   EXPECT_THAT(root.statuses(), UnorderedElementsAre(&status1, &status2));
 }
 
+TEST(StatusTest, Type) {
+  Status status("status");
+  EXPECT_EQ(status.type(), hdl::ComponentType::Status);
+}
+
 } // namespace irata::sim::components

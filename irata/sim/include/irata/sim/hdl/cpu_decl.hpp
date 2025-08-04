@@ -7,6 +7,10 @@
 
 namespace irata::sim::hdl {
 
+// CpuDecl is a declaration of a CPU component.
+// A CPU component is a component that has a controller, a program counter, and
+// a set of registers. The CPU component is the root component of the CPU
+// hierarchy, and is a child of the Irata component.
 class CpuDecl final : public ComponentWithParentDecl<ComponentType::Cpu> {
 public:
   CpuDecl(const ComponentDecl &parent, const WordBusDecl &address_bus,

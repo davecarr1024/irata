@@ -21,6 +21,8 @@ public:
   // Returns all status lines in this component and its children.
   std::vector<Status *> statuses() override;
 
+  hdl::ComponentType type() const override final;
+
 private:
   bool value_ = false;
 };
