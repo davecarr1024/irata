@@ -11,6 +11,7 @@ namespace irata::asm_ {
 using Byte = common::bytes::Byte;
 
 enum class AddressingMode {
+  NONE,
   IMMEDIATE,
   ABSOLUTE,
 };

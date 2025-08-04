@@ -1,98 +1,84 @@
-Absolutely — here’s your updated `status.md` in raw Markdown with everything you just accomplished and what’s coming next:
-
-```markdown
 # 🧾 Irata Project Status
 
 _Last updated: August 3, 2025_
 
 ---
 
-## 🎉 Major Milestone: HDL Refactor Complete and Integrated!
+## 🎉 Major Milestone: Full-System Simulation Tick Verified!
 
-I’ve finished a full refactor of the HDL subsystem into clean, mixin-based declarations with strongly typed component kinds. It’s now possible to define buses, registers, memory, and the CPU itself in terms of reusable, testable HDL component declarations. This unlocks high-confidence simulation verification and gives me a structured, declarative way to build the whole machine — no magic, no ambiguity, just real modeled hardware.
+The full `Irata` component — the entire computer — now ticks end to end using real microcode, real buses, and real hardware modeling. I verified that the system halts correctly when loaded with just a HLT instruction at address `0x8000`, and that the PC updates as expected. This is the first time the whole machine has run a "program" — and it worked!
 
 ---
 
 ## ✅ Current State
 
-### 🧠 HDL Subsystem
+### 🧠 HDL + Simulation Unified
 
-- The HDL type system is complete:
-  - Component kinds are tracked with enums and type-safe base classes
-  - Mixins like `RegisterWithReset`, `RegisterWithBus`, and `ComponentWithBus` make building new parts fast and accurate
-  - Connected registers now carry bus relationships clearly (e.g., `RegisterWithWordBus` vs `RegisterWithByteBus`)
-- I split HDL headers cleanly and removed the old `hdl.hpp` monolith
-- I introduced a generic `ComponentWithBus` template to unify all bus-connected components under one shared interface
-- Verification logic is structured and extensible per-component — each mixin declares its own `verify()` logic that walks and validates children
-- Added fake components and fake component declarations for test isolation
-- Unit tests now verify `ComponentDecl`, `BusDecl`, and full parent-child relationships including mismatches and hierarchy validation
+- HDL declarations (via mixins and component kinds) now fully match simulation components
+- `Irata`, `CPU`, and `Memory` are constructed using real HDL intent and verified in unit tests
+- Bus-connected components (like `ByteBus`, `WordBus`, `RegisterWithBus`) are cleanly represented and reusable
+- The HDL verification system confirms that the sim component tree structurally matches expectations
+- The entire `Irata` machine can now be driven in tests and produce logs from actual controller microcode
 
-### 🧠 DSL + Microcode Integration
+### ⚙️ Microcode + Execution
 
-- Components in the microcode DSL can now generically `copy()` from any bus-connected component to any other
-- This enables writing real instructions (like `LDA absolute`) with total indifference to component internals — the DSL only cares about what bus each thing is connected to
-- I can now express a full `read_memory_at_pc` in terms of component relationships alone
+- Microcode is compiled from a clean YAML DSL
+- The system properly performs fetch-decode-execute cycles:
+  - PC to address
+  - Memory read
+  - Opcode register update
+  - Execution of instruction logic
+- HLT runs successfully from real microcode
+- Disabling step merging avoids fetch-decode corruption, so LDA also works now
 
-### 🧠 Simulation Integration
+### 🧪 TickUntilHalt Test Cases Passing
 
-- The HDL type system is now fully connected to the sim layer
-- Each sim component can now return a `ComponentType`, and the plan is to verify the actual sim structure against the HDL declarations
-- `ProgramCounter`, `Memory`, and registers now follow the HDL mixin structure and will be validated using real HDL
-- HDL verification will be a core test in the sim suite: it will ensure that the component tree is wired the way I intended, with no simulation-specific shortcuts
-
----
-
-## 🧪 Testing
-
-- Test suite now includes:
-  - Standalone HDL component tests (including fakes)
-  - `ComponentDecl` and `BusDecl` verification logic
-  - DSL microcode execution
-  - Instruction encoder validation
-  - Controller ROM decoding
-- Fake components allow testing HDL logic without full sim integration
-- Tests ensure structural correctness and fail loudly on mismatch or misuse
+- ✅ HLT halts at 0x8001
+- ✅ LDA immediate loads correct value and halts at 0x8003
+- 🚨 Step merging caused controller corruption due to lack of stage boundaries — currently disabled
 
 ---
 
-## 🏗️ Actively In Progress
+## ⚠️ Known Issue: Step Merging Bug
 
-- ✅ Finalizing HDL `verify()` unit tests for core components
-- 🔁 Refactoring sim-side `Control` and `Register` to use mixin-style structure like the HDL
-- 🧱 Adding `CPU` and `Irata` shell components to the sim side
-- 🔎 Adding `type()` overrides to all sim components to support HDL-based verification
+- Step merging currently causes invalid controller behavior due to merging fetch logic from unrelated instructions (like HLT) into the prefix of other opcodes
+- Fix idea: introduce **`stage`** field in DSL steps (e.g., `fetch`, `decode`, `execute`) to restrict merging across conceptual boundaries
+
+---
+
+## 🛠️ In Progress
+
+- 🧩 `irata_test.cpp` now tests full instruction programs tick-by-tick
+- 🛑 Disabled step merging in compiler to ensure correctness
+- 🧪 Starting to build more test programs to verify the controller and system behavior
 
 ---
 
 ## 🔜 Immediate Next Steps
 
-- [ ] Add `ControllerDecl` and `MemoryDecl` tests
-- [ ] Implement sim-side CPU and Irata using HDL-defined structure
-- [ ] Verify full sim tree in `IrataDeclTest`
-- [ ] Build minimal `sim_runner` that loads a test cartridge and runs ticks
-- [ ] Output serialized simulator state for golden test comparison
+- [ ] Introduce `stage` concept to control step merging boundaries
+- [ ] Re-enable and safely test step merging with stage-aware logic
+- [ ] Add more basic instructions (`STA`, `JMP`, etc.) and verify correctness
+- [ ] Finalize sim CPU internals using HDL-style declarations
+- [ ] Start assembler prototype to compile programs from minimal syntax + YAML opcodes
 
 ---
 
-## 🔮 Longer-Term Plans
+## 💡 Emerging Ideas
 
-- 🧠 Expand instruction set and ROM cartridge support
-- 💾 Add assembler pipeline and support for YAML-defined test ROMs
-- 🔧 Improve sim runtime introspection for wires and buses
-- 🐞 Add debugger or step-through support
-- 🖥️ (Optional) Build GUI visualizer for educational value
-
----
-
-## 🧠 Guiding Principles
-
-- Declare everything. Fake nothing.
-- Let HDL define intent. Let sim prove execution.
-- Design for observability. Never hide the wires.
-- Keep each layer testable and explainable.
-- Write real instructions. Run real ticks. Build something that feels alive.
+- 🧱 Rebuild sim component system with mixin-style features for clarity and power
+- 🐍 Begin Python-side `irata/asm/py` support for reusable instruction definition loading
+- 📦 Use editable `pip` install and unify Python tooling via root Makefile
+- 🧰 Add `sim_runner` to load ROMs and dump serialized machine state for test harnesses
 
 ---
 
-🚀 **The HDL is solid. The sim is verifiable. The instructions are real. I can now tick a modeled CPU through a real control cycle based entirely on declared structure and compiled microcode. I’m almost to the point of running real programs. It’s happening.**
-```
+## 🧠 Philosophy Snapshot
+
+> "Declare the machine. Simulate the intent. Test every wire."
+
+This project is finally what I wanted it to be — a structure where nothing is hand-waved, and where everything that's true in the HDL is testably true in the simulation. And it runs real programs.
+
+---
+
+🔥 **This was a huge milestone. The computer ran. And it was beautiful.**

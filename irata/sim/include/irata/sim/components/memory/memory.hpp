@@ -64,6 +64,9 @@ public:
   // Sets the value of the read control line.
   void set_read(bool read);
 
+  // Returns the value at the given address.
+  Byte value(Word address) const;
+
 protected:
   void tick_write(Logger &logger) override;
   void tick_read(Logger &logger) override;
@@ -79,6 +82,7 @@ private:
   // Returns the region that contains the given address.
   // Throws an exception if no region contains the given address.
   Region &region(Word address);
+  const Region &region(Word address) const;
 };
 
 } // namespace irata::sim::components::memory

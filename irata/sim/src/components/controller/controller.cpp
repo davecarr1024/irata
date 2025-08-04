@@ -1,3 +1,4 @@
+#include <irata/common/strings/strings.hpp>
 #include <irata/sim/components/controller/complete_statuses.hpp>
 #include <irata/sim/components/controller/controller.hpp>
 #include <irata/sim/components/status.hpp>
@@ -72,11 +73,26 @@ CompleteStatuses Controller::status_values() const {
 }
 
 void Controller::tick_control(Logger &logger) {
+  const auto opcode = this->opcode();
+  const auto step_counter = this->step_counter();
   const auto complete_statuses = status_values();
   const auto controls =
-      instruction_memory_.read(opcode().unsigned_value(), complete_statuses,
-                               step_counter().unsigned_value());
+      instruction_memory_.read(opcode.unsigned_value(), complete_statuses,
+                               step_counter.unsigned_value());
   set_control_values(controls);
+
+  std::vector<std::string> status_strings;
+  for (const auto &[status, value] : complete_statuses.statuses()) {
+    status_strings.push_back(status->name() + "=" + std::to_string(value));
+  }
+  std::vector<std::string> control_strings;
+  for (const auto &control : controls) {
+    control_strings.push_back(control->path());
+  }
+  logger << "opcode=" << opcode << " step_counter=" << step_counter
+         << " statuses=[" << common::strings::join(status_strings, ", ")
+         << "] controls=[" << common::strings::join(control_strings, ", ")
+         << "]";
 }
 
 void Controller::set_control_values(

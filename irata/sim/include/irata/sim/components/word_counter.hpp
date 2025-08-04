@@ -10,7 +10,7 @@
 namespace irata::sim::components {
 
 // A word counter is a word register that can be incremented.
-class WordCounter : public WordRegister {
+class WordCounter final : public WordRegister {
 public:
   // Constructs a word counter with the given name.
   // If bus is non-nullptr, the word counter will be connected to the bus and

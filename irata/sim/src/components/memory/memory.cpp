@@ -78,9 +78,23 @@ Region &Memory::region(Word address) {
       return *region;
     }
   }
-  throw std::runtime_error("memory " + path() + " using unmapped address " +
-                           std::to_string(address.value()));
+  std::ostringstream os;
+  os << "memory " << path() << " using unmapped address " << address;
+  throw std::runtime_error(os.str());
 }
+
+const Region &Memory::region(Word address) const {
+  for (const auto &region : regions_) {
+    if (region->contains_address(address)) {
+      return *region;
+    }
+  }
+  std::ostringstream os;
+  os << "memory " << path() << " using unmapped address " << address;
+  throw std::runtime_error(os.str());
+}
+
+Byte Memory::value(Word address) const { return region(address).read(address); }
 
 void Memory::tick_write(Logger &logger) {
   if (write()) {

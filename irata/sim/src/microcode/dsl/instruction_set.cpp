@@ -36,6 +36,10 @@ namespace {
 std::unique_ptr<const InstructionSet> build_irata() {
   auto instruction_set = std::make_unique<InstructionSet>();
 
+  instruction_set->create_instruction("hlt", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().halt());
+
   instruction_set->create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().a());
 

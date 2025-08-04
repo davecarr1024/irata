@@ -33,6 +33,20 @@ template <typename T> void Bus<T>::tick_clear(Logger &logger) {
   }
 }
 
+template <typename T> struct BusComponentType;
+
+template <> struct BusComponentType<Byte> {
+  static constexpr hdl::ComponentType value = hdl::ComponentType::ByteBus;
+};
+
+template <> struct BusComponentType<Word> {
+  static constexpr hdl::ComponentType value = hdl::ComponentType::WordBus;
+};
+
+template <typename T> hdl::ComponentType Bus<T>::type() const {
+  return BusComponentType<T>::value;
+}
+
 template class Bus<Byte>;
 template class Bus<Word>;
 

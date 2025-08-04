@@ -10,11 +10,16 @@ namespace irata::sim::components {
 // The bus clears its value at the end of the tick.
 // It is an error if more than one component tries to set the value of the bus
 // in the same tick.
-template <typename T> class Bus : public Component {
+template <typename T> class Bus final : public Component {
 public:
+  static_assert(std::is_same_v<T, Byte> || std::is_same_v<T, Word>,
+                "Bus data type must be Byte or Word");
+
   // Constructs a bus with the given name and parent.
   explicit Bus(std::string_view name = "bus", Component *parent = nullptr);
   virtual ~Bus() = default;
+
+  hdl::ComponentType type() const override final;
 
   // Returns the current value on the bus during this tick, if any.
   std::optional<T> value() const;

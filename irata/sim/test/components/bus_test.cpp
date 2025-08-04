@@ -7,6 +7,13 @@ using ::testing::Optional;
 
 namespace irata::sim::components {
 
+TEST(BusTest, Type) {
+  ByteBus byte_bus;
+  EXPECT_EQ(byte_bus.type(), hdl::ComponentType::ByteBus);
+  WordBus word_bus;
+  EXPECT_EQ(word_bus.type(), hdl::ComponentType::WordBus);
+}
+
 TEST(BusTest, Empty) {
   Bus<Byte> bus;
   EXPECT_EQ(bus.value(), std::nullopt);

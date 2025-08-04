@@ -1,4 +1,8 @@
 instructions:
+  - name: HLT
+    opcode: 0x00
+    addressing_mode: none
+    description: Halt the CPU
   - name: LDA
     opcode: 0xA9
     addressing_mode: immediate

@@ -23,6 +23,7 @@
           "addressing_mode": {
             "type": "string",
             "enum": [
+              "none",
               "immediate",
               "absolute"
             ],

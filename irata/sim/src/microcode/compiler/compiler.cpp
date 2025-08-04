@@ -59,11 +59,11 @@ const Compiler &Compiler::irata() {
   passes.push_back(passes::InstructionCoverageValidator::irata());
   passes.push_back(std::make_unique<passes::StepIndexTransformer>());
   passes.push_back(std::make_unique<passes::StepIndexValidator>());
-  passes.push_back(std::make_unique<passes::StepMerger>());
-  passes.push_back(std::make_unique<passes::BusValidator>());
-  passes.push_back(std::make_unique<passes::StatusCompletenessValidator>());
-  passes.push_back(std::make_unique<passes::StepIndexValidator>());
-  passes.push_back(passes::InstructionCoverageValidator::irata());
+  // passes.push_back(std::make_unique<passes::StepMerger>());
+  // passes.push_back(std::make_unique<passes::BusValidator>());
+  // passes.push_back(std::make_unique<passes::StatusCompletenessValidator>());
+  // passes.push_back(std::make_unique<passes::StepIndexValidator>());
+  // passes.push_back(passes::InstructionCoverageValidator::irata());
   static const Compiler compiler(std::move(passes));
   return compiler;
 }

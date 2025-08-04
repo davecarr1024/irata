@@ -21,6 +21,8 @@ public:
 
   const CpuDecl &cpu() const;
 
+  const ProcessControlDecl &halt() const;
+
   static const IrataDecl &irata();
 
 private:
@@ -28,6 +30,7 @@ private:
   const ByteBusDecl data_bus_;
   const MemoryDecl memory_;
   const CpuDecl cpu_;
+  const ProcessControlDecl halt_;
 };
 
 const IrataDecl &irata();

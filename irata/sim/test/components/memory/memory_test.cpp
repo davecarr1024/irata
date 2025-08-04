@@ -102,6 +102,17 @@ TEST_F(MemoryTest, Type) {
   EXPECT_EQ(memory.type(), hdl::ComponentType::Memory);
 }
 
+TEST_F(MemoryTest, Value) {
+  std::map<Word, Byte> data = {{Word(0x00BE), Byte(0xEF)}};
+  auto memory = rom_memory(0x1000, Word(0x1000), "rom", std::move(data));
+  EXPECT_EQ(memory.value(Word(0x10BE)), Byte(0xEF));
+}
+
+TEST_F(MemoryTest, ValueOutOfRange) {
+  auto memory = rom_memory(0x1000, Word(0x1000), "rom");
+  EXPECT_THROW(memory.value(Word(0x2000)), std::runtime_error);
+}
+
 TEST_F(MemoryTest, Constructor) {
   std::vector<std::unique_ptr<Region>> regions;
   regions.emplace_back(ram(0x1000, Word(0x0000)));
