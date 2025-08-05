@@ -10,10 +10,13 @@
 
 namespace irata::assembler {
 
+// Parses a program into an intermediate representation.
 class Parser {
 public:
+  // An intermediate representation of a program.
   class Program {
   public:
+    // A single statement in a program.
     class Statement {
     public:
       enum class Type {
@@ -51,21 +54,27 @@ public:
       std::string value_;
     };
 
+    // A comment in a program, of the form ";  the comment", alone on a line or
+    // at the end of a line.
     class Comment final : public StatementWithType<Statement::Type::Comment>,
                           public StatementWithValue {
     public:
       explicit Comment(std::string_view value);
     };
 
+    // A label in a program, of the form "label:", alone on a line or at the
+    // start of a line.
     class Label final : public StatementWithType<Statement::Type::Label>,
                         public StatementWithValue {
     public:
       explicit Label(std::string_view value);
     };
 
+    // An instruction in a program, of the form "instruction arg".
     class Instruction final
         : public StatementWithType<Statement::Type::Instruction> {
     public:
+      // An argument to an instruction.
       class Arg {
       public:
         enum class Type {
@@ -101,6 +110,7 @@ public:
         }
       };
 
+      // No argument to an instruction. Of the form "instruction".
       class None final
           : public ArgWithType<Arg::Type::None>,
             public ArgWithAddressingMode<asm_::AddressingMode::NONE> {
@@ -123,6 +133,8 @@ public:
         T value_;
       };
 
+      // An immediate argument to an instruction. Of the form "instruction
+      // #value". Note that value can be #decimal or #$hex.
       class Immediate final
           : public ArgWithType<Arg::Type::Immediate>,
             public ArgWithAddressingMode<asm_::AddressingMode::IMMEDIATE>,
@@ -133,6 +145,8 @@ public:
         bool operator==(const Arg &other) const override final;
       };
 
+      // An absolute literal argument to an instruction. Of the form
+      // "instruction value". Note that value can be decimal or $hex.
       class AbsoluteLiteral final
           : public ArgWithType<Arg::Type::AbsoluteLiteral>,
             public ArgWithAddressingMode<asm_::AddressingMode::ABSOLUTE>,
@@ -143,6 +157,8 @@ public:
         bool operator==(const Arg &other) const override final;
       };
 
+      // An absolute label argument to an instruction. Of the form
+      // "instruction label".
       class AbsoluteLabel
           : public ArgWithType<Arg::Type::AbsoluteLabel>,
             public ArgWithAddressingMode<asm_::AddressingMode::ABSOLUTE>,
@@ -177,6 +193,7 @@ public:
     std::vector<std::unique_ptr<Statement>> statements_;
   };
 
+  // Parses the given input into a program.
   Program parse(std::string_view input);
 };
 
