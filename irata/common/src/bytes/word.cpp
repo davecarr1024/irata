@@ -6,6 +6,8 @@ namespace irata::common::bytes {
 
 Word::Word(uint16_t value) : value_(value) {}
 
+Word::operator uint16_t() const { return value_; }
+
 Word Word::from_bytes(Byte high, Byte low) {
   return Word((high.unsigned_value() << 8) | low.unsigned_value());
 }

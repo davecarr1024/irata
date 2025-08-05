@@ -27,4 +27,6 @@ std::string to_upper(std::string_view str);
 
 std::string to_lower(std::string_view str);
 
+bool starts_with(std::string_view s, std::string_view prefix);
+
 } // namespace irata::common::strings

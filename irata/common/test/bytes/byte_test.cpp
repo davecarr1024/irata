@@ -14,6 +14,12 @@ TEST(ByteTest, DefaultConstructor) {
   EXPECT_EQ(byte.signed_value(), 0);
 }
 
+TEST(ByteTest, ImplicitConversion) {
+  Byte byte = 0x12;
+  uint8_t value = byte;
+  EXPECT_EQ(value, 0x12);
+}
+
 TEST(ByteTest, UnsignedConstructor) {
   const Byte byte(0x12);
   EXPECT_EQ(byte.value(), 0x12);
@@ -40,6 +46,9 @@ TEST(ByteTest, Equality) {
   EXPECT_EQ(Byte::from_unsigned(0xAB), Byte::from_signed(-85));
   EXPECT_NE(Byte::from_signed(85), Byte::from_unsigned(0xAB));
   EXPECT_NE(Byte::from_unsigned(0xAB), Byte::from_signed(85));
+
+  EXPECT_EQ(Byte(0x12), 0x12);
+  EXPECT_NE(Byte(0x12), 0x34);
 }
 
 TEST(ByteTest, Bit) {

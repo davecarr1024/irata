@@ -61,4 +61,9 @@ std::string to_lower(std::string_view str) {
   return result;
 }
 
+bool starts_with(std::string_view s, std::string_view prefix) {
+  return s.size() >= prefix.size() &&
+         std::equal(prefix.begin(), prefix.end(), s.begin());
+}
+
 } // namespace irata::common::strings

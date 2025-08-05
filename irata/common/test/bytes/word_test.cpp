@@ -8,6 +8,12 @@ TEST(WordTest, DefaultConstructor) {
   EXPECT_EQ(word.value(), 0);
 }
 
+TEST(WordTest, ImplicitConstructor) {
+  const Word word = 0x1234;
+  uint16_t value = word;
+  EXPECT_EQ(value, 0x1234);
+}
+
 TEST(WordTest, ForValue) {
   const Word word(0x1234);
   EXPECT_EQ(word.value(), 0x1234);
@@ -39,6 +45,8 @@ TEST(WordTest, ToString) {
 TEST(WordTest, Equal) {
   EXPECT_EQ(Word(0x1234), Word(0x1234));
   EXPECT_NE(Word(0x1234), Word(0x5678));
+  EXPECT_EQ(Word(0x1234), 0x1234);
+  EXPECT_NE(Word(0x1234), 0x5678);
 }
 
 TEST(WordTest, Add) { EXPECT_EQ(Word(0x1234) + Word(0x5678), Word(0x68AC)); }

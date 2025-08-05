@@ -51,4 +51,16 @@ TEST(StringsTest, ToLower) {
   EXPECT_EQ(to_lower("hello"), "hello");
 }
 
+TEST(StringsTest, StartsWith) {
+  EXPECT_TRUE(starts_with("", ""));
+  EXPECT_TRUE(starts_with("hello", ""));
+  EXPECT_TRUE(starts_with("hello", "h"));
+  EXPECT_TRUE(starts_with("hello", "he"));
+  EXPECT_TRUE(starts_with("hello", "hello"));
+  EXPECT_FALSE(starts_with("hello", "hello world"));
+  EXPECT_FALSE(starts_with("hello", "world"));
+  EXPECT_FALSE(starts_with("hello", "x"));
+  EXPECT_FALSE(starts_with("hello", "xhello"));
+}
+
 } // namespace irata::common::strings

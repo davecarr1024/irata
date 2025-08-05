@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <type_traits>
 #include <vector>
 
 namespace irata::common::bytes {
@@ -12,7 +13,9 @@ class ByteResult;
 class Byte {
 public:
   // Constructs a byte with the given unsigned value.
-  explicit Byte(uint8_t value);
+  Byte(uint8_t value);
+
+  operator uint8_t() const;
 
   // Constructs a byte with the given unsigned value.
   static Byte from_unsigned(uint8_t value);
@@ -29,6 +32,17 @@ public:
   bool operator==(const Byte &rhs) const;
   bool operator!=(const Byte &rhs) const;
   bool operator<(const Byte &rhs) const;
+
+  template <typename T, typename std::enable_if<
+                            std::is_integral<T>::value>::type * = nullptr>
+  bool operator==(T rhs) const {
+    return rhs == value_;
+  }
+  template <typename T, typename std::enable_if<
+                            std::is_integral<T>::value>::type * = nullptr>
+  bool operator!=(T rhs) const {
+    return rhs != value_;
+  }
 
   // Returns the value of the bit at the given index (0-7).
   bool bit(uint8_t index) const;

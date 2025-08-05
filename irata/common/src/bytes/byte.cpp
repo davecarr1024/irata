@@ -13,6 +13,8 @@ Byte Byte::from_signed(int8_t value) {
 
 Byte::Byte(uint8_t value) : value_(value) {}
 
+Byte::operator uint8_t() const { return unsigned_value(); }
+
 bool Byte::operator==(const Byte &rhs) const { return value_ == rhs.value_; }
 
 bool Byte::operator!=(const Byte &rhs) const { return value_ != rhs.value_; }
