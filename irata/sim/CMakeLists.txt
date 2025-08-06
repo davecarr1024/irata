@@ -12,3 +12,7 @@ target_include_directories(sim_tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/test/inc
 target_link_libraries(sim_tests PUBLIC irata_sim irata_asm irata_common gtest gmock gtest_main)
 target_link_libraries(sim_tests PRIVATE irata_build_flags)
 add_test(NAME sim_tests COMMAND sim_tests)
+
+add_executable(sim ${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp)
+target_link_libraries(sim PUBLIC irata_sim irata_asm irata_common gtest gmock gtest_main)
+target_link_libraries(sim PRIVATE irata_build_flags)

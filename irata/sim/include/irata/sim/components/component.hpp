@@ -66,7 +66,7 @@ public:
   std::string path() const;
 
   // Tick the whole component tree, doing all tick phases in order top down.
-  void tick(std::ostream &log_output = std::cout);
+  void tick(std::ostream &log_output = std::cerr);
 
   // Returns a list of all controls in the component tree.
   virtual std::vector<Control *> controls();
