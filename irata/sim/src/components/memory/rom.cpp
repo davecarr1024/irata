@@ -19,6 +19,30 @@ ROM::ROM(size_t size, std::string_view name, std::map<Word, Byte> data)
   }
 }
 
+namespace {
+
+std::map<Word, Byte> load(size_t size, std::istream &is) {
+  std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(is)),
+                             (std::istreambuf_iterator<char>()));
+  if (bytes.size() >= size) {
+    throw std::invalid_argument("loaded data size " + std::to_string(size) +
+                                " larger than rom size " +
+                                std::to_string(size));
+  }
+  std::map<Word, Byte> data;
+  for (size_t i = 0; i < bytes.size(); ++i) {
+    if (const auto byte = bytes[i]; byte != 0) {
+      data[Word(i)] = byte;
+    }
+  }
+  return data;
+}
+
+} // namespace
+
+ROM::ROM(size_t size, std::istream &is, std::string_view name)
+    : ROM(size, name, load(size, is)) {}
+
 size_t ROM::size() const { return size_; }
 
 const std::map<Word, Byte> &ROM::data() const { return data_; }

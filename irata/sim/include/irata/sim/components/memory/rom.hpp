@@ -17,6 +17,7 @@ public:
   // Addresses must be within the range [0, size).
   explicit ROM(size_t size, std::string_view name = "rom",
                std::map<Word, Byte> data = {});
+  ROM(size_t size, std::istream &is, std::string_view name = "rom");
   virtual ~ROM() = default;
 
   // Returns the size of the ROM in bytes.
