@@ -41,6 +41,13 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->create_step()
       ->with_control(hdl::irata().halt());
 
+  instruction_set->create_instruction("crs", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().crash());
+
+  instruction_set->create_instruction("nop", asm_::AddressingMode::NONE)
+      ->create_step();
+
   instruction_set->create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().a());
 

@@ -23,6 +23,8 @@ public:
 
   const ProcessControlDecl &halt() const;
 
+  const ProcessControlDecl &crash() const;
+
   static const IrataDecl &irata();
 
 private:
@@ -31,6 +33,7 @@ private:
   const MemoryDecl memory_;
   const CpuDecl cpu_;
   const ProcessControlDecl halt_;
+  const ProcessControlDecl crash_;
 };
 
 const IrataDecl &irata();

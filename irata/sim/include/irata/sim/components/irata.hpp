@@ -14,6 +14,8 @@ namespace irata::sim::components {
 // It also provides facilities for running the computer until it halts.
 class Irata final : public Component {
 public:
+  enum class Result { Halt, Crash };
+
   explicit Irata(std::unique_ptr<memory::ROM> cartridge = nullptr);
 
   hdl::ComponentType type() const override final;
@@ -30,7 +32,13 @@ public:
   const Cpu &cpu() const;
   Cpu &cpu();
 
-  void tick_until_halt();
+  const Control &halt() const;
+  Control &halt();
+
+  const Control &crash() const;
+  Control &crash();
+
+  Result tick_until_halt();
 
 protected:
   void tick_process(Logger &logger) override final;
@@ -41,7 +49,9 @@ private:
   memory::Memory memory_;
   Cpu cpu_;
   Control halt_;
+  Control crash_;
   bool halt_received_ = false;
+  bool crash_received_ = false;
 };
 
 } // namespace irata::sim::components

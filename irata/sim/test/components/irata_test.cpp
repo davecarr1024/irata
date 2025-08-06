@@ -19,6 +19,8 @@ protected:
 
   const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
       "HLT", asm_::AddressingMode::NONE);
+  const asm_::Instruction &crs = asm_::InstructionSet::irata().get_instruction(
+      "CRS", asm_::AddressingMode::NONE);
   const asm_::Instruction &lda = asm_::InstructionSet::irata().get_instruction(
       "LDA", asm_::AddressingMode::IMMEDIATE);
 };
@@ -49,13 +51,19 @@ TEST_F(IrataTest, LoadCartridge) {
 
 TEST_F(IrataTest, TickUntilHalt) {
   auto irata = this->irata({hlt.opcode()});
-  irata.tick_until_halt();
+  EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
+  EXPECT_EQ(irata.cpu().pc().value(), Word(0x8001));
+}
+
+TEST_F(IrataTest, TickUntilCrash) {
+  auto irata = this->irata({crs.opcode()});
+  EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Crash);
   EXPECT_EQ(irata.cpu().pc().value(), Word(0x8001));
 }
 
 TEST_F(IrataTest, TickUntilHaltWithLda) {
   auto irata = this->irata({lda.opcode(), Byte(0x12), hlt.opcode()});
-  irata.tick_until_halt();
+  EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
   EXPECT_EQ(irata.cpu().pc().value(), Word(0x8003));
   EXPECT_EQ(irata.cpu().a().value(), Byte(0x12));
 }

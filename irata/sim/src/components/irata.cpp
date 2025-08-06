@@ -8,7 +8,8 @@ Irata::Irata(std::unique_ptr<memory::ROM> cartridge)
       memory_(memory::Memory::irata(address_bus_, data_bus_,
                                     std::move(cartridge), this)),
       cpu_(Cpu::irata(data_bus_, address_bus_, this)),
-      halt_("halt", hdl::TickPhase::Process, this) {
+      halt_("halt", hdl::TickPhase::Process, this),
+      crash_("crash", hdl::TickPhase::Process, this) {
   cpu_.pc().set_value(Word(0x8000));
 }
 
@@ -26,22 +27,35 @@ ByteBus &Irata::data_bus() { return data_bus_; }
 const WordBus &Irata::address_bus() const { return address_bus_; }
 WordBus &Irata::address_bus() { return address_bus_; }
 
+const Control &Irata::halt() const { return halt_; }
+Control &Irata::halt() { return halt_; }
+
+const Control &Irata::crash() const { return crash_; }
+Control &Irata::crash() { return crash_; }
+
 void Irata::tick_process(Logger &logger) {
   if (halt_.value()) {
     logger << "halted";
     halt_received_ = true;
   }
+  if (crash_.value()) {
+    logger << "crashed";
+    crash_received_ = true;
+  }
 }
 
-void Irata::tick_until_halt() {
-  int i = 0;
-  while (!halt_received_ && i++ < 10) {
+Irata::Result Irata::tick_until_halt() {
+  while (!halt_received_ && !crash_received_) {
     std::cout << "ticking irata:\n  pc = " << cpu_.pc().value()
               << "\n  opcode = " << cpu_.controller().opcode()
               << "\n  step counter = " << cpu_.controller().step_counter()
               << "\n";
     tick();
   }
+  if (crash_received_) {
+    return Result::Crash;
+  }
+  return Result::Halt;
 }
 
 } // namespace irata::sim::components
