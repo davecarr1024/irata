@@ -14,13 +14,21 @@ int main(int argc, char **argv) {
     rom = std::make_unique<memory::ROM>(0x1000, std::cin);
   }
   Irata irata(std::move(rom));
+  Irata::Result result;
   try {
-    irata.tick_until_halt();
+    result = irata.tick_until_halt();
   } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << std::endl;
     return 1;
   }
-  std::cerr << "Simulation complete. Final state:" << std::endl;
-  irata.serialize_all(std::cerr);
-  return 0;
+  switch (result) {
+  case Irata::Result::Halt:
+    std::cerr << "Simulation complete. Final state:" << std::endl;
+    irata.serialize_all(std::cerr);
+    return 0;
+  case Irata::Result::Crash:
+    std::cerr << "Simulation crashed." << std::endl;
+    irata.serialize_all(std::cerr);
+    return 1;
+  }
 }
