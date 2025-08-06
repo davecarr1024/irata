@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irata/assembler/instruction_binder.hpp>
 #include <map>
 
