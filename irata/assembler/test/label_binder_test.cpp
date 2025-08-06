@@ -1,0 +1,296 @@
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <irata/asm/instruction_set.hpp>
+#include <irata/assembler/label_binder.hpp>
+
+using ::testing::HasSubstr;
+
+namespace irata::assembler {
+
+namespace {
+
+class LabelBinderTest : public ::testing::Test {
+protected:
+  LabelBinder binder;
+
+  const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
+      "hlt", asm_::AddressingMode::NONE);
+  const asm_::Instruction &lda_immediate =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::IMMEDIATE);
+  const asm_::Instruction &lda_absolute =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::ABSOLUTE);
+};
+
+} // namespace
+
+TEST_F(LabelBinderTest, Instruction_None_Properties) {
+  const auto arg = LabelBinder::Program::Instruction::None();
+  EXPECT_EQ(arg.type(), LabelBinder::Program::Instruction::Arg::Type::None);
+}
+
+TEST_F(LabelBinderTest, Instruction_None_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Instruction::None(),
+            LabelBinder::Program::Instruction::None());
+  EXPECT_NE(LabelBinder::Program::Instruction::None(),
+            LabelBinder::Program::Instruction::Immediate(0x00));
+}
+
+TEST_F(LabelBinderTest, Instruction_Immediate_Properties) {
+  const auto arg = LabelBinder::Program::Instruction::Immediate(0x12);
+  EXPECT_EQ(arg.type(),
+            LabelBinder::Program::Instruction::Arg::Type::Immediate);
+  EXPECT_EQ(arg.value(), 0x12);
+}
+
+TEST_F(LabelBinderTest, Instruction_Immediate_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Instruction::Immediate(0x12),
+            LabelBinder::Program::Instruction::Immediate(0x12));
+  EXPECT_NE(LabelBinder::Program::Instruction::Immediate(0x12),
+            LabelBinder::Program::Instruction::Immediate(0x34));
+  EXPECT_NE(LabelBinder::Program::Instruction::Immediate(0x12),
+            LabelBinder::Program::Instruction::None());
+}
+
+TEST_F(LabelBinderTest, Instruction_Absolute_Properties) {
+  const auto arg = LabelBinder::Program::Instruction::Absolute(0x1234);
+  EXPECT_EQ(arg.type(), LabelBinder::Program::Instruction::Arg::Type::Absolute);
+  EXPECT_EQ(arg.value(), 0x1234);
+}
+
+TEST_F(LabelBinderTest, Instruction_Absolute_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Instruction::Absolute(0x1234),
+            LabelBinder::Program::Instruction::Absolute(0x1234));
+  EXPECT_NE(LabelBinder::Program::Instruction::Absolute(0x1234),
+            LabelBinder::Program::Instruction::Absolute(0x5678));
+  EXPECT_NE(LabelBinder::Program::Instruction::Absolute(0x1234),
+            LabelBinder::Program::Instruction::None());
+}
+
+TEST_F(LabelBinderTest, Instruction_Properties) {
+  const auto instruction = LabelBinder::Program::Instruction(
+      0x1234, hlt, std::make_unique<LabelBinder::Program::Instruction::None>());
+  EXPECT_EQ(instruction.type(),
+            LabelBinder::Program::Statement::Type::Instruction);
+  EXPECT_EQ(instruction.address(), 0x1234);
+  EXPECT_EQ(instruction.instruction(), hlt);
+  EXPECT_EQ(instruction.arg(), LabelBinder::Program::Instruction::None());
+}
+
+TEST_F(LabelBinderTest, Instruction_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()),
+            LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()));
+  EXPECT_NE(LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()),
+            LabelBinder::Program::Instruction(
+                0x5678, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()));
+  EXPECT_NE(LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()),
+            LabelBinder::Program::Instruction(
+                0x1234, lda_immediate,
+                std::make_unique<LabelBinder::Program::Instruction::None>()));
+  EXPECT_NE(LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()),
+            LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::Immediate>(
+                    0x12)));
+}
+
+TEST_F(LabelBinderTest, Program_Equality) {
+  {
+    std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
+    std::vector<std::unique_ptr<LabelBinder::Program::Statement>> rhs;
+    EXPECT_EQ(LabelBinder::Program(std::move(lhs)),
+              LabelBinder::Program(std::move(rhs)));
+  }
+  {
+    std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
+    lhs.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+        0x1234, hlt,
+        std::make_unique<LabelBinder::Program::Instruction::None>()));
+    std::vector<std::unique_ptr<LabelBinder::Program::Statement>> rhs;
+    EXPECT_NE(LabelBinder::Program(std::move(lhs)),
+              LabelBinder::Program(std::move(rhs)));
+  }
+  {
+    std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
+    lhs.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+        0x1234, hlt,
+        std::make_unique<LabelBinder::Program::Instruction::None>()));
+    std::vector<std::unique_ptr<LabelBinder::Program::Statement>> rhs;
+    rhs.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+        0x1234, hlt,
+        std::make_unique<LabelBinder::Program::Instruction::None>()));
+    EXPECT_EQ(LabelBinder::Program(std::move(lhs)),
+              LabelBinder::Program(std::move(rhs)));
+  }
+}
+
+TEST_F(LabelBinderTest, Bind_Empty) {
+  const auto program = binder.bind(InstructionBinder::Program({}));
+  EXPECT_EQ(program, LabelBinder::Program({}));
+}
+
+TEST_F(LabelBinderTest, Bind_SingleInstruction_None) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, hlt,
+          std::make_unique<InstructionBinder::Program::Instruction::None>()));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, hlt,
+      std::make_unique<LabelBinder::Program::Instruction::None>()));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_SingleInstruction_Immediate) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, lda_immediate,
+          std::make_unique<InstructionBinder::Program::Instruction::Immediate>(
+              0x12)));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, lda_immediate,
+      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x12)));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLiteral) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, lda_absolute,
+          std::make_unique<
+              InstructionBinder::Program::Instruction::AbsoluteLiteral>(
+              0x5678)));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, lda_absolute,
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Label>(0x5678, "label"));
+  statements.push_back(std::make_unique<
+                       InstructionBinder::Program::Instruction>(
+      0x1234, lda_absolute,
+      std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
+          "label")));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, lda_absolute,
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel_NotFound) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(std::make_unique<
+                       InstructionBinder::Program::Instruction>(
+      0x1234, lda_absolute,
+      std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
+          "unknown_label")));
+  EXPECT_THROW(
+      {
+        try {
+          binder.bind(InstructionBinder::Program(std::move(statements)));
+        } catch (const std::invalid_argument &e) {
+          EXPECT_THAT(e.what(), HasSubstr("label not found: unknown_label"));
+          throw;
+        }
+      },
+      std::invalid_argument);
+}
+
+TEST_F(LabelBinderTest, Bind_DuplicateLabel) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Label>(0x5678, "label"));
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Label>(0x9ABC, "label"));
+  EXPECT_THROW(
+      {
+        try {
+          binder.bind(InstructionBinder::Program(std::move(statements)));
+        } catch (const std::invalid_argument &e) {
+          EXPECT_THAT(e.what(), HasSubstr("duplicate label: label"));
+          throw;
+        }
+      },
+      std::invalid_argument);
+}
+
+TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Label>(0x9ABC, "label"));
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, hlt,
+          std::make_unique<InstructionBinder::Program::Instruction::None>()));
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1235, lda_immediate,
+          std::make_unique<InstructionBinder::Program::Instruction::Immediate>(
+              0x12)));
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1236, lda_absolute,
+          std::make_unique<
+              InstructionBinder::Program::Instruction::AbsoluteLiteral>(
+              0x5678)));
+  statements.push_back(std::make_unique<
+                       InstructionBinder::Program::Instruction>(
+      0x1237, lda_absolute,
+      std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
+          "label")));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, hlt,
+      std::make_unique<LabelBinder::Program::Instruction::None>()));
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1235, lda_immediate,
+      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x12)));
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1236, lda_absolute,
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1237, lda_absolute,
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x9ABC)));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+} // namespace irata::assembler
