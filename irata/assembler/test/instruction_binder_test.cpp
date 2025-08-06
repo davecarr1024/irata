@@ -29,7 +29,7 @@ TEST_F(InstructionBinderTest, Label_Properties) {
   EXPECT_EQ(label.address(), 0x1234);
   EXPECT_EQ(label.value(), "label");
   EXPECT_EQ(label.type(), InstructionBinder::Program::Statement::Type::Label);
-  EXPECT_EQ(label.size(), 2);
+  EXPECT_EQ(label.size(), 0);
 }
 
 TEST_F(InstructionBinderTest, Label_Equality) {

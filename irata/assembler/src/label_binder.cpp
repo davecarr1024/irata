@@ -1,5 +1,7 @@
 #include <iostream>
 #include <irata/assembler/label_binder.hpp>
+#include <irata/common/strings/strings.hpp>
+#include <sstream>
 
 namespace irata::assembler {
 
@@ -247,6 +249,64 @@ LabelBinder::bind(const InstructionBinder::Program &program) {
     }
   }
   return Program(std::move(statements));
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Statement::Type &type) {
+  switch (type) {
+  case LabelBinder::Program::Statement::Type::Instruction:
+    return os << "Instruction";
+  default:
+    throw std::logic_error("unknown statement type");
+  }
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::Arg::Type &type) {
+  switch (type) {
+  case LabelBinder::Program::Instruction::Arg::Type::None:
+    return os << "None";
+  case LabelBinder::Program::Instruction::Arg::Type::Immediate:
+    return os << "Immediate";
+  case LabelBinder::Program::Instruction::Arg::Type::Absolute:
+    return os << "Absolute";
+  default:
+    throw std::logic_error("unknown arg type");
+  }
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Instruction::Arg &arg) {
+  return os << "Arg(type = " << arg.type() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Instruction &instruction) {
+  return os << "Instruction(instruction = " << instruction.instruction()
+            << ", arg = " << instruction.arg() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Statement &statement) {
+  switch (statement.type()) {
+  case LabelBinder::Program::Statement::Type::Instruction:
+    return os << dynamic_cast<const LabelBinder::Program::Instruction &>(
+               statement);
+  default:
+    throw std::logic_error("unknown statement type");
+  }
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program &program) {
+  std::vector<std::string> statement_strs;
+  for (const auto &statement : program.statements()) {
+    std::ostringstream os;
+    os << *statement;
+    statement_strs.push_back(os.str());
+  }
+  return os << "Program(" << common::strings::join(statement_strs, ", ") << ")";
 }
 
 } // namespace irata::assembler

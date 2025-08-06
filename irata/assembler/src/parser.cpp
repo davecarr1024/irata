@@ -218,4 +218,80 @@ Parser::Program Parser::parse(std::string_view input) {
   return Program(std::move(statements));
 }
 
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Statement::Type &type) {
+  switch (type) {
+  case Parser::Program::Statement::Type::Comment:
+    return os << "Comment";
+  case Parser::Program::Statement::Type::Label:
+    return os << "Label";
+  case Parser::Program::Statement::Type::Instruction:
+    return os << "Instruction";
+  default:
+    throw std::logic_error("Unknown statement type");
+  }
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::Arg::Type &type) {
+  switch (type) {
+  case Parser::Program::Instruction::Arg::Type::None:
+    return os << "None";
+  case Parser::Program::Instruction::Arg::Type::Immediate:
+    return os << "Immediate";
+  case Parser::Program::Instruction::Arg::Type::AbsoluteLiteral:
+    return os << "AbsoluteLiteral";
+  case Parser::Program::Instruction::Arg::Type::AbsoluteLabel:
+    return os << "AbsoluteLabel";
+  default:
+    throw std::logic_error("Unknown arg type");
+  }
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::Arg &arg) {
+  return os << "Arg(type = " << arg.type()
+            << ", addressing_mode = " << arg.addressing_mode() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Comment &comment) {
+  return os << "Comment(value = " << comment.value() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Label &label) {
+  return os << "Label(value = " << label.value() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction &instruction) {
+  return os << "Instruction(instruction = " << instruction.instruction()
+            << ", arg = " << instruction.arg() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Statement &statement) {
+  switch (statement.type()) {
+  case Parser::Program::Statement::Type::Comment:
+    return os << dynamic_cast<const Parser::Program::Comment &>(statement);
+  case Parser::Program::Statement::Type::Label:
+    return os << dynamic_cast<const Parser::Program::Label &>(statement);
+  case Parser::Program::Statement::Type::Instruction:
+    return os << dynamic_cast<const Parser::Program::Instruction &>(statement);
+  default:
+    throw std::logic_error("Unknown statement type");
+  }
+}
+
+std::ostream &operator<<(std::ostream &os, const Parser::Program &program) {
+  std::vector<std::string> statement_strs;
+  for (const auto &statement : program.statements()) {
+    std::ostringstream os;
+    os << *statement;
+    statement_strs.push_back(os.str());
+  }
+  return os << "Program(" << common::strings::join(statement_strs, ", ") << ")";
+}
+
 } // namespace irata::assembler

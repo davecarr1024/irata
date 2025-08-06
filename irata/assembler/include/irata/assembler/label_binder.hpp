@@ -148,4 +148,17 @@ public:
   Program bind(const InstructionBinder::Program &program);
 };
 
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Statement::Type &type);
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::Arg::Type &type);
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Instruction::Arg &arg);
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Instruction &instruction);
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Statement &statement);
+std::ostream &operator<<(std::ostream &os, const LabelBinder::Program &program);
+
 } // namespace irata::assembler

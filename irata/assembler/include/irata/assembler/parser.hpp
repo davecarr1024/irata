@@ -197,4 +197,19 @@ public:
   Program parse(std::string_view input);
 };
 
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Statement::Type &type);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::Arg::Type &type);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::Arg &arg);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Comment &comment);
+std::ostream &operator<<(std::ostream &os, const Parser::Program::Label &label);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction &instruction);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Statement &statement);
+std::ostream &operator<<(std::ostream &os, const Parser::Program &program);
+
 } // namespace irata::assembler

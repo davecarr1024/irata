@@ -56,7 +56,7 @@ InstructionBinder::Program::Label::Label(common::bytes::Word address,
 
 std::string InstructionBinder::Program::Label::value() const { return value_; }
 
-size_t InstructionBinder::Program::Label::size() const { return 2; }
+size_t InstructionBinder::Program::Label::size() const { return 0; }
 
 bool InstructionBinder::Program::Label::operator==(
     const Statement &other) const {
