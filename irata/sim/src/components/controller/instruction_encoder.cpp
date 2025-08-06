@@ -87,8 +87,7 @@ InstructionEncoder::encode_address(const microcode::table::Entry &entry) const {
 
 std::tuple<uint8_t, CompleteStatuses, uint8_t>
 InstructionEncoder::decode_address(uint16_t address) const {
-  const uint8_t opcode =
-      (address >> (num_status_bits() + num_step_index_bits())) & max_opcode();
+  const uint8_t opcode = address >> (num_status_bits() + num_step_index_bits());
   const uint8_t encoded_statuses =
       (address >> num_step_index_bits()) & ((1 << num_status_bits()) - 1);
   const auto statuses = status_encoder_.decode(encoded_statuses);

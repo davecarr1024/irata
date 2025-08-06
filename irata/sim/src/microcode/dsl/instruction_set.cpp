@@ -44,6 +44,10 @@ std::unique_ptr<const InstructionSet> build_irata() {
   instruction_set->create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().a());
 
+  // implement me
+  instruction_set->create_instruction("lda", asm_::AddressingMode::ABSOLUTE)
+      ->create_step();
+
   return instruction_set;
 }
 

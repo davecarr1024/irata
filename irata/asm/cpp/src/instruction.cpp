@@ -10,6 +10,9 @@ std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode) {
   case AddressingMode::ABSOLUTE:
     os << "ABSOLUTE";
     break;
+  case AddressingMode::NONE:
+    os << "NONE";
+    break;
   default:
     os << "UNKNOWN";
     break;

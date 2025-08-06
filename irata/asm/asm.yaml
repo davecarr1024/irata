@@ -7,4 +7,8 @@ instructions:
     opcode: 0xA9
     addressing_mode: immediate
     description: Load accumulator from constant
+  - name: LDA
+    opcode: 0xA5
+    addressing_mode: absolute
+    description: Load accumulator from memory
 

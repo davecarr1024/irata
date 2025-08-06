@@ -1,9 +1,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <irata/sim/components/controller/instruction_encoder.hpp>
 #include <irata/sim/hdl/irata_decl.hpp>
 #include <irata/sim/microcode/compiler/compiler.hpp>
-#include <stdexcept>
+#include <utility>
 
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;

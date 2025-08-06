@@ -25,7 +25,7 @@ std::ostream &operator<<(std::ostream &os, const Entry &entry) {
   }
   os << "}, controls={";
   for (const auto &control : entry.controls) {
-    os << control << ", ";
+    os << control->path() << ", ";
   }
   os << "})";
   return os;

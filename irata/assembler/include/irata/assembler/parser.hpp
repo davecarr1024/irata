@@ -11,7 +11,7 @@
 namespace irata::assembler {
 
 // Parses a program into an intermediate representation.
-class Parser {
+class Parser final {
 public:
   // An intermediate representation of a program.
   class Program {
