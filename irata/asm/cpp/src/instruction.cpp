@@ -51,10 +51,10 @@ bool Instruction::operator<(const Instruction &other) const {
 }
 
 std::ostream &operator<<(std::ostream &os, const Instruction &instruction) {
-  os << "Instruction{name=" << instruction.name()
+  os << "Instruction(name=" << instruction.name()
      << ", opcode=" << instruction.opcode()
      << ", addressing_mode=" << instruction.addressing_mode()
-     << ", description=" << instruction.description() << "}";
+     << ", description=" << instruction.description() << ")";
   return os;
 }
 

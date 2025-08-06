@@ -295,8 +295,48 @@ operator<<(std::ostream &os,
 
 std::ostream &
 operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::None &arg) {
+  return os << "None()";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::Immediate &arg) {
+  return os << "Immediate(value = " << arg.value() << ")";
+}
+
+std::ostream &operator<<(
+    std::ostream &os,
+    const InstructionBinder::Program::Instruction::AbsoluteLiteral &arg) {
+  return os << "AbsoluteLiteral(value = " << arg.value() << ")";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::AbsoluteLabel &arg) {
+  return os << "AbsoluteLabel(value = " << arg.value() << ")";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
            const InstructionBinder::Program::Instruction::Arg &arg) {
-  return os << "Arg(type = " << arg.type() << ", size = " << arg.size() << ")";
+  switch (arg.type()) {
+  case InstructionBinder::Program::Instruction::Arg::Type::None:
+    return os << dynamic_cast<
+               const InstructionBinder::Program::Instruction::None &>(arg);
+  case InstructionBinder::Program::Instruction::Arg::Type::Immediate:
+    return os << dynamic_cast<
+               const InstructionBinder::Program::Instruction::Immediate &>(arg);
+  case InstructionBinder::Program::Instruction::Arg::Type::AbsoluteLiteral:
+    return os << dynamic_cast<const InstructionBinder::Program::Instruction::
+                                  AbsoluteLiteral &>(arg);
+  case InstructionBinder::Program::Instruction::Arg::Type::AbsoluteLabel:
+    return os << dynamic_cast<
+               const InstructionBinder::Program::Instruction::AbsoluteLabel &>(
+               arg);
+  default:
+    throw std::logic_error("unknown arg type");
+  }
 }
 
 std::ostream &operator<<(std::ostream &os,

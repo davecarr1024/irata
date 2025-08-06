@@ -1,4 +1,4 @@
 modules = ["cpp-clang14", "python-3.12"]
 [nix]
 channel = "stable-24_05"
-packages = ["clang-tools_18", "cmake", "llvmPackages.bintools-unwrapped", "python312Packages.jsonschema", "python312Packages.pyyaml", "bc"]
+packages = ["clang-tools_18", "cmake", "llvmPackages.bintools-unwrapped", "python312Packages.jsonschema", "python312Packages.pyyaml", "bc", "unixtools.xxd", "hexdump"]

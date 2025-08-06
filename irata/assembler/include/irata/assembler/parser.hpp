@@ -202,6 +202,16 @@ std::ostream &operator<<(std::ostream &os,
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction::Arg::Type &type);
 std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::None &arg);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::Immediate &arg);
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::AbsoluteLiteral &arg);
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::AbsoluteLabel &arg);
+std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction::Arg &arg);
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Comment &comment);

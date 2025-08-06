@@ -6,16 +6,15 @@ namespace irata::assembler {
 
 std::vector<common::bytes::Byte>
 Assembler::assemble(std::string_view input) const {
-  std::cout << "assemble " << input << std::endl;
   const auto parser_output = Parser().parse(input);
-  std::cout << "parser_output " << parser_output << std::endl;
+  std::cerr << "parser output: " << parser_output << std::endl;
   const auto instruction_binder_output =
       InstructionBinder().bind(parser_output);
-  std::cout << "instruction_binder_output " << instruction_binder_output
+  std::cerr << "instruction binder output: " << instruction_binder_output
             << std::endl;
   const auto label_binder_output =
       LabelBinder().bind(instruction_binder_output);
-  std::cout << "label_binder_output " << label_binder_output << std::endl;
+  std::cerr << "label binder output: " << label_binder_output << std::endl;
   const auto byte_encoder_output = ByteEncoder().encode(label_binder_output);
   if (byte_encoder_output.empty()) {
     return {};
@@ -38,7 +37,11 @@ void Assembler::assemble(std::string_view input, std::ostream &output) const {
   std::vector<uint8_t> values;
   values.reserve(bytes.size());
   for (const auto &byte : bytes) {
-    values.push_back(byte.value());
+    const auto value = byte.value();
+    std::cerr << "writing byte: " << byte << " = " << common::bytes::Byte(value)
+              << " = " << int(value) << std::endl;
+    values.push_back(value);
+    // values.push_back(byte.value());
   }
   output.write(reinterpret_cast<const char *>(values.data()), values.size());
 }

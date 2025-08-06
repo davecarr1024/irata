@@ -12,3 +12,7 @@ target_include_directories(assembler_tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/te
 target_link_libraries(assembler_tests PUBLIC irata_assembler irata_sim irata_asm irata_common gtest gmock gtest_main)
 target_link_libraries(assembler_tests PRIVATE irata_build_flags)
 add_test(NAME assembler_tests COMMAND assembler_tests)
+
+add_executable(assembler ${CMAKE_CURRENT_SOURCE_DIR}/assembler.cpp)
+target_link_libraries(assembler PUBLIC irata_assembler irata_sim irata_asm irata_common)
+target_link_libraries(assembler PRIVATE irata_build_flags)

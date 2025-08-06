@@ -115,4 +115,12 @@ TEST_F(AssemblerTest, AssembleToStream_MultipleInstructions) {
   EXPECT_EQ(os.str(), expected);
 }
 
+TEST_F(AssemblerTest, AssembleToStream_SingleInstruction_Immediate) {
+  std::ostringstream os;
+  assembler.assemble("lda #$12", os);
+  const auto expected = std::string() +
+                        static_cast<char>(lda_immediate.opcode()) +
+                        static_cast<char>(0x12);
+}
+
 } // namespace irata::assembler

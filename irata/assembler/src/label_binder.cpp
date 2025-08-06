@@ -277,8 +277,38 @@ operator<<(std::ostream &os,
 }
 
 std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Instruction::None &none) {
+  return os << "None()";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::Immediate &immediate) {
+  return os << "Immediate(value = " << immediate.value() << ")";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::Absolute &absolute) {
+  return os << "Absolute(value = " << absolute.value() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Instruction::Arg &arg) {
-  return os << "Arg(type = " << arg.type() << ")";
+  switch (arg.type()) {
+  case LabelBinder::Program::Instruction::Arg::Type::None:
+    return os << dynamic_cast<const LabelBinder::Program::Instruction::None &>(
+               arg);
+  case LabelBinder::Program::Instruction::Arg::Type::Immediate:
+    return os << dynamic_cast<
+               const LabelBinder::Program::Instruction::Immediate &>(arg);
+  case LabelBinder::Program::Instruction::Arg::Type::Absolute:
+    return os
+           << dynamic_cast<const LabelBinder::Program::Instruction::Absolute &>(
+                  arg);
+  default:
+    throw std::logic_error("unknown arg type");
+  }
 }
 
 std::ostream &operator<<(std::ostream &os,

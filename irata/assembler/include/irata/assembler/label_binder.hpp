@@ -154,6 +154,14 @@ std::ostream &
 operator<<(std::ostream &os,
            const LabelBinder::Program::Instruction::Arg::Type &type);
 std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Instruction::None &arg);
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::Immediate &arg);
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::Absolute &arg);
+std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Instruction::Arg &arg);
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Instruction &instruction);

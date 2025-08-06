@@ -249,9 +249,45 @@ std::ostream &operator<<(std::ostream &os,
 }
 
 std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::None &arg) {
+  return os << "None()";
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::Instruction::Immediate &arg) {
+  return os << "Immediate(value = " << arg.value() << ")";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::AbsoluteLiteral &arg) {
+  return os << "AbsoluteLiteral(value = " << arg.value() << ")";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::AbsoluteLabel &arg) {
+  return os << "AbsoluteLabel(value = " << arg.value() << ")";
+}
+
+std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction::Arg &arg) {
-  return os << "Arg(type = " << arg.type()
-            << ", addressing_mode = " << arg.addressing_mode() << ")";
+  switch (arg.type()) {
+  case Parser::Program::Instruction::Arg::Type::None:
+    return os << dynamic_cast<const Parser::Program::Instruction::None &>(arg);
+  case Parser::Program::Instruction::Arg::Type::Immediate:
+    return os << dynamic_cast<const Parser::Program::Instruction::Immediate &>(
+               arg);
+  case Parser::Program::Instruction::Arg::Type::AbsoluteLiteral:
+    return os << dynamic_cast<
+               const Parser::Program::Instruction::AbsoluteLiteral &>(arg);
+  case Parser::Program::Instruction::Arg::Type::AbsoluteLabel:
+    return os
+           << dynamic_cast<const Parser::Program::Instruction::AbsoluteLabel &>(
+                  arg);
+  default:
+    throw std::logic_error("Unknown arg type");
+  }
 }
 
 std::ostream &operator<<(std::ostream &os,

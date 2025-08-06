@@ -183,6 +183,22 @@ operator<<(std::ostream &os,
 
 std::ostream &
 operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::None &arg);
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::Immediate &arg);
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::AbsoluteLiteral &arg);
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::AbsoluteLabel &arg);
+
+std::ostream &
+operator<<(std::ostream &os,
            const InstructionBinder::Program::Instruction::Arg &arg);
 
 std::ostream &operator<<(std::ostream &os,
