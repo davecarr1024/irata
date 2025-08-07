@@ -6,6 +6,7 @@ namespace irata::assembler {
 
 std::vector<common::bytes::Byte>
 Assembler::assemble(std::string_view input) const {
+  std::cerr << "assembling:" << std::endl << input << std::endl;
   const auto parser_output = Parser().parse(input);
   std::cerr << "parser output: " << parser_output << std::endl;
   const auto instruction_binder_output =

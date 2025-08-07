@@ -1,22 +1,22 @@
 instructions:
-  - name: HLT
+  - name: NOP
     opcode: 0x00
+    addressing_mode: none
+    description: No operation
+  - name: HLT
+    opcode: 0x01
     addressing_mode: none
     description: Halt the CPU
   - name: CRS
-    opcode: 0x01
-    addressing_mode: none
-    description: Crash the CPU
-  - name: NOP
     opcode: 0x02
     addressing_mode: none
-    description: No operation
+    description: Crash the CPU
   - name: LDA
     opcode: 0xA9
     addressing_mode: immediate
     description: Load accumulator from constant
   - name: LDA
-    opcode: 0xA5
+    opcode: 0xAA
     addressing_mode: absolute
     description: Load accumulator from memory
 
