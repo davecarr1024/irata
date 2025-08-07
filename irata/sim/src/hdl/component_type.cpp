@@ -24,8 +24,14 @@ std::ostream &operator<<(std::ostream &os, ComponentType type) {
     return os << "Status";
   case ComponentType::Controller:
     return os << "Controller";
-  default:
+  case ComponentType::Alu:
+    return os << "Alu";
+  case ComponentType::AluModule:
+    return os << "AluModule";
+  case ComponentType::Unknown:
     return os << "Unknown";
+  default:
+    throw std::logic_error("Unknown component type");
   }
 }
 

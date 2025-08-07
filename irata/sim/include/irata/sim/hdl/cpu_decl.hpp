@@ -1,5 +1,6 @@
 #pragma once
 
+#include <irata/sim/hdl/alu_decl.hpp>
 #include <irata/sim/hdl/bus_decl.hpp>
 #include <irata/sim/hdl/component_decl.hpp>
 #include <irata/sim/hdl/controller_decl.hpp>
@@ -32,6 +33,8 @@ public:
 
   const ControllerDecl &controller() const;
 
+  const AluDecl &alu() const;
+
 private:
   const WordBusDecl &address_bus_;
   const ByteBusDecl &data_bus_;
@@ -40,6 +43,7 @@ private:
   const ConnectedByteRegisterDecl y_;
   const ProgramCounterDecl pc_;
   const ControllerDecl controller_;
+  const AluDecl alu_;
 };
 
 } // namespace irata::sim::hdl

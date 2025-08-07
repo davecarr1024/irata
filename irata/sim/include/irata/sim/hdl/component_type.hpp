@@ -6,6 +6,8 @@ namespace irata::sim::hdl {
 
 enum class ComponentType {
   Unknown,
+  Alu,
+  AluModule,
   Irata,
   Cpu,
   Memory,

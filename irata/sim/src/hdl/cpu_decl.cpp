@@ -9,7 +9,7 @@ CpuDecl::CpuDecl(const ComponentDecl &parent, const WordBusDecl &address_bus,
       address_bus_(address_bus), data_bus_(data_bus), a_("a", *this, data_bus_),
       x_("x", *this, data_bus_), y_("y", *this, data_bus_),
       pc_("pc", *this, address_bus_, data_bus_),
-      controller_("controller", *this, data_bus_) {}
+      controller_("controller", *this, data_bus_), alu_(*this, data_bus_) {}
 
 void CpuDecl::verify(const components::Component *component) const {
   ComponentWithParentDecl<ComponentType::Cpu>::verify(component);
@@ -18,6 +18,7 @@ void CpuDecl::verify(const components::Component *component) const {
   verify_child(y_, component);
   verify_child(pc_, component);
   verify_child(controller_, component);
+  verify_child(alu_, component);
 }
 
 const WordBusDecl &CpuDecl::address_bus() const { return address_bus_; }
@@ -33,5 +34,7 @@ const ConnectedByteRegisterDecl &CpuDecl::y() const { return y_; }
 const ProgramCounterDecl &CpuDecl::pc() const { return pc_; }
 
 const ControllerDecl &CpuDecl::controller() const { return controller_; }
+
+const AluDecl &CpuDecl::alu() const { return alu_; }
 
 } // namespace irata::sim::hdl
