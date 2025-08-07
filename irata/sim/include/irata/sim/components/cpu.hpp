@@ -1,5 +1,7 @@
 #pragma once
 
+#include <irata/sim/components/alu/alu.hpp>
+#include <irata/sim/components/alu/module.hpp>
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/controller/controller.hpp>
 #include <irata/sim/components/register.hpp>
@@ -20,6 +22,9 @@ public:
   const controller::Controller &controller() const;
   controller::Controller &controller();
 
+  const alu::ALU &alu() const;
+  alu::ALU &alu();
+
   const Register &a() const;
   Register &a();
 
@@ -34,6 +39,7 @@ public:
 
 private:
   controller::Controller controller_;
+  alu::ALU alu_;
   Register a_;
   Register x_;
   Register y_;

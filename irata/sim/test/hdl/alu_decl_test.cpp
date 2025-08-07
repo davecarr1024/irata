@@ -1,5 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/sim/components/alu/alu.hpp>
+#include <irata/sim/components/alu/module.hpp>
+#include <irata/sim/components/bus.hpp>
+#include <irata/sim/components/fake_component.hpp>
 #include <irata/sim/hdl/alu_decl.hpp>
 #include <irata/sim/hdl/fake_component_decl.hpp>
 
@@ -19,6 +23,9 @@ protected:
   const FakeComponentDecl irata = {ComponentType::Irata, "irata"};
   const ByteBusDecl bus = {"bus", irata};
   const AluDecl alu = {irata, bus};
+  components::FakeComponent irata_component = {ComponentType::Irata, "irata"};
+  components::ByteBus data_bus_component =
+      components::ByteBus("data_bus", &irata_component);
 
   template <typename Matcher>
   auto ModuleHasOpcode(const Matcher &matcher) const {
@@ -57,57 +64,73 @@ TEST_F(AluDeclTest, Properties) {
   EXPECT_EQ(alu.rhs().name(), "rhs");
   EXPECT_EQ(alu.result().parent(), &alu);
   EXPECT_EQ(alu.result().name(), "result");
-  EXPECT_EQ(alu.carry().parent(), &alu);
-  EXPECT_EQ(alu.carry().name(), "carry");
+  EXPECT_EQ(alu.carry_in().parent(), &alu);
+  EXPECT_EQ(alu.carry_in().name(), "carry_in");
+  EXPECT_EQ(alu.carry_out().parent(), &alu);
+  EXPECT_EQ(alu.carry_out().name(), "carry_out");
   EXPECT_EQ(alu.zero().parent(), &alu);
   EXPECT_EQ(alu.zero().name(), "zero");
   EXPECT_EQ(alu.negative().parent(), &alu);
   EXPECT_EQ(alu.negative().name(), "negative");
   EXPECT_EQ(alu.overflow().parent(), &alu);
   EXPECT_EQ(alu.overflow().name(), "overflow");
-  EXPECT_EQ(alu.half_carry().parent(), &alu);
-  EXPECT_EQ(alu.half_carry().name(), "half_carry");
 }
 
 TEST_F(AluDeclTest, Modules) {
-  EXPECT_THAT(alu.modules(),
-              UnorderedElementsAre(
-                  Pointee(AllOf(ModuleHasOpcode(0x01), ModuleHasName("cmp"))),
-                  Pointee(AllOf(ModuleHasOpcode(0x02), ModuleHasName("adc"))),
-                  Pointee(AllOf(ModuleHasOpcode(0x03), ModuleHasName("sbc")))));
+  EXPECT_THAT(
+      alu.modules(),
+      UnorderedElementsAre(
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::Add), ModuleHasName("add"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::Subtract),
+                        ModuleHasName("subtract"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::And), ModuleHasName("and"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::Or), ModuleHasName("or"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::Xor), ModuleHasName("xor"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::RotateLeft),
+                        ModuleHasName("rotate_left"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::RotateRight),
+                        ModuleHasName("rotate_right"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::ShiftLeft),
+                        ModuleHasName("shift_left"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::ShiftRight),
+                        ModuleHasName("shift_right")))));
   EXPECT_THAT(
       alu.modules(),
       Each(Pointee(AllOf(ComponentDeclHasParent(&alu),
                          ComponentDeclHasType(ComponentType::AluModule)))));
 }
 
-TEST_F(AluDeclTest, MaxOpcode) { EXPECT_EQ(alu.max_opcode(), 0x03); }
+TEST_F(AluDeclTest, MaxOpcode) { EXPECT_EQ(alu.max_opcode(), 0x09); }
 
 TEST_F(AluDeclTest, NumOpcodeControls) {
-  EXPECT_EQ(alu.num_opcode_controls(), 2);
+  EXPECT_EQ(alu.num_opcode_controls(), 4);
 }
 
 TEST_F(AluDeclTest, OpcodeControls) {
   EXPECT_THAT(alu.opcode_controls(),
               UnorderedElementsAre(Pointee(ComponentDeclHasName("opcode_0")),
-                                   Pointee(ComponentDeclHasName("opcode_1"))));
+                                   Pointee(ComponentDeclHasName("opcode_1")),
+                                   Pointee(ComponentDeclHasName("opcode_2")),
+                                   Pointee(ComponentDeclHasName("opcode_3"))));
   EXPECT_THAT(alu.opcode_controls(),
               Each(Pointee(ComponentDeclHasParent(&alu))));
 }
 
 TEST_F(AluDeclTest, OpcodeControlsForOpcode) {
-  EXPECT_THAT(alu.opcode_controls_for_opcode(0x00), IsEmpty());
-  EXPECT_THAT(alu.opcode_controls_for_opcode(0x01),
+  EXPECT_THAT(alu.opcode_controls_for_opcode(AluOpcode::Nop), IsEmpty());
+  EXPECT_THAT(alu.opcode_controls_for_opcode(AluOpcode::Add),
               UnorderedElementsAre(Pointee(ComponentDeclHasName("opcode_0"))));
-  EXPECT_THAT(alu.opcode_controls_for_opcode(0x02),
+  EXPECT_THAT(alu.opcode_controls_for_opcode(AluOpcode::Subtract),
               UnorderedElementsAre(Pointee(ComponentDeclHasName("opcode_1"))));
-  EXPECT_THAT(alu.opcode_controls_for_opcode(0x03),
+  EXPECT_THAT(alu.opcode_controls_for_opcode(AluOpcode::And),
               UnorderedElementsAre(Pointee(ComponentDeclHasName("opcode_0")),
                                    Pointee(ComponentDeclHasName("opcode_1"))));
 }
 
-TEST_F(AluDeclTest, OpcodeControlsForOpcode_Invalid) {
-  EXPECT_THROW(alu.opcode_controls_for_opcode(0x04), std::invalid_argument);
+TEST_F(AluDeclTest, Verify) {
+  auto alu_component =
+      components::alu::ALU(irata_component, data_bus_component);
+  EXPECT_NO_THROW(alu.verify(&alu_component));
 }
 
 } // namespace irata::sim::hdl

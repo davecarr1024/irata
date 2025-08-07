@@ -56,33 +56,6 @@ public:
   // Returns the signed value of this byte.
   int8_t signed_value() const;
 
-  // Returns the result of adding this byte to the given byte.
-  ByteResult add(Byte rhs, bool carry_in = false) const;
-
-  // Returns the result of subtracting the given byte from this byte.
-  ByteResult subtract(Byte rhs, bool borrow_in = false) const;
-
-  // Returns the result of ANDing this byte with the given byte.
-  ByteResult and_(Byte rhs) const;
-
-  // Returns the result of ORing this byte with the given byte.
-  ByteResult or_(Byte rhs) const;
-
-  // Returns the result of XORing this byte with the given byte.
-  ByteResult xor_(Byte rhs) const;
-
-  // Returns the result of shifting this byte left by one bit.
-  ByteResult shift_left() const;
-
-  // Returns the result of shifting this byte right by one bit.
-  ByteResult shift_right() const;
-
-  // Returns the result of rotating this byte left by one bit.
-  ByteResult rotate_left(bool carry_in = false) const;
-
-  // Returns the result of rotating this byte right by one bit.
-  ByteResult rotate_right(bool carry_in = false) const;
-
 private:
   uint8_t value_ = 0;
 };

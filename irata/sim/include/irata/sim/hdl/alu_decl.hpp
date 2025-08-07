@@ -1,5 +1,6 @@
 #pragma once
 
+#include <irata/sim/hdl/alu_opcode.hpp>
 #include <irata/sim/hdl/component_decl.hpp>
 #include <irata/sim/hdl/control_decl.hpp>
 #include <irata/sim/hdl/register_decl.hpp>
@@ -20,12 +21,14 @@ class AluDecl final : public ComponentWithParentDecl<ComponentType::Alu> {
 public:
   class ModuleDecl : public ComponentWithParentDecl<ComponentType::AluModule> {
   public:
-    ModuleDecl(const AluDecl &parent, std::string_view name, uint8_t opcode);
+    ModuleDecl(const AluDecl &parent, std::string_view name, AluOpcode opcode);
 
-    uint8_t opcode() const;
+    AluOpcode opcode() const;
+
+    void verify(const components::Component *component) const override final;
 
   private:
-    const uint8_t opcode_;
+    const AluOpcode opcode_;
   };
 
   AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus);
@@ -42,7 +45,7 @@ public:
   opcode_controls() const;
 
   std::vector<const ProcessControlDecl *>
-  opcode_controls_for_opcode(uint8_t opcode) const;
+  opcode_controls_for_opcode(AluOpcode opcode) const;
 
   const ConnectedByteRegisterDecl &lhs() const;
 
@@ -50,15 +53,15 @@ public:
 
   const ConnectedByteRegisterDecl &result() const;
 
-  const StatusDecl &carry() const;
+  const ProcessControlDecl &carry_in() const;
+
+  const StatusDecl &carry_out() const;
 
   const StatusDecl &zero() const;
 
   const StatusDecl &negative() const;
 
   const StatusDecl &overflow() const;
-
-  const StatusDecl &half_carry() const;
 
 private:
   std::set<std::unique_ptr<ModuleDecl>> modules_;
@@ -67,11 +70,11 @@ private:
   const ConnectedByteRegisterDecl lhs_;
   const ConnectedByteRegisterDecl rhs_;
   const ConnectedByteRegisterDecl result_;
-  const StatusDecl carry_;
+  const ProcessControlDecl carry_in_;
+  const StatusDecl carry_out_;
   const StatusDecl zero_;
   const StatusDecl negative_;
   const StatusDecl overflow_;
-  const StatusDecl half_carry_;
 };
 
 } // namespace irata::sim::hdl

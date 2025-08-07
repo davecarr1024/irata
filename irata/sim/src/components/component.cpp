@@ -26,8 +26,16 @@ void Component::add_child(Component *child) {
   if (child->parent_ != nullptr) {
     throw std::invalid_argument("child already has a parent");
   }
+  if (const auto it = children_.find(child->name_); it != children_.end()) {
+    if (it->second == child) {
+      return;
+    }
+    std::ostringstream os;
+    os << "trying to add child " << child->name() << " to component "
+       << this->path() << " but a child with the same name already exists";
+    throw std::invalid_argument(os.str());
+  }
   if (children_.find(child->name_) != children_.end()) {
-    throw std::invalid_argument("child with same name already exists");
   }
   children_[child->name_] = child;
   child->parent_ = this;

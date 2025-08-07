@@ -1,6 +1,28 @@
+#include <irata/common/strings/strings.hpp>
+#include <irata/sim/components/alu/alu.hpp>
+#include <irata/sim/components/alu/module.hpp>
 #include <irata/sim/hdl/alu_decl.hpp>
 
 namespace irata::sim::hdl {
+
+AluDecl::ModuleDecl::ModuleDecl(const AluDecl &parent, std::string_view name,
+                                AluOpcode opcode)
+    : ComponentWithParentDecl<ComponentType::AluModule>(name, parent),
+      ComponentWithTypeDecl<ComponentType::AluModule>(name), opcode_(opcode) {}
+
+AluOpcode AluDecl::ModuleDecl::opcode() const { return opcode_; }
+
+void AluDecl::ModuleDecl::verify(const components::Component *component) const {
+  ComponentWithParentDecl<ComponentType::AluModule>::verify(component);
+  const components::alu::Module &module =
+      dynamic_cast<const components::alu::Module &>(*component);
+  if (module.opcode() != opcode_) {
+    std::ostringstream os;
+    os << "alu module opcode mismatch: " << module.opcode()
+       << " != " << opcode_;
+    throw std::invalid_argument(os.str());
+  }
+}
 
 namespace {
 
@@ -32,27 +54,31 @@ uint8_t
 get_max_opcode(const std::set<std::unique_ptr<AluDecl::ModuleDecl>> &modules) {
   uint8_t max_opcode = 0;
   for (const auto &module : modules) {
-    max_opcode = std::max(max_opcode, module->opcode());
+    max_opcode = std::max(max_opcode, static_cast<uint8_t>(module->opcode()));
   }
   return max_opcode;
 }
 
 std::set<std::unique_ptr<AluDecl::ModuleDecl>> get_modules(const AluDecl &alu) {
   std::set<std::unique_ptr<AluDecl::ModuleDecl>> modules;
-  modules.insert(std::make_unique<AluDecl::ModuleDecl>(alu, "cmp", 0x01));
-  modules.insert(std::make_unique<AluDecl::ModuleDecl>(alu, "adc", 0x02));
-  modules.insert(std::make_unique<AluDecl::ModuleDecl>(alu, "sbc", 0x03));
+  for (const auto &[name, opcode] :
+       std::vector<std::pair<std::string, AluOpcode>>{
+           {"add", AluOpcode::Add},
+           {"subtract", AluOpcode::Subtract},
+           {"and", AluOpcode::And},
+           {"or", AluOpcode::Or},
+           {"xor", AluOpcode::Xor},
+           {"rotate_left", AluOpcode::RotateLeft},
+           {"rotate_right", AluOpcode::RotateRight},
+           {"shift_left", AluOpcode::ShiftLeft},
+           {"shift_right", AluOpcode::ShiftRight},
+       }) {
+    modules.insert(std::make_unique<AluDecl::ModuleDecl>(alu, name, opcode));
+  }
   return modules;
 }
 
 } // namespace
-
-AluDecl::ModuleDecl::ModuleDecl(const AluDecl &parent, std::string_view name,
-                                uint8_t opcode)
-    : ComponentWithParentDecl<ComponentType::AluModule>(name, parent),
-      ComponentWithTypeDecl<ComponentType::AluModule>(name), opcode_(opcode) {}
-
-uint8_t AluDecl::ModuleDecl::opcode() const { return opcode_; }
 
 AluDecl::AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus)
     : ComponentWithParentDecl<ComponentType::Alu>("alu", parent),
@@ -61,12 +87,12 @@ AluDecl::AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus)
       opcode_controls_(
           get_opcode_controls(*this, get_num_opcode_controls(max_opcode_))),
       lhs_("lhs", *this, data_bus), rhs_("rhs", *this, data_bus),
-      result_("result", *this, data_bus), carry_("carry", *this),
-      zero_("zero", *this), negative_("negative", *this),
-      overflow_("overflow", *this), half_carry_("half_carry", *this)
+      result_("result", *this, data_bus), carry_in_("carry_in", *this),
+      carry_out_("carry_out", *this), zero_("zero", *this),
+      negative_("negative", *this), overflow_("overflow", *this)
 
 {
-  std::set<uint8_t> seen_opcodes;
+  std::set<hdl::AluOpcode> seen_opcodes;
   std::set<std::string> seen_names;
   for (const auto &module : modules_) {
     if (module == nullptr) {
@@ -77,11 +103,12 @@ AluDecl::AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus)
                                   module->name());
     }
     if (!seen_opcodes.insert(module->opcode()).second) {
-      throw std::invalid_argument("duplicate alu module opcode: " +
-                                  std::to_string(module->opcode()));
+      std::ostringstream os;
+      os << "duplicate alu module opcode: " << module->opcode();
+      throw std::invalid_argument(os.str());
     }
-    if (module->opcode() == 0x00) {
-      throw std::invalid_argument("alu module opcode cannot be 0x00: " +
+    if (module->opcode() == AluOpcode::Nop) {
+      throw std::invalid_argument("alu module opcode cannot be Nop: " +
                                   module->name());
     }
   }
@@ -98,11 +125,34 @@ void AluDecl::verify(const components::Component *component) const {
   verify_child(lhs_, component);
   verify_child(rhs_, component);
   verify_child(result_, component);
-  verify_child(carry_, component);
+  verify_child(carry_in_, component);
+  verify_child(carry_out_, component);
   verify_child(zero_, component);
   verify_child(negative_, component);
   verify_child(overflow_, component);
-  verify_child(half_carry_, component);
+
+  const auto &alu = dynamic_cast<const components::alu::ALU &>(*component);
+  for (const auto &module : modules_) {
+    const auto hdl_controls = opcode_controls_for_opcode(module->opcode());
+    std::set<std::string> hdl_control_names;
+    for (const auto &control : hdl_controls) {
+      hdl_control_names.insert(control->name());
+    }
+    const auto sim_controls = alu.opcode_controls_for_opcode(module->opcode());
+    std::set<std::string> sim_control_names;
+    for (const auto &control : sim_controls) {
+      sim_control_names.insert(control->name());
+    }
+    if (hdl_control_names != sim_control_names) {
+      std::ostringstream os;
+      os << "alu module " << module->name()
+         << " opcode controls mismatch: hdl controls ["
+         << common::strings::join(hdl_control_names, ", ")
+         << "] != sim controls ["
+         << common::strings::join(sim_control_names, ", ") << "]";
+      throw std::invalid_argument(os.str());
+    }
+  }
 }
 
 const std::set<std::unique_ptr<AluDecl::ModuleDecl>> &AluDecl::modules() const {
@@ -119,22 +169,11 @@ AluDecl::opcode_controls() const {
 }
 
 std::vector<const ProcessControlDecl *>
-AluDecl::opcode_controls_for_opcode(uint8_t opcode) const {
-  bool found = false;
-  for (const auto &module : modules_) {
-    if (module->opcode() == opcode) {
-      found = true;
-    }
-  }
-  if (opcode != 0 && !found) {
-    std::ostringstream os;
-    os << "alu opcode not found: " << int(opcode);
-    throw std::invalid_argument(os.str());
-  }
-
+AluDecl::opcode_controls_for_opcode(AluOpcode opcode) const {
+  const auto opcode_value = static_cast<uint8_t>(opcode);
   std::vector<const ProcessControlDecl *> controls;
   for (size_t i = 0; i < opcode_controls_.size(); i++) {
-    if (opcode & (1 << i)) {
+    if (opcode_value & (1 << i)) {
       controls.push_back(opcode_controls_[i].get());
     }
   }
@@ -147,14 +186,14 @@ const ConnectedByteRegisterDecl &AluDecl::rhs() const { return rhs_; }
 
 const ConnectedByteRegisterDecl &AluDecl::result() const { return result_; }
 
-const StatusDecl &AluDecl::carry() const { return carry_; }
+const ProcessControlDecl &AluDecl::carry_in() const { return carry_in_; }
+
+const StatusDecl &AluDecl::carry_out() const { return carry_out_; }
 
 const StatusDecl &AluDecl::zero() const { return zero_; }
 
 const StatusDecl &AluDecl::negative() const { return negative_; }
 
 const StatusDecl &AluDecl::overflow() const { return overflow_; }
-
-const StatusDecl &AluDecl::half_carry() const { return half_carry_; }
 
 } // namespace irata::sim::hdl

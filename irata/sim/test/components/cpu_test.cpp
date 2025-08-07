@@ -22,6 +22,8 @@ TEST_F(CpuTest, Constructor) {
   EXPECT_EQ(cpu.name(), "cpu");
   EXPECT_EQ(cpu.controller().parent(), &cpu);
   EXPECT_EQ(cpu.controller().name(), "controller");
+  EXPECT_EQ(cpu.alu().parent(), &cpu);
+  EXPECT_EQ(cpu.alu().name(), "alu");
   EXPECT_EQ(cpu.a().parent(), &cpu);
   EXPECT_EQ(cpu.a().name(), "a");
   EXPECT_EQ(cpu.x().parent(), &cpu);

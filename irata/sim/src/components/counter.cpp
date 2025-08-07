@@ -1,4 +1,3 @@
-#include <irata/sim/bytes/byte_result.hpp>
 #include <irata/sim/components/counter.hpp>
 
 namespace irata::sim::components {
@@ -17,7 +16,7 @@ void Counter::tick_process(Logger &logger) {
     set_value(Byte::from_unsigned(0));
   } else if (increment()) {
     logger << "Incrementing by 1";
-    set_value(value().add(Byte::from_unsigned(1)).result);
+    set_value(value() + 1);
   }
 }
 

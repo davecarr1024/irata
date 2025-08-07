@@ -7,7 +7,7 @@ Cpu::Cpu(microcode::table::Table microcode_table, ByteBus &data_bus,
          WordBus &address_bus, Component *parent, std::string_view name)
     : Component(name, parent),
       controller_(microcode_table, data_bus, "controller", this),
-      a_("a", &data_bus, this), x_("x", &data_bus, this),
+      alu_(*this, data_bus), a_("a", &data_bus, this), x_("x", &data_bus, this),
       y_("y", &data_bus, this), pc_("pc", &address_bus, &data_bus, this) {}
 
 Cpu Cpu::irata(ByteBus &data_bus, WordBus &address_bus, Component *parent,
@@ -20,6 +20,9 @@ hdl::ComponentType Cpu::type() const { return hdl::ComponentType::Cpu; }
 
 const controller::Controller &Cpu::controller() const { return controller_; }
 controller::Controller &Cpu::controller() { return controller_; }
+
+const alu::ALU &Cpu::alu() const { return alu_; }
+alu::ALU &Cpu::alu() { return alu_; }
 
 const Register &Cpu::a() const { return a_; }
 Register &Cpu::a() { return a_; }
