@@ -1,73 +1,64 @@
 # 🧾 Irata Project Status
 
-_Last updated: August 4, 2025_
+_Last updated: August 6, 2025_
 
 ---
 
-## 🎉 Major Milestone: Fetch Logic Fixed, Safe Merging Restored!
+## 🎯 Major Milestone: Running Test Programs
 
-The microcode compiler now supports safe step merging by introducing **stage-aware logic** in the DSL and IR. A new `FetchStageValidator` enforces that **all instructions begin with the same canonical fetch-decode prefix**, regardless of opcode. With this fix, full-system simulation now runs reliably with step merging *enabled* — and instruction execution is rock solid.
+Irata now supports a full end-to-end test flow:
+
+1. Test programs are defined in `irata-assembly`.
+2. Programs are assembled into bytecode.
+3. Bytecode is executed by the simulator.
+4. Final test result is determined by special instructions: `HLT` (halt) and `CRS` (crash).
+
+This allows the Irata simulator to **run its own tests** — a major leap forward in making the system self-verifying. It enables vertical development with fewer brittle unit tests and more robust behavioral integration tests.
 
 ---
 
 ## ✅ Current State
 
-### 🧠 HDL + Simulation Unified
+### 🧠 Hardware Definition Language (HDL)
 
-- HDL declarations (via mixins and component kinds) now fully match simulation components
-- `Irata`, `CPU`, and `Memory` are constructed using real HDL intent and verified in unit tests
-- Bus-connected components (like `ByteBus`, `WordBus`, `RegisterWithBus`) are cleanly represented and reusable
-- The HDL verification system confirms that the sim component tree structurally matches expectations
-- The entire `Irata` machine can now be driven in tests and produce logs from actual controller microcode
+- The HDL fully describes the Irata computer’s architecture.
+- It drives both the simulator structure and instruction compatibility.
+- Simulator components are verified against the HDL before execution.
+- This guarantees structural correctness between declared hardware and actual execution.
 
-### ⚙️ Microcode + Execution
+### 🖥️ Simulation
 
-- Microcode is compiled from a clean YAML DSL
-- The DSL now supports **explicit stage annotations** to group control steps (e.g., `stage: 0` for fetch)
-- The compiler now respects stage boundaries during step merging
-- A new validator ensures all instructions share an identical stage 0
-- Execution proceeds correctly even if `opcode` is initially garbage
-- ✅ HLT halts at 0x8001  
-- ✅ LDA immediate loads 0x12 and halts at 0x8003  
-- ✅ Step merging is now safely enabled and passing tests
+- The simulator includes:
+  - Registers (A, X, Y, PC, etc.)
+  - Memory (RAM + ROM)
+  - Controller with instruction memory
+- All components are wired through simulated buses.
+- Instruction execution follows a **true fetch-decode-execute cycle**, with no shortcuts or magic behavior.
+- Every CPU action is performed via real control lines.
+- The entire system matches HDL and is tested using assembled programs.
 
-### 🧪 Compiler Safety
+### ⚙️ Microcode
 
-- `FetchStageValidator` runs both **before and after merging**, enforcing that fetch logic is preserved
-- Full unit test coverage for:
-  - Mismatched control lines
-  - Unequal stage 0 lengths
-  - Truncated or extended fetch sequences
-- Compiler will now fail hard on any structural inconsistency across instruction fetch stages
+- Instructions are defined using a domain-specific YAML-based microcode language.
+- A multi-pass microcode compiler:
+  - Validates instruction structure
+  - Enforces invariants (e.g., unified fetch stage, proper step counter use)
+  - Merges compatible steps for faster execution
+- Validators and transformers are modular, allowing for easy extension and enforcement of new rules.
 
 ---
 
 ## 🛠️ In Progress
 
-- 🧩 `irata_test.cpp` verifies multi-instruction programs tick-by-tick
-- ✅ Step merging is re-enabled and protected by stage-based invariants
-- 🧪 Continuing to expand test programs and microcode coverage
-- 🧪 Planning more instruction additions: `STA`, `JMP`, `BRK`, etc.
-
----
-
-## 🔜 Immediate Next Steps
-
-- [ ] Add more basic instructions and validate stage structure
-- [ ] Build minimal assembler prototype from `.irata-c` to `irata-asm`
-- [ ] Explore exporting microcode step traces for visualization
-- [ ] Add richer HALT diagnostics and programmatic tick observers
-- [ ] Begin defining memory-mapped devices and screen output
-
----
-
-## 💡 Emerging Ideas
-
-- 🧱 Rebuild sim component system with mixin-style features for clarity and power
-- 🐍 Begin Python-side `irata/asm/py` support for reusable instruction definition loading
-- 📦 Use editable `pip` install and unify Python tooling via root Makefile
-- 🧰 Add `sim_runner` to load ROMs and dump serialized machine state for test harnesses
-- 🔬 Write test that runs real `.irata` bytecode through controller-only trace
+- **Test Program Infrastructure**:
+  - Building out more test programs to validate instruction behavior
+- **Upcoming Instructions**:
+  - `CMP`: Enables value comparisons by updating CPU status flags (requires ALU)
+  - `JNE`: Conditional branching based on status flags (already supported by microcode infrastructure)
+- **Next Test Targets**:
+  - Use `CMP + JNE` to create self-validating programs
+  - Add more control flow and memory instructions
+  - Scale up to full program-level correctness tests
 
 ---
 
@@ -75,8 +66,8 @@ The microcode compiler now supports safe step merging by introducing **stage-awa
 
 > "Declare the machine. Simulate the intent. Test every wire."
 
-Every layer of Irata now has a structural and testable contract. DSL logic, compiler passes, instruction fetch, and execution are all verified. There are no shortcuts — only wires and truth.
+Irata is built with structural rigor at every level. Hardware declarations, simulation wiring, compiler logic, and execution behavior are all **explicit, testable, and real**.
 
 ---
 
-🔥 **The machine runs. The fetch is pure. The compiler has teeth. It’s beautiful.**
+🔥 **The machine runs. The tests are programs. There are no shortcuts.**
