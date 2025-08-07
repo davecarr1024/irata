@@ -1,4 +1,5 @@
 #include <irata/asm/instruction.hpp>
+#include <irata/sim/hdl/alu_opcode.hpp>
 #include <irata/sim/hdl/component_with_bus_decl.hpp>
 #include <irata/sim/hdl/status_decl.hpp>
 #include <irata/sim/microcode/dsl/step.hpp>
@@ -79,6 +80,32 @@ public:
   // the destination register.
   Instruction *
   read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
+
+  // Perform an ALU operation with the given opcode.
+  // This assumes that the operands are ready in the alu lhs and rhs registers.
+  // After this step, the result will be in the alu result register.
+  Instruction *alu_operation(hdl::AluOpcode opcode, bool carry_in = false);
+
+  // Perform an ALU operation with the given opcode, lhs, rhs, and result.
+  Instruction *binary_alu_operation(hdl::AluOpcode opcode,
+                                    const hdl::ComponentWithByteBusDecl &lhs,
+                                    const hdl::ComponentWithByteBusDecl &rhs,
+                                    const hdl::ComponentWithByteBusDecl &result,
+                                    bool carry_in = false);
+
+  Instruction *unary_alu_operation(hdl::AluOpcode opcode,
+                                   const hdl::ComponentWithByteBusDecl &operand,
+                                   const hdl::ComponentWithByteBusDecl &result,
+                                   bool carry_in = false);
+
+  Instruction *binary_alu_operation_no_result(
+      hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &lhs,
+      const hdl::ComponentWithByteBusDecl &rhs, bool carry_in = false);
+
+  Instruction *
+  unary_alu_operation_no_result(hdl::AluOpcode opcode,
+                                const hdl::ComponentWithByteBusDecl &operand,
+                                bool carry_in = false);
 
   int stage() const;
 

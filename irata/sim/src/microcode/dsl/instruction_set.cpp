@@ -51,9 +51,14 @@ std::unique_ptr<const InstructionSet> build_irata() {
   instruction_set->create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().a());
 
-  // implement me
+  // TODO: make a buffer register and implement this
   instruction_set->create_instruction("lda", asm_::AddressingMode::ABSOLUTE)
       ->create_step();
+
+  instruction_set->create_instruction("cmp", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
+      ->alu_operation(hdl::AluOpcode::Subtract);
 
   return instruction_set;
 }

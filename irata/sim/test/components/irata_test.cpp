@@ -23,6 +23,8 @@ protected:
       "CRS", asm_::AddressingMode::NONE);
   const asm_::Instruction &lda = asm_::InstructionSet::irata().get_instruction(
       "LDA", asm_::AddressingMode::IMMEDIATE);
+  const asm_::Instruction &cmp = asm_::InstructionSet::irata().get_instruction(
+      "CMP", asm_::AddressingMode::IMMEDIATE);
 };
 
 } // namespace
@@ -66,6 +68,24 @@ TEST_F(IrataTest, TickUntilHaltWithLda) {
   EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
   EXPECT_EQ(irata.cpu().pc().value(), Word(0x8003));
   EXPECT_EQ(irata.cpu().a().value(), Byte(0x12));
+}
+
+TEST_F(IrataTest, Cmp) {
+  for (const auto &[cmp_value, expected_zero_status] :
+       std::vector<std::pair<Byte, bool>>{
+           {Byte(0x12), true},
+           {Byte(0x34), false},
+       }) {
+    auto irata = this->irata({
+        lda.opcode(),
+        0x12,
+        cmp.opcode(),
+        cmp_value,
+        hlt.opcode(),
+    });
+    EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
+    EXPECT_EQ(irata.cpu().alu().zero(), expected_zero_status);
+  }
 }
 
 } // namespace irata::sim::components
