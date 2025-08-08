@@ -96,51 +96,48 @@ Instruction *Instruction::next_stage() {
   return this;
 }
 
-Instruction *Instruction::alu_operation(hdl::AluOpcode opcode, bool carry_in) {
+Instruction *Instruction::alu_operation(hdl::AluOpcode opcode) {
   auto *instruction = this;
   auto *step = instruction->create_step();
   for (const auto &control :
        hdl::irata().cpu().alu().opcode_controls_for_opcode(opcode)) {
     step = step->with_control(*control);
   }
-  if (carry_in) {
-    step = step->with_control(hdl::irata().cpu().alu().carry_in());
-  }
-  // TODO: latch status
+  step->with_control(hdl::irata().cpu().status_register().latch());
   return step->instruction();
 }
 
-Instruction *Instruction::binary_alu_operation(
-    hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &lhs,
-    const hdl::ComponentWithByteBusDecl &rhs,
-    const hdl::ComponentWithByteBusDecl &result, bool carry_in) {
+Instruction *
+Instruction::binary_alu_operation(hdl::AluOpcode opcode,
+                                  const hdl::ComponentWithByteBusDecl &lhs,
+                                  const hdl::ComponentWithByteBusDecl &rhs,
+                                  const hdl::ComponentWithByteBusDecl &result) {
   return copy(lhs, hdl::irata().cpu().alu().lhs())
       ->copy(rhs, hdl::irata().cpu().alu().rhs())
-      ->alu_operation(opcode, carry_in)
+      ->alu_operation(opcode)
       ->copy(hdl::irata().cpu().alu().result(), result);
 }
 
-Instruction *Instruction::unary_alu_operation(
-    hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &operand,
-    const hdl::ComponentWithByteBusDecl &result, bool carry_in) {
+Instruction *
+Instruction::unary_alu_operation(hdl::AluOpcode opcode,
+                                 const hdl::ComponentWithByteBusDecl &operand,
+                                 const hdl::ComponentWithByteBusDecl &result) {
   return copy(operand, hdl::irata().cpu().alu().lhs())
-      ->alu_operation(opcode, carry_in)
+      ->alu_operation(opcode)
       ->copy(hdl::irata().cpu().alu().result(), result);
 }
 
 Instruction *Instruction::binary_alu_operation_no_result(
     hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &lhs,
-    const hdl::ComponentWithByteBusDecl &rhs, bool carry_in) {
+    const hdl::ComponentWithByteBusDecl &rhs) {
   return copy(lhs, hdl::irata().cpu().alu().lhs())
       ->copy(rhs, hdl::irata().cpu().alu().rhs())
-      ->alu_operation(opcode, carry_in);
+      ->alu_operation(opcode);
 }
 
 Instruction *Instruction::unary_alu_operation_no_result(
-    hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &operand,
-    bool carry_in) {
-  return copy(operand, hdl::irata().cpu().alu().lhs())
-      ->alu_operation(opcode, carry_in);
+    hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &operand) {
+  return copy(operand, hdl::irata().cpu().alu().lhs())->alu_operation(opcode);
 }
 
 } // namespace irata::sim::microcode::dsl

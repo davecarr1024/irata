@@ -5,10 +5,11 @@ namespace irata::sim::components {
 StatusRegister::StatusRegister(Component &parent, ByteBus &bus,
                                const Status &carry_in,
                                const Status &negative_in,
-                               const Status &overflow_in, const Status &zero_in)
+                               const Status &overflow_in, const Status &zero_in,
+                               Status &carry_out)
     : Register("status_register", &bus, &parent), carry_in_(carry_in),
       negative_in_(negative_in), overflow_in_(overflow_in), zero_in_(zero_in),
-      carry_out_("carry", this), negative_out_("negative", this),
+      carry_out_(carry_out), negative_out_("negative", this),
       overflow_out_("overflow", this), zero_out_("zero", this),
       latch_("latch", hdl::TickPhase::Clear, this, /*auto_clear=*/false),
       status_indices_({
@@ -66,7 +67,7 @@ void StatusRegister::tick_clear(Logger &logger) {
     overflow_out().set_value(overflow_in().value());
     zero_out().set_value(zero_in().value());
     // Manually clear the latch control line - it is not auto-cleared.
-    latch_.clear();
+    latch_.set_value(false);
   }
 }
 

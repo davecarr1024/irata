@@ -85,6 +85,10 @@ TEST_F(IrataTest, Cmp) {
     });
     EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
     EXPECT_EQ(irata.cpu().alu().zero(), expected_zero_status);
+    EXPECT_EQ(irata.cpu().status_register().zero_out().value(),
+              expected_zero_status);
+    EXPECT_EQ(irata.cpu().status_register().value(),
+              expected_zero_status ? 0x02 : 0x00);
   }
 }
 

@@ -126,6 +126,27 @@ private:
   const DisconnectedByteRegisterDecl high_;
 };
 
+class DataAndAddressBusWordRegisterDecl final
+    : public ComponentWithParentDecl<ComponentType::WordRegister>,
+      public RegisterWithResetDecl,
+      public RegisterWithWordBusDecl {
+public:
+  DataAndAddressBusWordRegisterDecl(std::string_view name,
+                                    const ComponentDecl &parent,
+                                    const WordBusDecl &address_bus,
+                                    const ByteBusDecl &data_bus);
+
+  const ConnectedByteRegisterDecl &low() const;
+
+  const ConnectedByteRegisterDecl &high() const;
+
+  void verify(const components::Component *component) const override final;
+
+private:
+  const ConnectedByteRegisterDecl low_;
+  const ConnectedByteRegisterDecl high_;
+};
+
 // ProgramCounterDecl is a declaration of a program counter component.
 // This is a word register that has a reset, increment, and bus connection.
 // The low and high byte register are also connected to the data bus.

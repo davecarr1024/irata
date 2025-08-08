@@ -36,6 +36,13 @@ public:
 
   const AluDecl &alu() const;
 
+  // This is the persistent carry status from the status register.
+  // The value originates from the ALU but is stored in the status register
+  // after it is latched.
+  // This is kept separate from the ALU and SR since it is a common dependency
+  // of both.
+  const StatusDecl &carry() const;
+
   const StatusRegisterDecl &status_register() const;
 
 private:
@@ -46,6 +53,7 @@ private:
   const ConnectedByteRegisterDecl y_;
   const ProgramCounterDecl pc_;
   const ControllerDecl controller_;
+  const StatusDecl carry_;
   const AluDecl alu_;
   const StatusRegisterDecl status_register_;
 };

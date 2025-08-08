@@ -23,7 +23,8 @@ protected:
   ByteBus data_bus = ByteBus("data_bus", &root);
   Register source = Register("source", &data_bus, &root);
   Register dest = Register("dest", &data_bus, &root);
-  ALU alu = ALU(root, data_bus);
+  Status carry = Status("carry", &root);
+  ALU alu = ALU(root, data_bus, carry);
 
   template <typename Matcher>
   auto ComponentHasName(const Matcher &matcher) const {
@@ -54,10 +55,13 @@ TEST_F(ALUTest, Properties) {
   EXPECT_EQ(alu.rhs_register().name(), "rhs");
   EXPECT_EQ(alu.result_register().parent(), &alu);
   EXPECT_EQ(alu.result_register().name(), "result");
-  EXPECT_EQ(alu.carry_in_control().parent(), &alu);
-  EXPECT_EQ(alu.carry_in_control().name(), "carry_in");
+  EXPECT_EQ(&alu.carry_in_status(), &carry);
+  EXPECT_EQ(alu.carry_in_status().parent(), &root);
+  EXPECT_EQ(alu.carry_in_status().name(), "carry");
+  EXPECT_EQ(alu.carry_in_status().path(), "/carry");
   EXPECT_EQ(alu.carry_out_status().parent(), &alu);
-  EXPECT_EQ(alu.carry_out_status().name(), "carry_out");
+  EXPECT_EQ(alu.carry_out_status().name(), "carry");
+  EXPECT_EQ(alu.carry_out_status().path(), "/alu/carry");
   EXPECT_EQ(alu.zero_status().parent(), &alu);
   EXPECT_EQ(alu.zero_status().name(), "zero");
   EXPECT_EQ(alu.negative_status().parent(), &alu);
@@ -125,9 +129,9 @@ TEST_F(ALUTest, Modules) {
 }
 
 TEST_F(ALUTest, CarryIn) {
-  alu.set_carry_in(false);
+  carry.set_value(false);
   EXPECT_FALSE(alu.carry_in());
-  alu.set_carry_in(true);
+  carry.set_value(true);
   EXPECT_TRUE(alu.carry_in());
 }
 
@@ -196,7 +200,7 @@ TEST_F(ALUTest, Add) {
 
   // Set opcode to add and run alu
   alu.set_opcode(hdl::AluOpcode::Add);
-  alu.set_carry_in(false);
+  carry.set_value(false);
   alu.tick();
 
   // Copy result to dest

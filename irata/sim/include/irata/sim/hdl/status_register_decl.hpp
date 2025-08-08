@@ -14,6 +14,12 @@ namespace irata::sim::hdl {
 // It also has a set of outgoing status lines that are connected to the
 // corresponding bits in the register. It is connected to the data bus to allow
 // for interacting with the status register from the CPU.
+// A note on carry wiring:
+// The transient carry status is connected from the ALU to the status register,
+// this is carry_in from the SR's POV. The persistent carry status is connected
+// from the status register to the ALU, this is carry_out from the SR's POV.
+// This is why both carry signals are passed in to the constructor, since they
+// exist in the wider context of the CPU and don't belong to the SR.
 class StatusRegisterDecl final
     : public ComponentWithParentDecl<ComponentType::StatusRegister>,
       public RegisterWithResetDecl,
@@ -21,7 +27,8 @@ class StatusRegisterDecl final
 public:
   StatusRegisterDecl(const ComponentDecl &parent, const ByteBusDecl &bus,
                      const StatusDecl &carry_in, const StatusDecl &negative_in,
-                     const StatusDecl &overflow_in, const StatusDecl &zero_in);
+                     const StatusDecl &overflow_in, const StatusDecl &zero_in,
+                     const StatusDecl &carry_out);
 
   void verify(const components::Component *component) const override final;
 
@@ -50,7 +57,7 @@ private:
   const StatusDecl &negative_in_;
   const StatusDecl &overflow_in_;
   const StatusDecl &zero_in_;
-  const StatusDecl carry_out_;
+  const StatusDecl &carry_out_;
   const StatusDecl negative_out_;
   const StatusDecl overflow_out_;
   const StatusDecl zero_out_;

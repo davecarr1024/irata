@@ -87,6 +87,34 @@ void ConnectedWordRegisterDecl::verify(
   verify_child(high_, component);
 }
 
+DataAndAddressBusWordRegisterDecl::DataAndAddressBusWordRegisterDecl(
+    std::string_view name, const ComponentDecl &parent,
+    const WordBusDecl &address_bus, const ByteBusDecl &data_bus)
+    : ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
+      ComponentWithTypeDecl<ComponentType::WordRegister>(name),
+      ComponentWithWordBusDecl(address_bus),
+      RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
+      high_("high", *this, data_bus) {}
+
+const ConnectedByteRegisterDecl &
+DataAndAddressBusWordRegisterDecl::low() const {
+  return low_;
+}
+
+const ConnectedByteRegisterDecl &
+DataAndAddressBusWordRegisterDecl::high() const {
+  return high_;
+}
+
+void DataAndAddressBusWordRegisterDecl::verify(
+    const components::Component *component) const {
+  ComponentWithParentDecl<ComponentType::WordRegister>::verify(component);
+  RegisterWithResetDecl::verify(component);
+  RegisterWithWordBusDecl::verify(component);
+  verify_child(low_, component);
+  verify_child(high_, component);
+}
+
 ProgramCounterDecl::ProgramCounterDecl(std::string_view name,
                                        const ComponentDecl &parent,
                                        const WordBusDecl &address_bus,

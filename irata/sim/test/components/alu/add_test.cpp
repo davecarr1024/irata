@@ -13,7 +13,8 @@ class AddTest : public ::testing::Test {
 protected:
   FakeComponent irata = {hdl::ComponentType::Irata, "irata"};
   ByteBus data_bus = ByteBus("data_bus", &irata);
-  ALU alu = ALU(irata, data_bus);
+  Status carry = Status("carry", &irata);
+  ALU alu = ALU(irata, data_bus, carry);
   const Add &add = dynamic_cast<const Add &>(*alu.module(hdl::AluOpcode::Add));
 };
 

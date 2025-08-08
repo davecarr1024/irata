@@ -84,28 +84,27 @@ public:
   // Perform an ALU operation with the given opcode.
   // This assumes that the operands are ready in the alu lhs and rhs registers.
   // After this step, the result will be in the alu result register.
-  Instruction *alu_operation(hdl::AluOpcode opcode, bool carry_in = false);
+  Instruction *alu_operation(hdl::AluOpcode opcode);
 
   // Perform an ALU operation with the given opcode, lhs, rhs, and result.
-  Instruction *binary_alu_operation(hdl::AluOpcode opcode,
-                                    const hdl::ComponentWithByteBusDecl &lhs,
-                                    const hdl::ComponentWithByteBusDecl &rhs,
-                                    const hdl::ComponentWithByteBusDecl &result,
-                                    bool carry_in = false);
+  Instruction *
+  binary_alu_operation(hdl::AluOpcode opcode,
+                       const hdl::ComponentWithByteBusDecl &lhs,
+                       const hdl::ComponentWithByteBusDecl &rhs,
+                       const hdl::ComponentWithByteBusDecl &result);
 
   Instruction *unary_alu_operation(hdl::AluOpcode opcode,
                                    const hdl::ComponentWithByteBusDecl &operand,
-                                   const hdl::ComponentWithByteBusDecl &result,
-                                   bool carry_in = false);
+                                   const hdl::ComponentWithByteBusDecl &result);
 
-  Instruction *binary_alu_operation_no_result(
-      hdl::AluOpcode opcode, const hdl::ComponentWithByteBusDecl &lhs,
-      const hdl::ComponentWithByteBusDecl &rhs, bool carry_in = false);
+  Instruction *
+  binary_alu_operation_no_result(hdl::AluOpcode opcode,
+                                 const hdl::ComponentWithByteBusDecl &lhs,
+                                 const hdl::ComponentWithByteBusDecl &rhs);
 
   Instruction *
   unary_alu_operation_no_result(hdl::AluOpcode opcode,
-                                const hdl::ComponentWithByteBusDecl &operand,
-                                bool carry_in = false);
+                                const hdl::ComponentWithByteBusDecl &operand);
 
   int stage() const;
 

@@ -13,7 +13,8 @@ class RotateRightTest : public ::testing::Test {
 protected:
   FakeComponent irata = {hdl::ComponentType::Irata, "irata"};
   ByteBus data_bus = ByteBus("data_bus", &irata);
-  ALU alu = ALU(irata, data_bus);
+  Status carry = Status("carry", &irata);
+  ALU alu = ALU(irata, data_bus, carry);
   const RotateRight &rotate_right = dynamic_cast<const RotateRight &>(
       *alu.module(hdl::AluOpcode::RotateRight));
 };

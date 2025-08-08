@@ -10,7 +10,7 @@ class StatusRegister final : public Register {
 public:
   StatusRegister(Component &parent, ByteBus &bus, const Status &carry_in,
                  const Status &negative_in, const Status &overflow_in,
-                 const Status &zero_in);
+                 const Status &zero_in, Status &carry_out);
 
   hdl::ComponentType type() const override final;
 
@@ -47,7 +47,7 @@ private:
   const Status &negative_in_;
   const Status &overflow_in_;
   const Status &zero_in_;
-  Status carry_out_;
+  Status &carry_out_;
   Status negative_out_;
   Status overflow_out_;
   Status zero_out_;

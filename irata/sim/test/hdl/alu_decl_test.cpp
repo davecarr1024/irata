@@ -4,6 +4,7 @@
 #include <irata/sim/components/alu/module.hpp>
 #include <irata/sim/components/bus.hpp>
 #include <irata/sim/components/fake_component.hpp>
+#include <irata/sim/components/status.hpp>
 #include <irata/sim/hdl/alu_decl.hpp>
 #include <irata/sim/hdl/fake_component_decl.hpp>
 
@@ -22,10 +23,13 @@ class AluDeclTest : public ::testing::Test {
 protected:
   const FakeComponentDecl irata = {ComponentType::Irata, "irata"};
   const ByteBusDecl bus = {"bus", irata};
-  const AluDecl alu = {irata, bus};
+  const StatusDecl carry_in = {"carry", irata};
+  const AluDecl alu = {irata, bus, carry_in};
   components::FakeComponent irata_component = {ComponentType::Irata, "irata"};
   components::ByteBus data_bus_component =
       components::ByteBus("data_bus", &irata_component);
+  components::Status carry_component =
+      components::Status("carry", &irata_component);
 
   template <typename Matcher>
   auto ModuleHasOpcode(const Matcher &matcher) const {
@@ -64,10 +68,13 @@ TEST_F(AluDeclTest, Properties) {
   EXPECT_EQ(alu.rhs().name(), "rhs");
   EXPECT_EQ(alu.result().parent(), &alu);
   EXPECT_EQ(alu.result().name(), "result");
-  EXPECT_EQ(alu.carry_in().parent(), &alu);
-  EXPECT_EQ(alu.carry_in().name(), "carry_in");
+  EXPECT_EQ(&alu.carry_in(), &carry_in);
+  EXPECT_EQ(alu.carry_in().parent(), &irata);
+  EXPECT_EQ(alu.carry_in().name(), "carry");
+  EXPECT_EQ(alu.carry_in().path(), "/carry");
   EXPECT_EQ(alu.carry_out().parent(), &alu);
-  EXPECT_EQ(alu.carry_out().name(), "carry_out");
+  EXPECT_EQ(alu.carry_out().name(), "carry");
+  EXPECT_EQ(alu.carry_out().path(), "/alu/carry");
   EXPECT_EQ(alu.zero().parent(), &alu);
   EXPECT_EQ(alu.zero().name(), "zero");
   EXPECT_EQ(alu.negative().parent(), &alu);
@@ -128,8 +135,8 @@ TEST_F(AluDeclTest, OpcodeControlsForOpcode) {
 }
 
 TEST_F(AluDeclTest, Verify) {
-  auto alu_component =
-      components::alu::ALU(irata_component, data_bus_component);
+  auto alu_component = components::alu::ALU(irata_component, data_bus_component,
+                                            carry_component);
   EXPECT_NO_THROW(alu.verify(&alu_component));
 }
 

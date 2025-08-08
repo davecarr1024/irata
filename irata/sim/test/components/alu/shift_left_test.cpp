@@ -13,7 +13,8 @@ class ShiftLeftTest : public ::testing::Test {
 protected:
   FakeComponent irata = {hdl::ComponentType::Irata, "irata"};
   ByteBus data_bus = ByteBus("data_bus", &irata);
-  ALU alu = ALU(irata, data_bus);
+  Status carry = Status("carry", &irata);
+  ALU alu = ALU(irata, data_bus, carry);
   const ShiftLeft &shift_left =
       dynamic_cast<const ShiftLeft &>(*alu.module(hdl::AluOpcode::ShiftLeft));
 };

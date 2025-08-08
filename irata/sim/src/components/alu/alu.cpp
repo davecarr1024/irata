@@ -69,13 +69,12 @@ build_opcode_controls(const std::vector<std::unique_ptr<Module>> &modules,
 
 } // namespace
 
-ALU::ALU(Component &parent, ByteBus &data_bus)
+ALU::ALU(Component &parent, ByteBus &data_bus, const Status &carry_in)
     : Component("alu", &parent), modules_(build_modules(*this)),
       opcode_controls_(build_opcode_controls(modules_, *this)),
       lhs_("lhs", &data_bus, this), rhs_("rhs", &data_bus, this),
-      result_("result", &data_bus, this),
-      carry_in_("carry_in", hdl::TickPhase::Process, this),
-      carry_out_("carry_out", this), zero_("zero", this),
+      result_("result", &data_bus, this), carry_in_(carry_in),
+      carry_out_("carry", this), zero_("zero", this),
       negative_("negative", this), overflow_("overflow", this) {}
 
 hdl::ComponentType ALU::type() const { return hdl::ComponentType::Alu; }
@@ -85,9 +84,7 @@ const std::vector<std::unique_ptr<Module>> &ALU::modules() const {
 }
 
 bool ALU::carry_in() const { return carry_in_.value(); }
-void ALU::set_carry_in(bool value) { carry_in_.set_value(value); }
-Control &ALU::carry_in_control() { return carry_in_; }
-const Control &ALU::carry_in_control() const { return carry_in_; }
+const Status &ALU::carry_in_status() const { return carry_in_; }
 
 Byte ALU::lhs() const { return lhs_.value(); }
 void ALU::set_lhs(Byte value) { lhs_.set_value(value); }

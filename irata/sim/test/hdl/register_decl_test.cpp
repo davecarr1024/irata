@@ -26,6 +26,10 @@ protected:
   const WordBusDecl address_bus_decl = {"address_bus", irata_decl};
   const ConnectedWordRegisterDecl connected_word_register_decl = {
       "connected_word_register", irata_decl, address_bus_decl};
+  const DataAndAddressBusWordRegisterDecl
+      data_and_address_bus_word_register_decl = {
+          "data_and_address_bus_word_register", irata_decl, address_bus_decl,
+          data_bus_decl};
   const ProgramCounterDecl program_counter_decl = {
       "program_counter", irata_decl, address_bus_decl, data_bus_decl};
 
@@ -64,6 +68,14 @@ TEST_F(RegisterDeclTest, ConnectedWordRegisterDecl_Validate) {
       "connected_word_register", &address_bus, nullptr, &irata_component);
   EXPECT_NO_THROW(
       connected_word_register_decl.verify(&connected_word_register_component));
+}
+
+TEST_F(RegisterDeclTest, DataAndAddressBusWordRegisterDecl_Validate) {
+  components::WordRegister data_and_address_bus_word_register_component(
+      "data_and_address_bus_word_register", &address_bus, &data_bus,
+      &irata_component);
+  EXPECT_NO_THROW(data_and_address_bus_word_register_decl.verify(
+      &data_and_address_bus_word_register_component));
 }
 
 TEST_F(RegisterDeclTest, ProgramCounterDecl_Validate) {

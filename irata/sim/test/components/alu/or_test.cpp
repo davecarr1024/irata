@@ -13,7 +13,8 @@ class OrTest : public ::testing::Test {
 protected:
   FakeComponent irata = {hdl::ComponentType::Irata, "irata"};
   ByteBus data_bus = ByteBus("data_bus", &irata);
-  ALU alu = ALU(irata, data_bus);
+  Status carry = Status("carry", &irata);
+  ALU alu = ALU(irata, data_bus, carry);
   const Or &or_ = dynamic_cast<const Or &>(*alu.module(hdl::AluOpcode::Or));
 };
 

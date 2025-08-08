@@ -13,7 +13,8 @@ class XorTest : public ::testing::Test {
 protected:
   FakeComponent irata = {hdl::ComponentType::Irata, "irata"};
   ByteBus data_bus = ByteBus("data_bus", &irata);
-  ALU alu = ALU(irata, data_bus);
+  Status carry = Status("carry", &irata);
+  ALU alu = ALU(irata, data_bus, carry);
   const Xor &xor_ = dynamic_cast<const Xor &>(*alu.module(hdl::AluOpcode::Xor));
 };
 

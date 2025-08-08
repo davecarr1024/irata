@@ -11,7 +11,7 @@ class Module;
 
 class ALU final : public Component {
 public:
-  ALU(Component &parent, ByteBus &data_bus);
+  ALU(Component &parent, ByteBus &data_bus, const Status &carry_in);
 
   hdl::ComponentType type() const override final;
 
@@ -32,9 +32,7 @@ public:
   const Module *module() const;
 
   bool carry_in() const;
-  void set_carry_in(bool value);
-  Control &carry_in_control();
-  const Control &carry_in_control() const;
+  const Status &carry_in_status() const;
 
   Byte lhs() const;
   void set_lhs(Byte value);
@@ -80,7 +78,7 @@ private:
   Register lhs_;
   Register rhs_;
   Register result_;
-  Control carry_in_;
+  const Status &carry_in_;
   Status carry_out_;
   Status zero_;
   Status negative_;

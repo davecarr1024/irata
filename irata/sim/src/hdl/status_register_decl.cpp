@@ -14,13 +14,14 @@ StatusRegisterDecl::StatusRegisterDecl(const ComponentDecl &parent,
                                        const StatusDecl &carry_in,
                                        const StatusDecl &negative_in,
                                        const StatusDecl &overflow_in,
-                                       const StatusDecl &zero_in)
+                                       const StatusDecl &zero_in,
+                                       const StatusDecl &carry_out)
     : ComponentWithParentDecl<ComponentType::StatusRegister>("status_register",
                                                              parent),
       ComponentWithTypeDecl<ComponentType::StatusRegister>("status_register"),
       RegisterWithByteBusDecl(bus), ComponentWithByteBusDecl(bus),
       carry_in_(carry_in), negative_in_(negative_in), overflow_in_(overflow_in),
-      zero_in_(zero_in), carry_out_("carry", *this),
+      zero_in_(zero_in), carry_out_(carry_out),
       negative_out_("negative", *this), overflow_out_("overflow", *this),
       zero_out_("zero", *this), latch_("latch", *this), status_indices_({
                                                             {&carry_in_, 0},
@@ -32,7 +33,6 @@ StatusRegisterDecl::StatusRegisterDecl(const ComponentDecl &parent,
 void StatusRegisterDecl::verify(const components::Component *component) const {
   ComponentWithParentDecl<ComponentType::StatusRegister>::verify(component);
   RegisterWithByteBusDecl::verify(component);
-  verify_child(carry_out_, component);
   verify_child(negative_out_, component);
   verify_child(overflow_out_, component);
   verify_child(zero_out_, component);
@@ -65,7 +65,30 @@ void StatusRegisterDecl::verify(const components::Component *component) const {
        << common::strings::join(actual_status_indices_strs, ", ") << "]";
     throw std::invalid_argument(os.str());
   }
-  // TODO: verify status indices
+  const auto verify_status_connection = [](const StatusDecl &expected,
+                                           const components::StatusRegister
+                                               &status_register,
+                                           const components::Status &(
+                                               components::StatusRegister::*
+                                                   func)() const) {
+    const components::Status &actual = (status_register.*func)();
+    if (actual.path() != expected.path()) {
+      std::ostringstream os;
+      os << "Status register status connection path does not match. Expected: "
+         << expected.path() << ", actual: " << actual.path();
+      throw std::invalid_argument(os.str());
+    }
+  };
+  verify_status_connection(carry_out_, status_register,
+                           &components::StatusRegister::carry_out);
+  verify_status_connection(carry_in_, status_register,
+                           &components::StatusRegister::carry_in);
+  verify_status_connection(negative_in_, status_register,
+                           &components::StatusRegister::negative_in);
+  verify_status_connection(overflow_in_, status_register,
+                           &components::StatusRegister::overflow_in);
+  verify_status_connection(zero_in_, status_register,
+                           &components::StatusRegister::zero_in);
 }
 
 const StatusDecl &StatusRegisterDecl::carry_in() const { return carry_in_; }

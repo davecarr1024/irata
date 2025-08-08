@@ -19,13 +19,13 @@ class StatusRegisterDeclTest : public ::testing::Test {
 protected:
   const FakeComponentDecl root = {ComponentType::Unknown, "root"};
   const ByteBusDecl bus = {"bus", root};
+  const StatusDecl carry_out = {"carry_out", root};
   const StatusDecl carry_in = {"carry", root};
   const StatusDecl negative_in = {"negative", root};
   const StatusDecl overflow_in = {"overflow", root};
   const StatusDecl zero_in = {"zero", root};
   const StatusRegisterDecl status_register = {
-      root, bus, carry_in, negative_in, overflow_in, zero_in,
-  };
+      root, bus, carry_in, negative_in, overflow_in, zero_in, carry_out};
 };
 
 } // namespace
@@ -39,8 +39,8 @@ TEST_F(StatusRegisterDeclTest, Properties) {
   EXPECT_EQ(&status_register.negative_in(), &negative_in);
   EXPECT_EQ(&status_register.overflow_in(), &overflow_in);
   EXPECT_EQ(&status_register.zero_in(), &zero_in);
-  EXPECT_EQ(status_register.carry_out().parent(), &status_register);
-  EXPECT_EQ(status_register.carry_out().name(), "carry");
+  EXPECT_EQ(status_register.carry_out().parent(), &root);
+  EXPECT_EQ(status_register.carry_out().name(), "carry_out");
   EXPECT_EQ(status_register.negative_out().parent(), &status_register);
   EXPECT_EQ(status_register.negative_out().name(), "negative");
   EXPECT_EQ(status_register.overflow_out().parent(), &status_register);
@@ -61,9 +61,10 @@ TEST_F(StatusRegisterDeclTest, Verify) {
   components::Status negative_in_component("negative", &root_component);
   components::Status overflow_in_component("overflow", &root_component);
   components::Status zero_in_component("zero", &root_component);
+  components::Status carry_out_component("carry_out", &root_component);
   components::StatusRegister status_register_component(
       root_component, bus_component, carry_in_component, negative_in_component,
-      overflow_in_component, zero_in_component);
+      overflow_in_component, zero_in_component, carry_out_component);
   EXPECT_NO_THROW(status_register.verify(&status_register_component));
 }
 

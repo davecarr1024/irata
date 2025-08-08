@@ -80,15 +80,16 @@ std::set<std::unique_ptr<AluDecl::ModuleDecl>> get_modules(const AluDecl &alu) {
 
 } // namespace
 
-AluDecl::AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus)
+AluDecl::AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus,
+                 const StatusDecl &carry_in)
     : ComponentWithParentDecl<ComponentType::Alu>("alu", parent),
       ComponentWithTypeDecl<ComponentType::Alu>("alu"),
       modules_(get_modules(*this)), max_opcode_(get_max_opcode(modules_)),
       opcode_controls_(
           get_opcode_controls(*this, get_num_opcode_controls(max_opcode_))),
       lhs_("lhs", *this, data_bus), rhs_("rhs", *this, data_bus),
-      result_("result", *this, data_bus), carry_in_("carry_in", *this),
-      carry_out_("carry_out", *this), zero_("zero", *this),
+      result_("result", *this, data_bus), carry_in_(carry_in),
+      carry_out_("carry", *this), zero_("zero", *this),
       negative_("negative", *this), overflow_("overflow", *this)
 
 {
@@ -125,7 +126,7 @@ void AluDecl::verify(const components::Component *component) const {
   verify_child(lhs_, component);
   verify_child(rhs_, component);
   verify_child(result_, component);
-  verify_child(carry_in_, component);
+  // Don't verify carry_in_, it's not a child of the ALU.
   verify_child(carry_out_, component);
   verify_child(zero_, component);
   verify_child(negative_, component);
@@ -153,6 +154,23 @@ void AluDecl::verify(const components::Component *component) const {
       throw std::invalid_argument(os.str());
     }
   }
+
+  const auto verify_status_connection = [](const StatusDecl &expected,
+                                           const components::alu::ALU
+                                               &status_register,
+                                           const components::Status &(
+                                               components::alu::ALU::*func)()
+                                               const) {
+    const components::Status &actual = (status_register.*func)();
+    if (actual.path() != expected.path()) {
+      std::ostringstream os;
+      os << "Status register status connection path does not match. Expected: "
+         << expected.path() << ", actual: " << actual.path();
+      throw std::invalid_argument(os.str());
+    }
+  };
+  verify_status_connection(carry_in_, alu,
+                           &components::alu::ALU::carry_in_status);
 }
 
 const std::set<std::unique_ptr<AluDecl::ModuleDecl>> &AluDecl::modules() const {
@@ -186,7 +204,7 @@ const ConnectedByteRegisterDecl &AluDecl::rhs() const { return rhs_; }
 
 const ConnectedByteRegisterDecl &AluDecl::result() const { return result_; }
 
-const ProcessControlDecl &AluDecl::carry_in() const { return carry_in_; }
+const StatusDecl &AluDecl::carry_in() const { return carry_in_; }
 
 const StatusDecl &AluDecl::carry_out() const { return carry_out_; }
 
