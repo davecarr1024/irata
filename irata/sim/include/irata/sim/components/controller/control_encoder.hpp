@@ -24,6 +24,8 @@ public:
   // Returns the number of controls in the table.
   size_t num_controls() const;
 
+  const std::map<const hdl::ControlDecl *, size_t> &indices() const;
+
 private:
   const std::map<const hdl::ControlDecl *, size_t> indices_;
 };

@@ -1,27 +1,32 @@
+#include <irata/common/strings/strings.hpp>
 #include <irata/sim/components/controller/instruction_memory.hpp>
 
 namespace irata::sim::components::controller {
 
 namespace {
 
-std::map<Word, Byte> encode_rom(const InstructionEncoder &encoder,
-                                const microcode::table::Table &table,
-                                size_t value_offset) {
-  std::map<Word, Byte> rom;
+memory::ROM encode_rom(const InstructionEncoder &encoder,
+                       const microcode::table::Table &table, size_t rom_index) {
+  std::map<Word, Byte> data;
   for (const auto &entry : table.entries) {
     for (const auto &address : encoder.encode_address(entry)) {
       const auto value = encoder.encode_value(entry);
-      const auto word_address = Word(address);
-      if (rom.find(word_address) != rom.end()) {
+      if (data.find(address) != data.end()) {
         std::ostringstream os;
         os << "Duplicate address " << std::hex << address << " for entry "
            << entry << " in instruction memory";
         throw std::logic_error(os.str());
       }
-      rom[word_address] = Byte((value >> value_offset) & 0xFF);
+      data[address] = Byte((value >> (8 * rom_index)) & 0xFF);
     }
   }
-  return rom;
+  return memory::ROM(1 << 16, "rom_" + std::to_string(rom_index), data);
+}
+
+std::array<memory::ROM, 4> encode_roms(const InstructionEncoder &encoder,
+                                       const microcode::table::Table &table) {
+  return {encode_rom(encoder, table, 0), encode_rom(encoder, table, 1),
+          encode_rom(encoder, table, 2), encode_rom(encoder, table, 3)};
 }
 
 } // namespace
@@ -29,16 +34,19 @@ std::map<Word, Byte> encode_rom(const InstructionEncoder &encoder,
 InstructionMemory::InstructionMemory(const microcode::table::Table &table,
                                      std::string_view name, Component *parent)
     : Component(name, parent), encoder_(table),
-      high_rom_(1 << 16, "high_rom", encode_rom(encoder_, table, 8)),
-      low_rom_(1 << 16, "low_rom", encode_rom(encoder_, table, 0)) {
-  add_child(&high_rom_);
-  add_child(&low_rom_);
+      roms_(encode_roms(encoder_, table)) {
+  for (auto &rom : roms_) {
+    add_child(&rom);
+  }
 }
 
-uint16_t InstructionMemory::read(uint16_t address) const {
-  const auto high = high_rom_.read(Word(address)).unsigned_value();
-  const auto low = low_rom_.read(Word(address)).unsigned_value();
-  return (high << 8) | low;
+uint32_t InstructionMemory::read(uint16_t address) const {
+  uint32_t value = 0;
+  for (size_t rom_index = 0; rom_index < roms_.size(); rom_index++) {
+    value |= roms_[rom_index].read(Word(address)).unsigned_value()
+             << (8 * rom_index);
+  }
+  return value;
 }
 
 std::set<const hdl::ControlDecl *>

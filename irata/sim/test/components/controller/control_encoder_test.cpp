@@ -4,6 +4,7 @@
 #include <irata/sim/hdl/irata_decl.hpp>
 
 using ::testing::IsEmpty;
+using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
 
 namespace irata::sim::components::controller {
@@ -28,6 +29,11 @@ protected:
 };
 
 } // namespace
+
+TEST_F(ControlEncoderTest, Indices) {
+  EXPECT_THAT(encoder.indices(),
+              UnorderedElementsAre(Pair(&control1, 0), Pair(&control2, 1)));
+}
 
 TEST_F(ControlEncoderTest, TooManyControls) {
   std::vector<std::unique_ptr<hdl::ProcessControlDecl>> controls;

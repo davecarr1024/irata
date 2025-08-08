@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/controller/instruction_encoder.hpp>
 #include <irata/sim/components/memory/rom.hpp>
@@ -28,9 +29,9 @@ public:
 
 private:
   const InstructionEncoder encoder_;
-  memory::ROM high_rom_, low_rom_;
+  std::array<memory::ROM, 4> roms_;
 
-  uint16_t read(uint16_t address) const;
+  uint32_t read(uint16_t address) const;
 };
 
 } // namespace irata::sim::components::controller

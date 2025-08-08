@@ -11,6 +11,7 @@ using ::testing::Contains;
 using ::testing::Each;
 using ::testing::Field;
 using ::testing::IsEmpty;
+using ::testing::Property;
 
 namespace irata::sim::microcode::compiler {
 
@@ -64,6 +65,20 @@ TEST(MicrocodeCompilerTest, LdaImm) {
                 Contains(step_index == entries.size() - 1
                              ? &reset_step_counter
                              : &increment_step_counter));
+  }
+}
+
+TEST(MicrocodeCompilerTest, CmpHasOpcode1) {
+  const auto table = Compiler::compile_irata();
+  const auto &descriptor = asm_::InstructionSet::irata().get_instruction(
+      "cmp", asm_::AddressingMode::IMMEDIATE);
+  EXPECT_THAT(table.entries,
+              Contains(AllOf(EntryHasInstruction(descriptor),
+                             EntryHasControls(Contains(
+                                 Property("path", &hdl::ComponentDecl::path,
+                                          "/cpu/alu/opcode_1"))))));
+  for (const auto &entry : table_entries_for_instruction(descriptor)) {
+    std::cout << entry << std::endl;
   }
 }
 

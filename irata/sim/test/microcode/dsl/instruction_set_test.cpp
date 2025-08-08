@@ -8,6 +8,7 @@
 #include <irata/sim/microcode/dsl/step.hpp>
 
 using ::testing::AllOf;
+using ::testing::Contains;
 using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Property;
@@ -164,6 +165,21 @@ TEST_F(MicrocodeDslInstructionSetTest, Irata) {
   const auto &instruction_set = InstructionSet::irata();
   EXPECT_NO_THROW(
       instruction_set.get_instruction("lda", asm_::AddressingMode::IMMEDIATE));
+}
+
+TEST_F(MicrocodeDslInstructionSetTest, Irata_CmpOpcode) {
+  const auto &instruction_set = InstructionSet::irata();
+  EXPECT_THAT(
+      instruction_set.instructions(),
+      Contains(Pointee(AllOf(InstructionHasDescriptor(
+                                 asm_::InstructionSet::irata().get_instruction(
+                                     "cmp", asm_::AddressingMode::IMMEDIATE)),
+                             Property("steps", &Instruction::steps,
+                                      Contains(Pointee(Property(
+                                          "controls", &Step::controls,
+                                          Contains(Pointee(Property(
+                                              "path", &hdl::ControlDecl::path,
+                                              "/cpu/alu/opcode_1")))))))))));
 }
 
 } // namespace irata::sim::microcode::dsl

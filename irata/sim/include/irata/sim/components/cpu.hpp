@@ -45,6 +45,9 @@ public:
   const StatusRegister &status_register() const;
   StatusRegister &status_register();
 
+  const WordRegister &buffer() const;
+  WordRegister &buffer();
+
 private:
   controller::Controller controller_;
   Register a_;
@@ -54,6 +57,7 @@ private:
   Status carry_;
   alu::ALU alu_;
   StatusRegister status_register_;
+  WordRegister buffer_;
 };
 
 } // namespace irata::sim::components

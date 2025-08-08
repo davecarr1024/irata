@@ -33,6 +33,8 @@ TEST_F(CpuTest, Properties) {
   EXPECT_EQ(cpu.pc().name(), "pc");
   EXPECT_EQ(cpu.status_register().parent(), &cpu);
   EXPECT_EQ(cpu.status_register().name(), "status_register");
+  EXPECT_EQ(cpu.buffer().parent(), &cpu);
+  EXPECT_EQ(cpu.buffer().name(), "buffer");
 }
 
 } // namespace irata::sim::components

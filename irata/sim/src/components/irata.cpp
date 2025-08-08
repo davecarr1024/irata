@@ -45,12 +45,17 @@ void Irata::tick_process(Logger &logger) {
 }
 
 Irata::Result Irata::tick_until_halt() {
-  while (!halt_received_ && !crash_received_) {
+  int tick = 0;
+  static const int max_ticks = 30;
+  while (!halt_received_ && !crash_received_ && tick++ < max_ticks) {
     std::cout << "ticking irata:\n  pc = " << cpu_.pc().value()
               << "\n  opcode = " << cpu_.controller().opcode()
               << "\n  step counter = " << cpu_.controller().step_counter()
               << "\n";
-    tick();
+    this->tick();
+  }
+  if (tick >= max_ticks) {
+    throw std::runtime_error("max ticks reached");
   }
   if (crash_received_) {
     return Result::Crash;

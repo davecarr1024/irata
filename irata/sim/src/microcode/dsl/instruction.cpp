@@ -89,6 +89,14 @@ Instruction::read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest) {
       ->instruction();
 }
 
+Instruction *Instruction::indirect_read_memory_at_pc(
+    const hdl::ComponentWithByteBusDecl &data_dest) {
+  return read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address())
+      ->copy(hdl::irata().memory(), data_dest);
+}
+
 int Instruction::stage() const { return stage_; }
 
 Instruction *Instruction::next_stage() {

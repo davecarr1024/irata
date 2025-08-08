@@ -77,9 +77,14 @@ public:
                            const hdl::ComponentWithByteBusDecl &data_dest);
 
   // Read the value from the memory at the address in the program counter into
-  // the destination register.
+  // the destination register, and increment the program counter.
   Instruction *
   read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
+
+  // Read the value from memory at the address in the next two bytes of the
+  // program.
+  Instruction *
+  indirect_read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
 
   // Perform an ALU operation with the given opcode.
   // This assumes that the operands are ready in the alu lhs and rhs registers.

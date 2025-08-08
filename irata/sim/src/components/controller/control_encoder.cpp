@@ -63,4 +63,9 @@ ControlEncoder::decode(uint32_t encoded_controls) const {
 
 size_t ControlEncoder::num_controls() const { return indices_.size(); }
 
+const std::map<const hdl::ControlDecl *, size_t> &
+ControlEncoder::indices() const {
+  return indices_;
+}
+
 } // namespace irata::sim::components::controller

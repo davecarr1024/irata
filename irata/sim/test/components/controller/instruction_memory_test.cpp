@@ -1,9 +1,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <irata/asm/instruction.hpp>
+#include <irata/asm/instruction_set.hpp>
 #include <irata/sim/components/controller/instruction_memory.hpp>
 #include <irata/sim/hdl/irata_decl.hpp>
+#include <irata/sim/microcode/compiler/compiler.hpp>
 #include <stdexcept>
 
+using ::testing::Contains;
+using ::testing::Property;
 using ::testing::UnorderedElementsAre;
 
 namespace irata::sim::components::controller {
@@ -109,6 +114,27 @@ TEST_F(InstructionMemoryTest, ReadByInstruction) {
   EXPECT_THAT(instruction_memory.read(instruction2,
                                       complete({{&status1, false}}), 0x00),
               UnorderedElementsAre(&control2));
+}
+
+TEST_F(InstructionMemoryTest, CmpHasAluOpcode1) {
+  const auto &cmp = asm_::InstructionSet::irata().get_instruction(
+      "cmp", asm_::AddressingMode::IMMEDIATE);
+  const auto im =
+      InstructionMemory(microcode::compiler::Compiler::compile_irata());
+  std::cout << "checking instruction " << cmp << std::endl;
+  for (uint8_t step_index = 0; step_index <= im.encoder().max_step_index();
+       ++step_index) {
+    std::cout << "checking step " << int(step_index) << std::endl;
+    for (const auto &control :
+         im.read(cmp, CompleteStatuses(im.encoder().status_encoder(), {}),
+                 step_index)) {
+      std::cout << "checking control " << control->path() << std::endl;
+      if (control->path() == "/cpu/alu/opcode_1") {
+        return;
+      }
+    }
+  }
+  FAIL() << "cmp immediate did not assert alu opcode 1";
 }
 
 } // namespace irata::sim::components::controller

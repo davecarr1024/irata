@@ -12,7 +12,8 @@ Cpu::Cpu(microcode::table::Table microcode_table, ByteBus &data_bus,
       carry_("carry", this), alu_(*this, data_bus, carry_),
       status_register_(*this, data_bus, alu_.carry_out_status(),
                        alu_.negative_status(), alu_.overflow_status(),
-                       alu_.zero_status(), carry_) {}
+                       alu_.zero_status(), carry_),
+      buffer_("buffer", &address_bus, &data_bus, this) {}
 
 Cpu Cpu::irata(ByteBus &data_bus, WordBus &address_bus, Component *parent,
                std::string_view name) {
@@ -42,5 +43,11 @@ WordCounter &Cpu::pc() { return pc_; }
 
 const StatusRegister &Cpu::status_register() const { return status_register_; }
 StatusRegister &Cpu::status_register() { return status_register_; }
+
+const Status &Cpu::carry() const { return carry_; }
+Status &Cpu::carry() { return carry_; }
+
+const WordRegister &Cpu::buffer() const { return buffer_; }
+WordRegister &Cpu::buffer() { return buffer_; }
 
 } // namespace irata::sim::components
