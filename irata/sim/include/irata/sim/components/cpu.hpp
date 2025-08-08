@@ -5,6 +5,7 @@
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/controller/controller.hpp>
 #include <irata/sim/components/register.hpp>
+#include <irata/sim/components/status_register.hpp>
 
 namespace irata::sim::components {
 
@@ -37,6 +38,9 @@ public:
   const WordCounter &pc() const;
   WordCounter &pc();
 
+  const StatusRegister &status_register() const;
+  StatusRegister &status_register();
+
 private:
   controller::Controller controller_;
   alu::ALU alu_;
@@ -44,6 +48,7 @@ private:
   Register x_;
   Register y_;
   WordCounter pc_;
+  StatusRegister status_register_;
 };
 
 } // namespace irata::sim::components

@@ -8,7 +8,10 @@ Cpu::Cpu(microcode::table::Table microcode_table, ByteBus &data_bus,
     : Component(name, parent),
       controller_(microcode_table, data_bus, "controller", this),
       alu_(*this, data_bus), a_("a", &data_bus, this), x_("x", &data_bus, this),
-      y_("y", &data_bus, this), pc_("pc", &address_bus, &data_bus, this) {}
+      y_("y", &data_bus, this), pc_("pc", &address_bus, &data_bus, this),
+      status_register_(*this, data_bus, alu_.carry_out_status(),
+                       alu_.negative_status(), alu_.overflow_status(),
+                       alu_.zero_status()) {}
 
 Cpu Cpu::irata(ByteBus &data_bus, WordBus &address_bus, Component *parent,
                std::string_view name) {
@@ -35,5 +38,8 @@ Register &Cpu::y() { return y_; }
 
 const WordCounter &Cpu::pc() const { return pc_; }
 WordCounter &Cpu::pc() { return pc_; }
+
+const StatusRegister &Cpu::status_register() const { return status_register_; }
+StatusRegister &Cpu::status_register() { return status_register_; }
 
 } // namespace irata::sim::components

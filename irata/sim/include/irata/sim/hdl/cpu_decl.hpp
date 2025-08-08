@@ -5,6 +5,7 @@
 #include <irata/sim/hdl/component_decl.hpp>
 #include <irata/sim/hdl/controller_decl.hpp>
 #include <irata/sim/hdl/register_decl.hpp>
+#include <irata/sim/hdl/status_register_decl.hpp>
 
 namespace irata::sim::hdl {
 
@@ -35,6 +36,8 @@ public:
 
   const AluDecl &alu() const;
 
+  const StatusRegisterDecl &status_register() const;
+
 private:
   const WordBusDecl &address_bus_;
   const ByteBusDecl &data_bus_;
@@ -44,6 +47,7 @@ private:
   const ProgramCounterDecl pc_;
   const ControllerDecl controller_;
   const AluDecl alu_;
+  const StatusRegisterDecl status_register_;
 };
 
 } // namespace irata::sim::hdl

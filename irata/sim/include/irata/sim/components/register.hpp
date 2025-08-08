@@ -23,7 +23,7 @@ public:
                     Component *parent = nullptr);
   virtual ~Register() = default;
 
-  hdl::ComponentType type() const override final;
+  hdl::ComponentType type() const override;
 
   // Returns the current value of the register.
   Byte value() const;

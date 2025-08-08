@@ -18,6 +18,7 @@ enum class ComponentType {
   WordBus,
   Control,
   Status,
+  StatusRegister,
 };
 
 std::ostream &operator<<(std::ostream &os, ComponentType type);

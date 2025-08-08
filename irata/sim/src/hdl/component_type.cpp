@@ -28,6 +28,8 @@ std::ostream &operator<<(std::ostream &os, ComponentType type) {
     return os << "Alu";
   case ComponentType::AluModule:
     return os << "AluModule";
+  case ComponentType::StatusRegister:
+    return os << "StatusRegister";
   case ComponentType::Unknown:
     return os << "Unknown";
   default:

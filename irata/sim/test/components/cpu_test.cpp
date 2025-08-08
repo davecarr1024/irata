@@ -16,10 +16,9 @@ protected:
 
 } // namespace
 
-TEST_F(CpuTest, Type) { EXPECT_EQ(cpu.type(), hdl::ComponentType::Cpu); }
-
-TEST_F(CpuTest, Constructor) {
+TEST_F(CpuTest, Properties) {
   EXPECT_EQ(cpu.name(), "cpu");
+  EXPECT_EQ(cpu.type(), hdl::ComponentType::Cpu);
   EXPECT_EQ(cpu.controller().parent(), &cpu);
   EXPECT_EQ(cpu.controller().name(), "controller");
   EXPECT_EQ(cpu.alu().parent(), &cpu);
@@ -32,6 +31,8 @@ TEST_F(CpuTest, Constructor) {
   EXPECT_EQ(cpu.y().name(), "y");
   EXPECT_EQ(cpu.pc().parent(), &cpu);
   EXPECT_EQ(cpu.pc().name(), "pc");
+  EXPECT_EQ(cpu.status_register().parent(), &cpu);
+  EXPECT_EQ(cpu.status_register().name(), "status_register");
 }
 
 } // namespace irata::sim::components

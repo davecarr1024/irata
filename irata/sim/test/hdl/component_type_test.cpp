@@ -21,6 +21,10 @@ TEST(ComponentTypeTest, ToString) {
   EXPECT_EQ(to_string(ComponentType::Control), "Control");
   EXPECT_EQ(to_string(ComponentType::Status), "Status");
   EXPECT_EQ(to_string(ComponentType::Controller), "Controller");
+  EXPECT_EQ(to_string(ComponentType::Alu), "Alu");
+  EXPECT_EQ(to_string(ComponentType::AluModule), "AluModule");
+  EXPECT_EQ(to_string(ComponentType::StatusRegister), "StatusRegister");
+  EXPECT_EQ(to_string(ComponentType::Unknown), "Unknown");
 }
 
 } // namespace irata::sim::hdl
