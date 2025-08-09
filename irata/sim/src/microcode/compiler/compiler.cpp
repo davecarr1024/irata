@@ -57,18 +57,32 @@ Compiler::compile(const dsl::InstructionSet &instruction_set) const {
 
 const Compiler &Compiler::irata() {
   std::vector<std::unique_ptr<passes::Pass>> passes;
+
+  // Phase 1: validators for raw microcode.
   passes.push_back(std::make_unique<passes::FetchStageValidator>());
   passes.push_back(std::make_unique<passes::BusValidator>());
   passes.push_back(std::make_unique<passes::StatusCompletenessValidator>());
   passes.push_back(passes::InstructionCoverageValidator::irata());
+
+  // Phase 2: transformers
+  // First step index pass: add step index controls.
   passes.push_back(std::make_unique<passes::StepIndexTransformer>());
+  // Immediately validate the step index transformer's output.
   passes.push_back(std::make_unique<passes::StepIndexValidator>());
+  // Merge compatible steps.
   passes.push_back(std::make_unique<passes::StepMerger>());
+  // Second step index pass: clean up and remove extra merged step index
+  // controls.
+  passes.push_back(std::make_unique<passes::StepIndexTransformer>());
+  // Immediately validate the step index transformer's output.
+  passes.push_back(std::make_unique<passes::StepIndexValidator>());
+
+  // Phase 3: validators for compiled microcode
+  passes.push_back(std::make_unique<passes::FetchStageValidator>());
   passes.push_back(std::make_unique<passes::BusValidator>());
   passes.push_back(std::make_unique<passes::StatusCompletenessValidator>());
-  passes.push_back(std::make_unique<passes::StepIndexValidator>());
   passes.push_back(passes::InstructionCoverageValidator::irata());
-  passes.push_back(std::make_unique<passes::FetchStageValidator>());
+
   static const Compiler compiler(std::move(passes));
   return compiler;
 }

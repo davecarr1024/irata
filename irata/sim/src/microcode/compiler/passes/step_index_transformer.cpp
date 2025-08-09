@@ -5,15 +5,38 @@ namespace irata::sim::microcode::compiler::passes {
 
 namespace {
 
-ir::Step transform(const ir::Step &step, bool last) {
+void add_control(std::set<const hdl::ControlDecl *> &controls,
+                 const hdl::ControlDecl &control) {
+  controls.insert(&control);
+}
+
+void remove_control(std::set<const hdl::ControlDecl *> &controls,
+                    const hdl::ControlDecl &control) {
+  if (const auto it = controls.find(&control); it != controls.end()) {
+    controls.erase(it);
+  }
+}
+
+ir::Step transform_increment_step(const ir::Step &step) {
   const hdl::ProcessControlDecl &increment_control =
       hdl::irata().cpu().controller().step_counter().increment();
   const hdl::ProcessControlDecl &reset_control =
       hdl::irata().cpu().controller().step_counter().reset();
-  const hdl::ProcessControlDecl &control =
-      last ? reset_control : increment_control;
   std::set<const hdl::ControlDecl *> transformed_controls = step.controls();
-  transformed_controls.insert(&control);
+  add_control(transformed_controls, increment_control);
+  remove_control(transformed_controls, reset_control);
+  return ir::Step(transformed_controls, step.write_controls(),
+                  step.read_controls(), step.stage());
+}
+
+ir::Step transform_reset_step(const ir::Step &step) {
+  const hdl::ProcessControlDecl &increment_control =
+      hdl::irata().cpu().controller().step_counter().increment();
+  const hdl::ProcessControlDecl &reset_control =
+      hdl::irata().cpu().controller().step_counter().reset();
+  std::set<const hdl::ControlDecl *> transformed_controls = step.controls();
+  remove_control(transformed_controls, increment_control);
+  add_control(transformed_controls, reset_control);
   return ir::Step(transformed_controls, step.write_controls(),
                   step.read_controls(), step.stage());
 }
@@ -21,8 +44,12 @@ ir::Step transform(const ir::Step &step, bool last) {
 ir::Instruction transform(const ir::Instruction &instruction) {
   std::vector<ir::Step> transformed_steps;
   for (size_t i = 0; i < instruction.steps().size(); ++i) {
-    transformed_steps.push_back(
-        transform(instruction.steps()[i], i == instruction.steps().size() - 1));
+    const auto &step = instruction.steps()[i];
+    if (i == instruction.steps().size() - 1) {
+      transformed_steps.push_back(transform_reset_step(step));
+    } else {
+      transformed_steps.push_back(transform_increment_step(step));
+    }
   }
   return ir::Instruction(instruction.descriptor(), transformed_steps,
                          instruction.statuses());
