@@ -45,6 +45,12 @@ public:
   // instruction is owned by the same instruction set as this instruction.
   Instruction *create_instruction(const asm_::Instruction &instruction);
 
+  // Creates a new instruction with the given instruction name and addressing
+  // mode. The new instruction is owned by the same instruction set as this
+  // instruction.
+  Instruction *create_instruction(std::string_view name,
+                                  asm_::AddressingMode mode);
+
   // Creates a new step. The new step is owned by this instruction.
   Step *create_step();
 

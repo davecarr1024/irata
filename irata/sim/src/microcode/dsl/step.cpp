@@ -28,6 +28,13 @@ Instruction *Step::create_instruction(const asm_::Instruction &descriptor) {
   return instruction_->create_instruction(descriptor);
 }
 
+Instruction *Step::create_instruction(std::string_view name,
+                                      asm_::AddressingMode addressing_mode) {
+  return instruction_->create_instruction(name, addressing_mode);
+}
+
+Instruction *Step::next_stage() { return instruction_->next_stage(); }
+
 namespace {
 
 void validate_hdl_components_in_same_tree(const hdl::ComponentDecl &a,

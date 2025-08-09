@@ -129,6 +129,19 @@ TEST_F(MicrocodeDslInstructionTest, CreateInstructionFromInstruction) {
   EXPECT_THAT(instruction2->statuses(), IsEmpty());
 }
 
+TEST_F(MicrocodeDslInstructionTest,
+       CreateInstructionFromInstruction_WithNameAndAddressingMode) {
+  auto *instruction1 =
+      instruction_set_.create_instruction(instruction_descriptor_);
+  auto *instruction2 = instruction1->create_instruction(
+      instruction_descriptor_.name(),
+      instruction_descriptor_.addressing_mode());
+  EXPECT_EQ(instruction2->descriptor(), instruction_descriptor_);
+  EXPECT_EQ(instruction2->instruction_set(), &instruction_set_);
+  EXPECT_EQ(instruction_set_.instructions().back().get(), instruction2);
+  EXPECT_THAT(instruction2->statuses(), IsEmpty());
+}
+
 TEST_F(MicrocodeDslInstructionTest, CreateStep) {
   auto *instruction =
       instruction_set_.create_instruction(instruction_descriptor_);

@@ -6,8 +6,10 @@
 #include <irata/sim/microcode/compiler/compiler.hpp>
 #include <utility>
 
+using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
 
 namespace irata::sim::components::controller {
@@ -102,7 +104,9 @@ TEST_F(InstructionEncoderTest, EncodeAndDecodeIrata) {
       const auto [opcode, statuses, step_index] =
           encoder.decode_address(address);
       EXPECT_EQ(opcode, entry.instruction.opcode().unsigned_value());
-      EXPECT_EQ(statuses.statuses(), entry.statuses);
+      for (const auto &[status, value] : entry.statuses) {
+        EXPECT_THAT(statuses.statuses(), Contains(Pair(status, value)));
+      }
       EXPECT_EQ(step_index, entry.step_index.unsigned_value());
 
       const auto value = encoder.encode_value(entry.controls);

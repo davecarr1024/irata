@@ -156,10 +156,11 @@ LabelBinder::Program::Instruction::Absolute::Absolute(
     const InstructionBinder::Program::Instruction::AbsoluteLiteral &arg)
     : Absolute(arg.value()) {}
 
+// Note 0x8000 offset to account for cartridge memory mapping.
 LabelBinder::Program::Instruction::Absolute::Absolute(
     const InstructionBinder::Program::Instruction::AbsoluteLabel &arg,
     const BindContext &context)
-    : Absolute(context.get(arg.value())) {}
+    : Absolute(context.get(arg.value()) + common::bytes::Word(0x8000)) {}
 
 common::bytes::Word LabelBinder::Program::Instruction::Absolute::value() const {
   return value_;

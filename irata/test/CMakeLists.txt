@@ -13,16 +13,7 @@ foreach(TEST_FILE ${TEST_PROGRAMS})
 
   add_custom_target(${TEST_NAME}_asm ALL DEPENDS ${BIN_FILE})
 
-  add_custom_command(
-    OUTPUT ${BIN_FILE}.sim.ok
-    COMMAND sim < ${BIN_FILE} && touch ${BIN_FILE}.sim.ok
-    DEPENDS sim ${BIN_FILE}
-    COMMENT "Running sim on ${BIN_FILE}"
-  )
+  add_test(NAME run_${TEST_NAME} COMMAND sh -c "$<TARGET_FILE:sim> < ${BIN_FILE}")
 
-  add_custom_target(${TEST_NAME}_run ALL DEPENDS ${BIN_FILE}.sim.ok)
-
-  # Optional: add_test so it shows up in `ctest`
-  add_test(NAME run_${TEST_NAME} COMMAND sim < ${BIN_FILE})
+  set_property(TEST run_${TEST_NAME} PROPERTY DEPENDS ${TEST_NAME}_asm)
 endforeach()
-

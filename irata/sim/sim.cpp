@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     irata.serialize_all(std::cerr);
     return 0;
   case Irata::Result::Crash:
-    std::cerr << "Simulation crashed." << std::endl;
+    std::cerr << "Simulation crashed. Final state:" << std::endl;
     irata.serialize_all(std::cerr);
     return 1;
   }

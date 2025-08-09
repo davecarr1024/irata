@@ -26,6 +26,9 @@ public:
   // Returns the instruction set that owns this step.
   InstructionSet *instruction_set() const;
 
+  // Advances the instruction to a new stage and returns the instruction.
+  Instruction *next_stage();
+
   // The instruction stage that this step is part of.
   // Instruction stages are sets of steps that can be merged.
   int stage() const;
@@ -36,6 +39,11 @@ public:
   // Creates a new instruction that is owned by the same instruction set as
   // this step.
   Instruction *create_instruction(const asm_::Instruction &descriptor);
+
+  // Creates a new instruction that is owned by the same instruction set as
+  // this step.
+  Instruction *create_instruction(std::string_view name,
+                                  asm_::AddressingMode mode);
 
   // Adds the given control line to the step.
   Step *with_control(const hdl::WriteControlDecl &control);

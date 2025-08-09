@@ -122,15 +122,16 @@ TEST_F(InstructionMemoryTest, CmpHasAluOpcode1) {
   const auto im =
       InstructionMemory(microcode::compiler::Compiler::compile_irata());
   std::cout << "checking instruction " << cmp << std::endl;
-  for (uint8_t step_index = 0; step_index <= im.encoder().max_step_index();
-       ++step_index) {
-    std::cout << "checking step " << int(step_index) << std::endl;
-    for (const auto &control :
-         im.read(cmp, CompleteStatuses(im.encoder().status_encoder(), {}),
-                 step_index)) {
-      std::cout << "checking control " << control->path() << std::endl;
-      if (control->path() == "/cpu/alu/opcode_1") {
-        return;
+  for (const auto &statuses :
+       im.encoder().status_encoder().permute(PartialStatuses({}))) {
+    for (uint8_t step_index = 0; step_index <= im.encoder().max_step_index();
+         ++step_index) {
+      std::cout << "checking step " << int(step_index) << std::endl;
+      for (const auto &control : im.read(cmp, statuses, step_index)) {
+        std::cout << "checking control " << control->path() << std::endl;
+        if (control->path() == "/cpu/alu/opcode_1") {
+          return;
+        }
       }
     }
   }

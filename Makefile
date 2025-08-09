@@ -3,6 +3,9 @@
 all:
 	$(MAKE) -C irata
 
+build:
+	$(MAKE) -C irata build
+
 configure:
 	$(MAKE) -C irata configure
 
@@ -14,9 +17,3 @@ test:
 
 format:
 	$(MAKE) -C irata format
-
-tidy:
-	$(MAKE) -C irata tidy
-
-coverage:
-	$(MAKE) -C irata coverage

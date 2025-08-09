@@ -58,22 +58,23 @@ TEST_F(AssemblerTest, Assemble_SingleInstruction_AbsoluteLiteral) {
 }
 
 TEST_F(AssemblerTest, Assemble_SingleInstruction_AbsoluteLabel) {
+  // Note 0x8000 offset to account for cartridge memory mapping.
   EXPECT_THAT(assembler.assemble("label: lda label"),
-              ElementsAre(lda_absolute.opcode(), 0x00, 0x00));
+              ElementsAre(lda_absolute.opcode(), 0x80, 0x00));
 }
 
 TEST_F(AssemblerTest, Assemble_MultipleInstructions) {
   EXPECT_THAT(assembler.assemble(R"(
         ; this is my program
         hlt ; start with hlt
-        label: ; a label that's at 0x0001 because hlt is 1 byte
+        label: ; a label that's at 0x8001 because hlt is 1 byte and the cartridge is mapped to 0x8000
         lda #$12 ; load immediate
         another_unused_label_on_this_line: lda $1234 ; load absolute literal
         two_labels: on_one_line: lda label ; load absolute label
         )"),
               ElementsAre(hlt.opcode(), lda_immediate.opcode(), 0x12,
                           lda_absolute.opcode(), 0x12, 0x34,
-                          lda_absolute.opcode(), 0x00, 0x01));
+                          lda_absolute.opcode(), 0x80, 0x01));
 }
 
 TEST_F(AssemblerTest, Assemble_InvalidInstruction) {

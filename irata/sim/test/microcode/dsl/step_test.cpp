@@ -97,6 +97,16 @@ TEST_F(MicrocodeDslStepTest, CreateInstruction) {
   EXPECT_EQ(instruction_set_.instructions().back().get(), instruction2);
 }
 
+TEST_F(MicrocodeDslStepTest, CreateInstruction_WithNameAndAddressingMode) {
+  auto *step = instruction_->create_step();
+  auto *instruction2 =
+      step->create_instruction(instruction_descriptor_.name(),
+                               instruction_descriptor_.addressing_mode());
+  EXPECT_EQ(instruction2->descriptor(), instruction_descriptor_);
+  EXPECT_EQ(instruction2->instruction_set(), &instruction_set_);
+  EXPECT_EQ(instruction_set_.instructions().back().get(), instruction2);
+}
+
 TEST_F(MicrocodeDslStepTest, NullInstruction) {
   EXPECT_THROW(Step(nullptr, 0), std::invalid_argument);
 }

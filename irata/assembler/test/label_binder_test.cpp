@@ -205,9 +205,11 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel) {
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  // Note the expected value is offset 0x8000 to account for cartridge memory
+  // mapping.
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xD678)));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -254,7 +256,7 @@ TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
       statements;
   statements.push_back(
-      std::make_unique<InstructionBinder::Program::Label>(0x9ABC, "label"));
+      std::make_unique<InstructionBinder::Program::Label>(0x4321, "label"));
   statements.push_back(
       std::make_unique<InstructionBinder::Program::Instruction>(
           0x1234, hlt,
@@ -287,9 +289,10 @@ TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1236, lda_absolute,
       std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+  // Note 0x8000 offset to account for cartridge memory mapping.
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1237, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x9ABC)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xC321)));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 

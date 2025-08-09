@@ -23,3 +23,11 @@ instructions:
     opcode: 0xC9
     addressing_mode: immediate
     description: Compare accumulator with constant
+  - name: JMP
+    opcode: 0x4C
+    addressing_mode: absolute
+    description: Jump to address
+  - name: JNE
+    opcode: 0xD0
+    addressing_mode: absolute
+    description: Jump to address if not equal

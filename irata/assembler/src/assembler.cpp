@@ -37,10 +37,11 @@ void Assembler::assemble(std::string_view input, std::ostream &output) const {
   const auto bytes = assemble(input);
   std::vector<uint8_t> values;
   values.reserve(bytes.size());
+  uint32_t address = 0;
   for (const auto &byte : bytes) {
     const auto value = byte.value();
-    std::cerr << "writing byte: " << byte << " = " << common::bytes::Byte(value)
-              << " = " << int(value) << std::endl;
+    std::cerr << "writing byte at address " << common::bytes::Word(address++)
+              << ": " << byte << std::endl;
     values.push_back(value);
     // values.push_back(byte.value());
   }

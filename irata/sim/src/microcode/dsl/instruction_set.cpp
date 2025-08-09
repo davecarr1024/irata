@@ -59,6 +59,29 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
       ->alu_operation(hdl::AluOpcode::Subtract);
 
+  instruction_set->create_instruction("jmp", asm_::AddressingMode::ABSOLUTE)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
+
+  instruction_set
+      ->create_instruction("jne", asm_::AddressingMode::ABSOLUTE)
+      // Zero is true: increment PC twice to get to the next instruction.
+      ->with_status(hdl::irata().cpu().status_register().zero_out(), true)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().pc().increment())
+      // Create a separate instruction stage to prevent merging the two
+      // increment controls.
+      ->next_stage()
+      ->create_step()
+      ->with_control(hdl::irata().cpu().pc().increment())
+      // Zero is false: jump to the address at pc.
+      ->create_instruction("jne", asm_::AddressingMode::ABSOLUTE)
+      ->with_status(hdl::irata().cpu().status_register().zero_out(), false)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
+
   return instruction_set;
 }
 

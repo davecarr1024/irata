@@ -26,6 +26,12 @@ Instruction::create_instruction(const asm_::Instruction &instruction) {
   return instruction_set_->create_instruction(instruction);
 }
 
+Instruction *
+Instruction::create_instruction(std::string_view name,
+                                asm_::AddressingMode addressing_mode) {
+  return instruction_set_->create_instruction(name, addressing_mode);
+}
+
 Step *Instruction::create_step() {
   return steps_.emplace_back(std::make_unique<Step>(this, stage_)).get();
 }

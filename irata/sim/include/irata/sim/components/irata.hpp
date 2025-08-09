@@ -38,7 +38,7 @@ public:
   const Control &crash() const;
   Control &crash();
 
-  Result tick_until_halt();
+  Result tick_until_halt(int max_ticks = 100);
 
 protected:
   void tick_process(Logger &logger) override final;
