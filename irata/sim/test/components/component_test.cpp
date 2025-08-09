@@ -3,6 +3,8 @@
 #include <irata/sim/components/component.hpp>
 #include <stdexcept>
 
+using ::testing::_;
+using ::testing::Invoke;
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
@@ -128,22 +130,22 @@ namespace {
 class MockComponent : public Component {
 public:
   explicit MockComponent(std::string_view name) : Component(name) {}
-  MOCK_METHOD(void, tick_control, (Component::Logger & logger), (override));
-  MOCK_METHOD(void, tick_write, (Component::Logger & logger), (override));
-  MOCK_METHOD(void, tick_read, (Component::Logger & logger), (override));
-  MOCK_METHOD(void, tick_process, (Component::Logger & logger), (override));
-  MOCK_METHOD(void, tick_clear, (Component::Logger & logger), (override));
+  MOCK_METHOD(void, tick_control, (Logger & logger), (override));
+  MOCK_METHOD(void, tick_write, (Logger & logger), (override));
+  MOCK_METHOD(void, tick_read, (Logger & logger), (override));
+  MOCK_METHOD(void, tick_process, (Logger & logger), (override));
+  MOCK_METHOD(void, tick_clear, (Logger & logger), (override));
 };
 } // namespace
 
 TEST(ComponentTest, TickCallsTickPhases) {
   MockComponent root("root");
   const ::testing::InSequence s;
-  EXPECT_CALL(root, tick_control(::testing::_));
-  EXPECT_CALL(root, tick_write(::testing::_));
-  EXPECT_CALL(root, tick_read(::testing::_));
-  EXPECT_CALL(root, tick_process(::testing::_));
-  EXPECT_CALL(root, tick_clear(::testing::_));
+  EXPECT_CALL(root, tick_control(_));
+  EXPECT_CALL(root, tick_write(_));
+  EXPECT_CALL(root, tick_read(_));
+  EXPECT_CALL(root, tick_process(_));
+  EXPECT_CALL(root, tick_clear(_));
   root.tick();
 }
 
@@ -152,16 +154,91 @@ TEST(ComponentTest, TickCallsTickPhasesForChildren) {
   MockComponent child("child");
   root.add_child(&child);
   const ::testing::InSequence s;
-  EXPECT_CALL(root, tick_control(::testing::_));
-  EXPECT_CALL(child, tick_control(::testing::_));
-  EXPECT_CALL(root, tick_write(::testing::_));
-  EXPECT_CALL(child, tick_write(::testing::_));
-  EXPECT_CALL(root, tick_read(::testing::_));
-  EXPECT_CALL(child, tick_read(::testing::_));
-  EXPECT_CALL(root, tick_process(::testing::_));
-  EXPECT_CALL(child, tick_process(::testing::_));
-  EXPECT_CALL(root, tick_clear(::testing::_));
-  EXPECT_CALL(child, tick_clear(::testing::_));
+  EXPECT_CALL(root, tick_control(_));
+  EXPECT_CALL(child, tick_control(_));
+  EXPECT_CALL(root, tick_write(_));
+  EXPECT_CALL(child, tick_write(_));
+  EXPECT_CALL(root, tick_read(_));
+  EXPECT_CALL(child, tick_read(_));
+  EXPECT_CALL(root, tick_process(_));
+  EXPECT_CALL(child, tick_process(_));
+  EXPECT_CALL(root, tick_clear(_));
+  EXPECT_CALL(child, tick_clear(_));
+  root.tick();
+}
+
+TEST(ComponentTest, ActiveTickPhase) {
+  MockComponent component("component");
+  EXPECT_EQ(component.active_tick_phase(), std::nullopt);
+  const ::testing::InSequence s;
+  EXPECT_CALL(component, tick_control(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(component.active_tick_phase(), hdl::TickPhase::Control);
+  }));
+  EXPECT_CALL(component, tick_write(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(component.active_tick_phase(), hdl::TickPhase::Write);
+  }));
+  EXPECT_CALL(component, tick_read(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(component.active_tick_phase(), hdl::TickPhase::Read);
+  }));
+  EXPECT_CALL(component, tick_process(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(component.active_tick_phase(), hdl::TickPhase::Process);
+  }));
+  EXPECT_CALL(component, tick_clear(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(component.active_tick_phase(), hdl::TickPhase::Clear);
+  }));
+  EXPECT_EQ(component.active_tick_phase(), std::nullopt);
+  component.tick();
+}
+
+TEST(ComponentTest, ActiveTickPhaseForChildren) {
+  MockComponent root("root");
+  MockComponent child("child");
+  root.add_child(&child);
+  EXPECT_EQ(root.active_tick_phase(), std::nullopt);
+  EXPECT_EQ(child.active_tick_phase(), std::nullopt);
+  const ::testing::InSequence s;
+  EXPECT_CALL(root, tick_control(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Control);
+    EXPECT_EQ(child.active_tick_phase(), std::nullopt);
+  }));
+  EXPECT_CALL(child, tick_control(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Control);
+    EXPECT_EQ(child.active_tick_phase(), hdl::TickPhase::Control);
+  }));
+  EXPECT_CALL(root, tick_write(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Write);
+    EXPECT_EQ(child.active_tick_phase(), std::nullopt);
+  }));
+  EXPECT_CALL(child, tick_write(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Write);
+    EXPECT_EQ(child.active_tick_phase(), hdl::TickPhase::Write);
+  }));
+  EXPECT_CALL(root, tick_read(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Read);
+    EXPECT_EQ(child.active_tick_phase(), std::nullopt);
+  }));
+  EXPECT_CALL(child, tick_read(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Read);
+    EXPECT_EQ(child.active_tick_phase(), hdl::TickPhase::Read);
+  }));
+  EXPECT_CALL(root, tick_process(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Process);
+    EXPECT_EQ(child.active_tick_phase(), std::nullopt);
+  }));
+  EXPECT_CALL(child, tick_process(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Process);
+    EXPECT_EQ(child.active_tick_phase(), hdl::TickPhase::Process);
+  }));
+  EXPECT_CALL(root, tick_clear(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Clear);
+    EXPECT_EQ(child.active_tick_phase(), std::nullopt);
+  }));
+  EXPECT_CALL(child, tick_clear(_)).WillOnce(Invoke([&](auto &) {
+    EXPECT_EQ(root.active_tick_phase(), hdl::TickPhase::Clear);
+    EXPECT_EQ(child.active_tick_phase(), hdl::TickPhase::Clear);
+  }));
+  EXPECT_EQ(root.active_tick_phase(), std::nullopt);
+  EXPECT_EQ(child.active_tick_phase(), std::nullopt);
   root.tick();
 }
 
@@ -170,16 +247,21 @@ TEST(ComponentTest, Log) {
   MockComponent child("child");
   root.add_child(&child);
   std::ostringstream os;
-  EXPECT_CALL(child, tick_control(::testing::_))
-      .WillOnce([&](Component::Logger &logger) { logger << "control msg"; });
-  EXPECT_CALL(child, tick_write(::testing::_))
-      .WillOnce([&](Component::Logger &logger) { logger << "write msg"; });
-  EXPECT_CALL(child, tick_read(::testing::_))
-      .WillOnce([&](Component::Logger &logger) { logger << "read msg"; });
-  EXPECT_CALL(child, tick_process(::testing::_))
-      .WillOnce([&](Component::Logger &logger) { logger << "process msg"; });
-  EXPECT_CALL(child, tick_clear(::testing::_))
-      .WillOnce([&](Component::Logger &logger) { logger << "clear msg"; });
+  EXPECT_CALL(child, tick_control(_)).WillOnce([&](auto &logger) {
+    logger << "control msg";
+  });
+  EXPECT_CALL(child, tick_write(_)).WillOnce([&](auto &logger) {
+    logger << "write msg";
+  });
+  EXPECT_CALL(child, tick_read(_)).WillOnce([&](auto &logger) {
+    logger << "read msg";
+  });
+  EXPECT_CALL(child, tick_process(_)).WillOnce([&](auto &logger) {
+    logger << "process msg";
+  });
+  EXPECT_CALL(child, tick_clear(_)).WillOnce([&](auto &logger) {
+    logger << "clear msg";
+  });
   root.tick(os);
   EXPECT_EQ(os.str(), "[Control] /child: control msg\n"
                       "[Write] /child: write msg\n"

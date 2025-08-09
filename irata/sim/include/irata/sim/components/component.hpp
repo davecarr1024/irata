@@ -9,6 +9,7 @@
 #include <irata/sim/hdl/tick_phase.hpp>
 #include <map>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -32,9 +33,10 @@ public:
   Component &operator=(const Component &) = delete;
   Component &operator=(Component &&) = delete;
 
-  virtual hdl::ComponentType type() const {
-    return hdl::ComponentType::Unknown;
-  }
+  // The hdl component type of this component.
+  // This must match the type of the corresponding hdl component.
+  // This defaults to unknown.
+  virtual hdl::ComponentType type() const;
 
   // Returns the name of the component.
   std::string name() const;
@@ -76,12 +78,25 @@ public:
   virtual std::vector<Status *> statuses();
   std::vector<const Status *> statuses() const;
 
+  // Serialize the whole component tree to the given output stream.
+  void serialize_all(std::ostream &os) const;
+
+  // Returns the currently active tick phase, or nullopt if no tick phase is
+  // currently active.
+  // Note that this is set during a component's tick and its children's ticks,
+  // for each phase of the tick.
+  std::optional<hdl::TickPhase> active_tick_phase() const;
+
+protected:
+  // Helper class used for logging during a tick.
+  // Logs a message to the output stream when destroyed, if a message was
+  // written to the logger.
+  // Output includes the tick phase and the component's path.
   class Logger {
   public:
-    explicit Logger(std::ostream &output, hdl::TickPhase tick_phase);
+    explicit Logger(std::ostream &output, hdl::TickPhase tick_phase,
+                    const Component &component);
     ~Logger();
-
-    Logger &for_component(const Component *component);
 
     template <typename T> Logger &operator<<(const T &value) {
       os_ << value;
@@ -92,14 +107,11 @@ public:
   private:
     std::ostringstream os_;
     hdl::TickPhase tick_phase_;
-    const Component *component_ = nullptr;
+    const Component &component_;
     std::ostream &output_;
     bool logged_ = false;
   };
 
-  void serialize_all(std::ostream &os) const;
-
-protected:
   // Set up any control lines that will be used this tick.
   virtual void tick_control(Logger &logger) {}
 
@@ -136,6 +148,7 @@ protected:
     const size_t tabs_;
   };
 
+  // Virtual entry point for serializing components.
   virtual void serialize(Serializer &serializer) const {}
 
 private:
@@ -149,21 +162,15 @@ private:
   // Note that the children are not owned by this map.
   std::map<std::string, Component *> children_;
 
-  // Traverse this component's subtree, calling func on each component.
-  template <typename Func> void traverse(Func func) {
-    func(this);
-    for (auto &[_, child] : children_) {
-      child->traverse(func);
-    }
-  }
-  template <typename Func> void traverse(Func func) const {
-    func(this);
-    for (const auto &[_, child] : children_) {
-      child->traverse(func);
-    }
-  }
+  void tick_traverse(std::ostream &log_output, hdl::TickPhase tick_phase);
 
+  // Traverse this component's subtree, calling serialize on each component.
   void serialize_traverse(Serializer &serializer) const;
+
+  // The currently active tick phase, only set during a tick.
+  std::optional<hdl::TickPhase> active_tick_phase_ = std::nullopt;
+
+  void set_active_tick_phase(std::optional<hdl::TickPhase> tick_phase);
 };
 
 } // namespace irata::sim::components

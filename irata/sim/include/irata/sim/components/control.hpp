@@ -16,6 +16,8 @@ public:
   explicit Control(std::string_view name, hdl::TickPhase phase,
                    Component *parent = nullptr, bool auto_clear = true);
 
+  hdl::ComponentType type() const override final;
+
   // Does this control line auto-clear at the end of the tick?
   // If not, a clear child control line will be created for explicit clearing.
   // If yes, the control line will be cleared at the end of the tick.
@@ -44,7 +46,11 @@ public:
   // Returns a list of all controls in the component tree.
   std::vector<Control *> controls() override;
 
-  hdl::ComponentType type() const override final;
+  // Returns true if the control line can be read during the given phase.
+  bool can_be_read_during_phase(std::optional<hdl::TickPhase> phase) const;
+
+  // Returns true if the control line can be set during the given phase.
+  bool can_be_set_during_phase(std::optional<hdl::TickPhase> phase) const;
 
 private:
   // The phase of the control line.

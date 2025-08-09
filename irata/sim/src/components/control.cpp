@@ -21,9 +21,59 @@ Control::Control(std::string_view name, hdl::TickPhase phase, Component *parent,
   }
 }
 
-bool Control::value() const { return value_; }
+bool Control::can_be_read_during_phase(
+    std::optional<hdl::TickPhase> phase) const {
+  // No phase set: this is outside of a tick.
+  if (phase == std::nullopt) {
+    return true;
+  }
+  // Reading during this control's phase.
+  if (*phase == phase_) {
+    return true;
+  }
+  return false;
+}
 
-void Control::set_value(bool value) { value_ = value; }
+bool Control::can_be_set_during_phase(
+    std::optional<hdl::TickPhase> phase) const {
+  // No phase set: this is outside of a tick.
+  if (phase == std::nullopt) {
+    return true;
+  }
+  // Setting during control phase: this is normal and when we would
+  // expect the controller to be asserting all controls for the tick.
+  if (*phase == hdl::TickPhase::Control) {
+    return true;
+  }
+  // Setting during this control's phase is ok if this isn't an auto clear
+  // control, since non auto clear controls need to be manually clear.
+  if (!auto_clear_ && *phase == phase_) {
+    return true;
+  }
+  return false;
+}
+
+bool Control::value() const {
+  const auto active_tick_phase = root()->active_tick_phase();
+  if (!can_be_read_during_phase(active_tick_phase)) {
+    std::ostringstream os;
+    os << "Control " << path() << " is being read in phase "
+       << *active_tick_phase;
+    throw std::runtime_error(os.str());
+  }
+  return value_;
+}
+
+void Control::set_value(bool value) {
+  const auto active_tick_phase = root()->active_tick_phase();
+  if (!can_be_set_during_phase(active_tick_phase)) {
+    std::ostringstream os;
+    os << "Control " << path() << " is being set in phase "
+       << *active_tick_phase;
+    throw std::runtime_error(os.str());
+  }
+  value_ = value;
+}
 
 std::optional<bool> Control::clear() const {
   return clear_ ? std::optional<bool>(clear_->value()) : std::nullopt;
@@ -36,15 +86,15 @@ void Control::set_clear(bool value) {
 }
 
 void Control::tick_process(Logger &logger) {
-  if (clear_ && clear_->value() && value()) {
-    set_value(false);
+  if (clear_ && clear_->value() && value_) {
+    value_ = false;
     logger << "manually cleared";
   }
 }
 
 void Control::tick_clear(Logger &logger) {
-  if (auto_clear_ && value()) {
-    set_value(false);
+  if (auto_clear_ && value_) {
+    value_ = false;
     logger << "auto cleared";
   }
 }

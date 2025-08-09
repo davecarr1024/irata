@@ -15,6 +15,10 @@ Component::Component(std::string_view name, Component *parent)
   }
 }
 
+hdl::ComponentType Component::type() const {
+  return hdl::ComponentType::Unknown;
+}
+
 std::string Component::name() const { return name_; }
 
 Component *Component::parent() const { return parent_; }
@@ -94,41 +98,65 @@ Component *Component::root() {
   }
 }
 
-void Component::tick(std::ostream &log_output) {
-  auto *root = this->root();
-  auto traverse_phase = [&](hdl::TickPhase tick_phase,
-                            void (Component::*tick_fn)(Logger &)) {
-    root->traverse([&](Component *component) {
-      Logger logger(log_output, tick_phase);
-      (component->*tick_fn)(logger.for_component(component));
-    });
-  };
-
-  traverse_phase(hdl::TickPhase::Control, &Component::tick_control);
-  traverse_phase(hdl::TickPhase::Write, &Component::tick_write);
-  traverse_phase(hdl::TickPhase::Read, &Component::tick_read);
-  traverse_phase(hdl::TickPhase::Process, &Component::tick_process);
-  traverse_phase(hdl::TickPhase::Clear, &Component::tick_clear);
+std::optional<hdl::TickPhase> Component::active_tick_phase() const {
+  return active_tick_phase_;
 }
 
-Component::Logger::Logger(std::ostream &output, hdl::TickPhase tick_phase)
-    : output_(output), tick_phase_(tick_phase) {}
+void Component::set_active_tick_phase(
+    std::optional<hdl::TickPhase> tick_phase) {
+  active_tick_phase_ = tick_phase;
+}
+
+void Component::tick_traverse(std::ostream &log_output, hdl::TickPhase phase) {
+  set_active_tick_phase(phase);
+  {
+    Logger logger(log_output, phase, *this);
+    switch (phase) {
+    case hdl::TickPhase::Control:
+      tick_control(logger);
+      break;
+    case hdl::TickPhase::Write:
+      tick_write(logger);
+      break;
+    case hdl::TickPhase::Read:
+      tick_read(logger);
+      break;
+    case hdl::TickPhase::Process:
+      tick_process(logger);
+      break;
+    case hdl::TickPhase::Clear:
+      tick_clear(logger);
+      break;
+    default:
+      throw std::logic_error("unknown tick phase " +
+                             std::to_string(int(phase)));
+    }
+  }
+  for (const auto &[_, child] : children_) {
+    child->tick_traverse(log_output, phase);
+  }
+  set_active_tick_phase(std::nullopt);
+}
+
+void Component::tick(std::ostream &log_output) {
+  auto *root = this->root();
+  root->tick_traverse(log_output, hdl::TickPhase::Control);
+  root->tick_traverse(log_output, hdl::TickPhase::Write);
+  root->tick_traverse(log_output, hdl::TickPhase::Read);
+  root->tick_traverse(log_output, hdl::TickPhase::Process);
+  root->tick_traverse(log_output, hdl::TickPhase::Clear);
+}
+
+Component::Logger::Logger(std::ostream &output, hdl::TickPhase tick_phase,
+                          const Component &component)
+    : output_(output), tick_phase_(tick_phase), component_(component) {}
 
 Component::Logger::~Logger() {
   if (!logged_) {
     return;
   }
-  output_ << "[" << tick_phase_ << "] ";
-  if (component_ != nullptr) {
-    output_ << component_->path() << ": ";
-  }
-  output_ << os_.str() << std::endl;
-}
-
-Component::Logger &
-Component::Logger::for_component(const Component *component) {
-  component_ = component;
-  return *this;
+  output_ << "[" << tick_phase_ << "] " << component_.path() << ": "
+          << os_.str() << std::endl;
 }
 
 std::vector<Control *> Component::controls() {
