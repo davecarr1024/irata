@@ -30,24 +30,24 @@ TEST_F(SubtractTest, Properties) {
 
 TEST_F(SubtractTest, Subtract) {
   EXPECT_EQ(subtract.apply(false, Byte(0x03), Byte(0x02)), (Module::Result{
-                                                               .value = 0x01,
+                                                               .value = 0x00,
+                                                               .zero = true,
                                                            }));
 }
 
 TEST_F(SubtractTest, SubtractWithCarry) {
   EXPECT_EQ(subtract.apply(true, Byte(0x03), Byte(0x02)), (Module::Result{
-                                                              .value = 0x00,
-                                                              .zero = true,
+                                                              .value = 0x01,
                                                           }));
 }
 
 TEST_F(SubtractTest, SubtractOverflow) {
-  EXPECT_EQ(subtract.apply(false, Byte(0x00), Byte(0x01)), (Module::Result{
-                                                               .value = 0xFF,
-                                                               .carry = true,
-                                                               .negative = true,
-                                                               .overflow = true,
-                                                           }));
+  EXPECT_EQ(subtract.apply(true, Byte(0x00), Byte(0x01)), (Module::Result{
+                                                              .value = 0xFF,
+                                                              .carry = true,
+                                                              .negative = true,
+                                                              .overflow = true,
+                                                          }));
 }
 
 } // namespace irata::sim::components::alu

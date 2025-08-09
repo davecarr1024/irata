@@ -19,10 +19,6 @@ instructions:
     opcode: 0xAD
     addressing_mode: absolute
     description: Load accumulator from memory
-  - name: CMP
-    opcode: 0xC9
-    addressing_mode: immediate
-    description: Compare accumulator with constant
   - name: JMP
     opcode: 0x4C
     addressing_mode: absolute
@@ -43,7 +39,43 @@ instructions:
     opcode: 0x18
     addressing_mode: none
     description: Clear carry flag
+  - name: CMP
+    opcode: 0xC9
+    addressing_mode: immediate
+    description: Compare accumulator with constant
   - name: ADC
     opcode: 0x69
     addressing_mode: immediate
     description: Add constant to accumulator with carry
+  - name: SBC
+    opcode: 0xE9
+    addressing_mode: immediate
+    description: Subtract constant from accumulator with borrow
+  - name: AND
+    opcode: 0x29
+    addressing_mode: immediate
+    description: AND constant with accumulator
+  - name: ORA
+    opcode: 0x09
+    addressing_mode: immediate
+    description: OR constant with accumulator
+  - name: EOR
+    opcode: 0x49
+    addressing_mode: immediate
+    description: XOR constant with accumulator
+  - name: ASL
+    opcode: 0x0A
+    addressing_mode: none
+    description: Shift left accumulator
+  - name: LSR
+    opcode: 0x4A
+    addressing_mode: none
+    description: Shift right accumulator
+  - name: ROL
+    opcode: 0x2A
+    addressing_mode: none
+    description: Rotate left accumulator
+  - name: ROR
+    opcode: 0x6A
+    addressing_mode: none
+    description: Rotate right accumulator

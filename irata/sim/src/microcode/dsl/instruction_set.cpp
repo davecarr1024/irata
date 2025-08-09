@@ -56,6 +56,9 @@ std::unique_ptr<const InstructionSet> build_irata() {
 
   instruction_set->create_instruction("cmp", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      ->create_step()
+      ->with_control(hdl::irata().cpu().status_register().set_carry())
+      ->instruction()
       ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
       ->alu_operation(hdl::AluOpcode::Subtract);
 
@@ -63,6 +66,50 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
       ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
       ->alu_operation(hdl::AluOpcode::Add)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("sbc", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().alu().rhs())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().lhs())
+      ->alu_operation(hdl::AluOpcode::Subtract)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("and", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
+      ->alu_operation(hdl::AluOpcode::And)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("ora", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
+      ->alu_operation(hdl::AluOpcode::Or)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("eor", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
+      ->alu_operation(hdl::AluOpcode::Xor)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("asl", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().lhs())
+      ->alu_operation(hdl::AluOpcode::ShiftLeft)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("lsr", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().lhs())
+      ->alu_operation(hdl::AluOpcode::ShiftRight)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("rol", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().lhs())
+      ->alu_operation(hdl::AluOpcode::RotateLeft)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("ror", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().lhs())
+      ->alu_operation(hdl::AluOpcode::RotateRight)
       ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
 
   instruction_set->create_instruction("jmp", asm_::AddressingMode::ABSOLUTE)
