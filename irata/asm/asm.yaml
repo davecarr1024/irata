@@ -43,3 +43,7 @@ instructions:
     opcode: 0x18
     addressing_mode: none
     description: Clear carry flag
+  - name: ADC
+    opcode: 0x69
+    addressing_mode: immediate
+    description: Add constant to accumulator with carry

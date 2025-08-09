@@ -59,6 +59,12 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
       ->alu_operation(hdl::AluOpcode::Subtract);
 
+  instruction_set->create_instruction("adc", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().alu().rhs())
+      ->alu_operation(hdl::AluOpcode::Add)
+      ->copy(hdl::irata().cpu().alu().result(), hdl::irata().cpu().a());
+
   instruction_set->create_instruction("jmp", asm_::AddressingMode::ABSOLUTE)
       ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
       ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
