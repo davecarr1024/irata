@@ -52,6 +52,10 @@ public:
 
   const std::map<const StatusDecl *, int> &status_indices() const;
 
+  const ProcessControlDecl &set_carry() const;
+
+  const ProcessControlDecl &clear_carry() const;
+
 private:
   const StatusDecl &carry_in_;
   const StatusDecl &negative_in_;
@@ -63,6 +67,8 @@ private:
   const StatusDecl zero_out_;
   const PersistentClearControlDecl latch_;
   const std::map<const StatusDecl *, int> status_indices_;
+  const ProcessControlDecl set_carry_;
+  const ProcessControlDecl clear_carry_;
 };
 
 } // namespace irata::sim::hdl

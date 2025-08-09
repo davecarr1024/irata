@@ -52,6 +52,10 @@ TEST_F(StatusRegisterDeclTest, Properties) {
   EXPECT_THAT(status_register.status_indices(),
               UnorderedElementsAre(Pair(&carry_in, 0), Pair(&negative_in, 7),
                                    Pair(&overflow_in, 6), Pair(&zero_in, 1)));
+  EXPECT_EQ(status_register.set_carry().parent(), &status_register);
+  EXPECT_EQ(status_register.set_carry().name(), "set_carry");
+  EXPECT_EQ(status_register.clear_carry().parent(), &status_register);
+  EXPECT_EQ(status_register.clear_carry().name(), "clear_carry");
 }
 
 TEST_F(StatusRegisterDeclTest, Verify) {

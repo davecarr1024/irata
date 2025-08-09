@@ -35,3 +35,11 @@ instructions:
     opcode: 0xF0
     addressing_mode: absolute
     description: Jump to address if equal
+  - name: SEC
+    opcode: 0x38
+    addressing_mode: none
+    description: Set carry flag
+  - name: CLC
+    opcode: 0x18
+    addressing_mode: none
+    description: Clear carry flag

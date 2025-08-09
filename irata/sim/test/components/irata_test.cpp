@@ -25,6 +25,10 @@ protected:
       "LDA", asm_::AddressingMode::IMMEDIATE);
   const asm_::Instruction &cmp = asm_::InstructionSet::irata().get_instruction(
       "CMP", asm_::AddressingMode::IMMEDIATE);
+  const asm_::Instruction &sec = asm_::InstructionSet::irata().get_instruction(
+      "SEC", asm_::AddressingMode::NONE);
+  const asm_::Instruction &clc = asm_::InstructionSet::irata().get_instruction(
+      "CLC", asm_::AddressingMode::NONE);
 };
 
 } // namespace
@@ -90,6 +94,25 @@ TEST_F(IrataTest, Cmp) {
     EXPECT_EQ(irata.cpu().status_register().value(),
               expected_zero_status ? 0x02 : 0x00);
   }
+}
+
+TEST_F(IrataTest, Sec) {
+  auto irata = this->irata({
+      sec.opcode(),
+      hlt.opcode(),
+  });
+  EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
+  EXPECT_TRUE(irata.cpu().status_register().carry_out().value());
+}
+
+TEST_F(IrataTest, Clc) {
+  auto irata = this->irata({
+      sec.opcode(),
+      clc.opcode(),
+      hlt.opcode(),
+  });
+  EXPECT_EQ(irata.tick_until_halt(), Irata::Result::Halt);
+  EXPECT_FALSE(irata.cpu().status_register().carry_out().value());
 }
 
 } // namespace irata::sim::components

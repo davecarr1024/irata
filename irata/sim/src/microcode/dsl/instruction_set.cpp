@@ -100,6 +100,14 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
       ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
 
+  instruction_set->create_instruction("sec", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().status_register().set_carry());
+
+  instruction_set->create_instruction("clc", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().status_register().clear_carry());
+
   return instruction_set;
 }
 

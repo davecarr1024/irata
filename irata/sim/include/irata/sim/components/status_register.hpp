@@ -39,7 +39,15 @@ public:
 
   const std::map<const Status *, int> &status_indices() const;
 
+  Control &set_carry();
+  const Control &set_carry() const;
+
+  Control &clear_carry();
+  const Control &clear_carry() const;
+
 protected:
+  void tick_process(Logger &logger) override final;
+
   void tick_clear(Logger &logger) override final;
 
 private:
@@ -53,6 +61,8 @@ private:
   Status zero_out_;
   Control latch_;
   std::map<const Status *, int> status_indices_;
+  Control set_carry_;
+  Control clear_carry_;
 };
 
 } // namespace irata::sim::components

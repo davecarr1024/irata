@@ -28,15 +28,20 @@ StatusRegisterDecl::StatusRegisterDecl(const ComponentDecl &parent,
                                                             {&negative_in_, 7},
                                                             {&overflow_in_, 6},
                                                             {&zero_in_, 1},
-                                                        }) {}
+                                                        }),
+      set_carry_("set_carry", *this), clear_carry_("clear_carry", *this) {}
 
 void StatusRegisterDecl::verify(const components::Component *component) const {
   ComponentWithParentDecl<ComponentType::StatusRegister>::verify(component);
   RegisterWithByteBusDecl::verify(component);
+
   verify_child(negative_out_, component);
   verify_child(overflow_out_, component);
   verify_child(zero_out_, component);
   verify_child(latch_, component);
+  verify_child(set_carry_, component);
+  verify_child(clear_carry_, component);
+
   const auto &status_register =
       dynamic_cast<const components::StatusRegister &>(*component);
   std::set<std::pair<std::string, int>> expected_status_indices;
@@ -65,6 +70,7 @@ void StatusRegisterDecl::verify(const components::Component *component) const {
        << common::strings::join(actual_status_indices_strs, ", ") << "]";
     throw std::invalid_argument(os.str());
   }
+
   const auto verify_status_connection = [](const StatusDecl &expected,
                                            const components::StatusRegister
                                                &status_register,
@@ -122,6 +128,14 @@ const PersistentClearControlDecl &StatusRegisterDecl::latch() const {
 const std::map<const StatusDecl *, int> &
 StatusRegisterDecl::status_indices() const {
   return status_indices_;
+}
+
+const ProcessControlDecl &StatusRegisterDecl::set_carry() const {
+  return set_carry_;
+}
+
+const ProcessControlDecl &StatusRegisterDecl::clear_carry() const {
+  return clear_carry_;
 }
 
 } // namespace irata::sim::hdl

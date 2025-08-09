@@ -115,4 +115,22 @@ TEST_F(StatusRegisterTest, Latch_Zero) {
   EXPECT_EQ(status_register.value(), 0x02);
 }
 
+TEST_F(StatusRegisterTest, SetCarry) {
+  status_register.set_carry().set_value(true);
+  status_register.tick();
+  EXPECT_TRUE(status_register.carry_out().value());
+  EXPECT_EQ(status_register.value(), 0x01);
+}
+
+TEST_F(StatusRegisterTest, ClearCarry) {
+  status_register.set_carry().set_value(true);
+  status_register.tick();
+  EXPECT_TRUE(status_register.carry_out().value());
+  EXPECT_EQ(status_register.value(), 0x01);
+  status_register.clear_carry().set_value(true);
+  status_register.tick();
+  EXPECT_FALSE(status_register.carry_out().value());
+  EXPECT_EQ(status_register.value(), 0x00);
+}
+
 } // namespace irata::sim::components

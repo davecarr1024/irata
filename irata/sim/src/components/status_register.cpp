@@ -17,7 +17,9 @@ StatusRegister::StatusRegister(Component &parent, ByteBus &bus,
           {&negative_in_, 7},
           {&overflow_in_, 6},
           {&zero_in_, 1},
-      }) {}
+      }),
+      set_carry_("set_carry", hdl::TickPhase::Process, this),
+      clear_carry_("clear_carry", hdl::TickPhase::Process, this) {}
 
 hdl::ComponentType StatusRegister::type() const {
   return hdl::ComponentType::StatusRegister;
@@ -50,13 +52,38 @@ const std::map<const Status *, int> &StatusRegister::status_indices() const {
   return status_indices_;
 }
 
+const Control &StatusRegister::set_carry() const { return set_carry_; }
+
+Control &StatusRegister::set_carry() { return set_carry_; }
+
+const Control &StatusRegister::clear_carry() const { return clear_carry_; }
+
+Control &StatusRegister::clear_carry() { return clear_carry_; }
+
+void StatusRegister::tick_process(Logger &logger) {
+  const bool set_carry = set_carry_.value();
+  const bool clear_carry = clear_carry_.value();
+  if (set_carry || clear_carry) {
+    if (clear_carry) {
+      logger << "clearing carry";
+      carry_out_.set_value(false);
+      set_value(value() & ~(1 << status_indices_.at(&carry_in_)));
+    } else if (set_carry) {
+      logger << "setting carry";
+      carry_out_.set_value(true);
+      set_value(value() | (1 << status_indices_.at(&carry_in_)));
+    }
+    logger << ", status value = " << this->value();
+  }
+}
+
 void StatusRegister::tick_clear(Logger &logger) {
   if (latch_.value()) {
     logger << "latching status";
-    // Encode status values into the register value.
+    // Latch the status values into the register.`
     uint8_t value = 0x00;
     for (const auto &[status, index] : status_indices_) {
-      logger << "status " << status->name() << " = " << status->value();
+      logger << ", " << status->name() << " = " << status->value();
       value |= status->value() << index;
     }
     set_value(value);
