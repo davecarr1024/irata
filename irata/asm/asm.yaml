@@ -31,3 +31,7 @@ instructions:
     opcode: 0xD0
     addressing_mode: absolute
     description: Jump to address if not equal
+  - name: JEQ
+    opcode: 0xF0
+    addressing_mode: absolute
+    description: Jump to address if equal

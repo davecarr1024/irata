@@ -82,6 +82,24 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
       ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
 
+  instruction_set
+      ->create_instruction("jeq", asm_::AddressingMode::ABSOLUTE)
+      // Zero is false: increment PC twice to get to the next instruction.
+      ->with_status(hdl::irata().cpu().status_register().zero_out(), false)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().pc().increment())
+      // Create a separate instruction stage to prevent merging the two
+      // increment controls.
+      ->next_stage()
+      ->create_step()
+      ->with_control(hdl::irata().cpu().pc().increment())
+      // Zero is true: jump to the address at pc.
+      ->create_instruction("jeq", asm_::AddressingMode::ABSOLUTE)
+      ->with_status(hdl::irata().cpu().status_register().zero_out(), true)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
+
   return instruction_set;
 }
 
