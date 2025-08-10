@@ -3,6 +3,7 @@ instructions:
     opcode: 0x00
     addressing_mode: none
     description: No operation
+    
   - name: HLT
     opcode: 0x01
     addressing_mode: none
@@ -11,6 +12,7 @@ instructions:
     opcode: 0x02
     addressing_mode: none
     description: Crash the CPU
+    
   - name: LDA
     opcode: 0xA9
     addressing_mode: immediate
@@ -19,10 +21,12 @@ instructions:
     opcode: 0xAD
     addressing_mode: absolute
     description: Load accumulator from memory
+    
   - name: JMP
     opcode: 0x4C
     addressing_mode: absolute
     description: Jump to address
+    
   - name: JNE
     opcode: 0xD0
     addressing_mode: absolute
@@ -31,6 +35,7 @@ instructions:
     opcode: 0xF0
     addressing_mode: absolute
     description: Jump to address if equal
+    
   - name: SEC
     opcode: 0x38
     addressing_mode: none
