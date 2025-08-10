@@ -1,32 +1,30 @@
-# 🧾 Irata Project Status
+# Irata Project Status
 
-_Last updated: August 6, 2025_
-
----
-
-## 🎯 Major Milestone: Running Test Programs
-
-Irata now supports a full end-to-end test flow:
-
-1. Test programs are defined in `irata-assembly`.
-2. Programs are assembled into bytecode.
-3. Bytecode is executed by the simulator.
-4. Final test result is determined by special instructions: `HLT` (halt) and `CRS` (crash).
-
-This allows the Irata simulator to **run its own tests** — a major leap forward in making the system self-verifying. It enables vertical development with fewer brittle unit tests and more robust behavioral integration tests.
+_Last updated: August 10, 2025_
 
 ---
 
-## ✅ Current State
+## Major Milestone: Implementing Absolute Instructions
 
-### 🧠 Hardware Definition Language (HDL)
+Irata now supports tests for absolute addressing instructions:
+
+* The assembler supports the .byte directive for directly embedding data.
+* Absolute modes for LDA, ADC, SBC, AND, ORA, and EOR are all implemented and tested using test programs.
+
+The development loop of testing through test programs has enabled quick progress for implementing and testing new instructions.
+
+---
+
+## Current State
+
+### Hardware Definition Language (HDL)
 
 - The HDL fully describes the Irata computer’s architecture.
 - It drives both the simulator structure and instruction compatibility.
 - Simulator components are verified against the HDL before execution.
 - This guarantees structural correctness between declared hardware and actual execution.
 
-### 🖥️ Simulation
+### Simulation
 
 - The simulator includes:
   - Registers (A, X, Y, PC, etc.)
@@ -37,7 +35,7 @@ This allows the Irata simulator to **run its own tests** — a major leap forwar
 - Every CPU action is performed via real control lines.
 - The entire system matches HDL and is tested using assembled programs.
 
-### ⚙️ Microcode
+### Microcode
 
 - Instructions are defined using a domain-specific YAML-based microcode language.
 - A multi-pass microcode compiler:
@@ -48,26 +46,9 @@ This allows the Irata simulator to **run its own tests** — a major leap forwar
 
 ---
 
-## 🛠️ In Progress
+## In Progress
 
-- **Test Program Infrastructure**:
-  - Building out more test programs to validate instruction behavior
-- **Upcoming Instructions**:
-  - `CMP`: Enables value comparisons by updating CPU status flags (requires ALU)
-  - `JNE`: Conditional branching based on status flags (already supported by microcode infrastructure)
-- **Next Test Targets**:
-  - Use `CMP + JNE` to create self-validating programs
-  - Add more control flow and memory instructions
-  - Scale up to full program-level correctness tests
-
----
-
-## 🧠 Philosophy Snapshot
-
-> "Declare the machine. Simulate the intent. Test every wire."
-
-Irata is built with structural rigor at every level. Hardware declarations, simulation wiring, compiler logic, and execution behavior are all **explicit, testable, and real**.
-
----
-
-🔥 **The machine runs. The tests are programs. There are no shortcuts.**
+* Register management: LDA, LDX, LDY, STA, STX, STY, TAX, TXA, TAY, TYA
+* Increment: INC, DEC, INX, DEX, INY, DEY
+* Stack management: PHA, PLA, PHX, PLX, PHY, PLY, PHP, PLP
+* Subroutine support: JSR, RTS
