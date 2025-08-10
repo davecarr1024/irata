@@ -54,6 +54,48 @@ std::unique_ptr<const InstructionSet> build_irata() {
   instruction_set->create_instruction("lda", asm_::AddressingMode::ABSOLUTE)
       ->indirect_read_memory_at_pc(hdl::irata().cpu().a());
 
+  instruction_set->create_instruction("sta", asm_::AddressingMode::ABSOLUTE)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address())
+      ->copy(hdl::irata().cpu().a(), hdl::irata().memory());
+
+  instruction_set->create_instruction("ldx", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().x());
+
+  instruction_set->create_instruction("ldx", asm_::AddressingMode::ABSOLUTE)
+      ->indirect_read_memory_at_pc(hdl::irata().cpu().x());
+
+  instruction_set->create_instruction("stx", asm_::AddressingMode::ABSOLUTE)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address())
+      ->copy(hdl::irata().cpu().x(), hdl::irata().memory());
+
+  instruction_set->create_instruction("ldy", asm_::AddressingMode::IMMEDIATE)
+      ->read_memory_at_pc(hdl::irata().cpu().y());
+
+  instruction_set->create_instruction("ldy", asm_::AddressingMode::ABSOLUTE)
+      ->indirect_read_memory_at_pc(hdl::irata().cpu().y());
+
+  instruction_set->create_instruction("sty", asm_::AddressingMode::ABSOLUTE)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address())
+      ->copy(hdl::irata().cpu().y(), hdl::irata().memory());
+
+  instruction_set->create_instruction("tax", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().x());
+
+  instruction_set->create_instruction("txa", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().x(), hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("tay", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().a(), hdl::irata().cpu().y());
+
+  instruction_set->create_instruction("tya", asm_::AddressingMode::NONE)
+      ->copy(hdl::irata().cpu().y(), hdl::irata().cpu().a());
+
   instruction_set->create_instruction("cmp", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
       ->create_step()

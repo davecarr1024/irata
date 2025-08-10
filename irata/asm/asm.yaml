@@ -21,6 +21,53 @@ instructions:
     opcode: 0xAD
     addressing_mode: absolute
     description: Load accumulator from memory
+  - name: STA
+    opcode: 0x8D
+    addressing_mode: absolute
+    description: Store accumulator in memory
+
+  - name: LDX
+    opcode: 0xA2
+    addressing_mode: immediate
+    description: Load X register from constant
+  - name: LDX
+    opcode: 0xAE
+    addressing_mode: absolute
+    description: Load X register from memory
+  - name: STX
+    opcode: 0x8E
+    addressing_mode: absolute
+    description: Store X register in memory
+
+  - name: LDY
+    opcode: 0xA0
+    addressing_mode: immediate
+    description: Load Y register from constant
+  - name: LDY
+    opcode: 0xAC
+    addressing_mode: absolute
+    description: Load Y register from memory
+  - name: STY
+    opcode: 0x8C
+    addressing_mode: absolute
+    description: Store Y register in memory
+
+  - name: TAX
+    opcode: 0xAA
+    addressing_mode: none
+    description: Transfer accumulator to X register
+  - name: TXA
+    opcode: 0x8A
+    addressing_mode: none
+    description: Transfer X register to accumulator
+  - name: TAY
+    opcode: 0xA8
+    addressing_mode: none
+    description: Transfer accumulator to Y register
+  - name: TYA
+    opcode: 0x98
+    addressing_mode: none
+    description: Transfer Y register to accumulator
     
   - name: JMP
     opcode: 0x4C
