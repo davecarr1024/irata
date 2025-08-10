@@ -52,22 +52,42 @@ instructions:
     opcode: 0x69
     addressing_mode: immediate
     description: Add constant to accumulator with carry
+  - name: ADC
+    opcode: 0x6D
+    addressing_mode: absolute
+    description: Add memory to accumulator with carry
   - name: SBC
     opcode: 0xE9
     addressing_mode: immediate
     description: Subtract constant from accumulator with borrow
+  - name: SBC
+    opcode: 0xED
+    addressing_mode: absolute
+    description: Subtract memory from accumulator with borrow
   - name: AND
     opcode: 0x29
     addressing_mode: immediate
     description: AND constant with accumulator
+  - name: AND
+    opcode: 0x2D
+    addressing_mode: absolute
+    description: AND memory with accumulator
   - name: ORA
     opcode: 0x09
     addressing_mode: immediate
     description: OR constant with accumulator
+  - name: ORA
+    opcode: 0x0D
+    addressing_mode: absolute
+    description: OR memory with accumulator
   - name: EOR
     opcode: 0x49
     addressing_mode: immediate
     description: XOR constant with accumulator
+  - name: EOR
+    opcode: 0x4D
+    addressing_mode: absolute
+    description: XOR memory with accumulator
   - name: ASL
     opcode: 0x0A
     addressing_mode: none
