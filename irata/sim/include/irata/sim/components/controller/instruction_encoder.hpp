@@ -43,14 +43,14 @@ public:
   decode_address(uint16_t address) const;
 
   // Encodes the given controls into a value.
-  uint32_t
+  uint64_t
   encode_value(const std::set<const hdl::ControlDecl *> &controls) const;
 
   // Encodes the given entry into a value.
-  uint32_t encode_value(const microcode::table::Entry &entry) const;
+  uint64_t encode_value(const microcode::table::Entry &entry) const;
 
   // Decodes the given value into a set of controls.
-  std::set<const hdl::ControlDecl *> decode_value(uint32_t value) const;
+  std::set<const hdl::ControlDecl *> decode_value(uint64_t value) const;
 
   // The number of statuses that are used in the microcode table.
   size_t num_statuses() const;

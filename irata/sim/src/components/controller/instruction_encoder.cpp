@@ -95,18 +95,18 @@ InstructionEncoder::decode_address(uint16_t address) const {
   return {opcode, statuses, step_index};
 }
 
-uint32_t InstructionEncoder::encode_value(
+uint64_t InstructionEncoder::encode_value(
     const std::set<const hdl::ControlDecl *> &controls) const {
   return control_encoder_.encode(controls);
 }
 
-uint32_t
+uint64_t
 InstructionEncoder::encode_value(const microcode::table::Entry &entry) const {
   return encode_value(entry.controls);
 }
 
 std::set<const hdl::ControlDecl *>
-InstructionEncoder::decode_value(uint32_t value) const {
+InstructionEncoder::decode_value(uint64_t value) const {
   return control_encoder_.decode(value);
 }
 

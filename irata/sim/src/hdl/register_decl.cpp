@@ -13,17 +13,22 @@ void RegisterWithResetDecl::verify(
 
 RegisterWithResetDecl::RegisterWithResetDecl() : reset_("reset", *this) {}
 
+RegisterWithIncrementDecl::RegisterWithIncrementDecl()
+    : increment_("increment", *this), decrement_("decrement", *this) {}
+
 const ProcessControlDecl &RegisterWithIncrementDecl::increment() const {
   return increment_;
+}
+
+const ProcessControlDecl &RegisterWithIncrementDecl::decrement() const {
+  return decrement_;
 }
 
 void RegisterWithIncrementDecl::verify(
     const components::Component *component) const {
   verify_child(increment_, component);
+  verify_child(decrement_, component);
 }
-
-RegisterWithIncrementDecl::RegisterWithIncrementDecl()
-    : increment_("increment", *this) {}
 
 DisconnectedByteRegisterDecl::DisconnectedByteRegisterDecl(
     std::string_view name, const ComponentDecl &parent)
@@ -52,14 +57,16 @@ void ConnectedByteRegisterDecl::verify(
 
 IncrementableConnectedByteRegisterDecl::IncrementableConnectedByteRegisterDecl(
     std::string_view name, const ComponentDecl &parent, const ByteBusDecl &bus)
-    : ComponentWithTypeDecl<ComponentType::Register>(name),
+    : ComponentWithTypeDecl<ComponentType::IncrementableRegister>(name),
       ComponentWithByteBusDecl(bus),
-      ComponentWithParentDecl<ComponentType::Register>(name, parent),
+      ComponentWithParentDecl<ComponentType::IncrementableRegister>(name,
+                                                                    parent),
       RegisterWithByteBusDecl(bus) {}
 
 void IncrementableConnectedByteRegisterDecl::verify(
     const components::Component *component) const {
-  ComponentWithParentDecl<ComponentType::Register>::verify(component);
+  ComponentWithParentDecl<ComponentType::IncrementableRegister>::verify(
+      component);
   RegisterWithResetDecl::verify(component);
   RegisterWithIncrementDecl::verify(component);
   RegisterWithByteBusDecl::verify(component);
@@ -121,9 +128,10 @@ ProgramCounterDecl::ProgramCounterDecl(std::string_view name,
                                        const ComponentDecl &parent,
                                        const WordBusDecl &address_bus,
                                        const ByteBusDecl &data_bus)
-    : ComponentWithTypeDecl<ComponentType::WordRegister>(name),
+    : ComponentWithTypeDecl<ComponentType::IncrementableWordRegister>(name),
       ComponentWithWordBusDecl(address_bus),
-      ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
+      ComponentWithParentDecl<ComponentType::IncrementableWordRegister>(name,
+                                                                        parent),
       RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
       high_("high", *this, data_bus) {}
 
@@ -136,7 +144,8 @@ const ConnectedByteRegisterDecl &ProgramCounterDecl::high() const {
 }
 
 void ProgramCounterDecl::verify(const components::Component *component) const {
-  ComponentWithParentDecl<ComponentType::WordRegister>::verify(component);
+  ComponentWithParentDecl<ComponentType::IncrementableWordRegister>::verify(
+      component);
   RegisterWithResetDecl::verify(component);
   RegisterWithIncrementDecl::verify(component);
   RegisterWithWordBusDecl::verify(component);

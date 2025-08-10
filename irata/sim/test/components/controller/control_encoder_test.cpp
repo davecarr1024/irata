@@ -6,6 +6,7 @@
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
+using ::testing::UnorderedElementsAreArray;
 
 namespace irata::sim::components::controller {
 
@@ -38,7 +39,7 @@ TEST_F(ControlEncoderTest, Indices) {
 TEST_F(ControlEncoderTest, TooManyControls) {
   std::vector<std::unique_ptr<hdl::ProcessControlDecl>> controls;
   std::set<const hdl::ControlDecl *> control_ptrs;
-  for (size_t i = 0; i < 33; ++i) {
+  for (size_t i = 0; i < 65; ++i) {
     auto control = std::make_unique<hdl::ProcessControlDecl>(
         "control" + std::to_string(i), hdl::irata());
     control_ptrs.insert(control.get());
@@ -51,6 +52,36 @@ TEST_F(ControlEncoderTest, TooManyControls) {
                                              .controls = control_ptrs,
                                          }}};
   EXPECT_THROW((ControlEncoder(table)), std::invalid_argument);
+}
+
+TEST_F(ControlEncoderTest, EncodeLotsOfControls) {
+  std::vector<std::unique_ptr<hdl::ProcessControlDecl>> controls;
+  std::set<const hdl::ControlDecl *> control_ptrs;
+  for (size_t i = 0; i < 64; ++i) {
+    auto control = std::make_unique<hdl::ProcessControlDecl>(
+        "control" + std::to_string(i), hdl::irata());
+    control_ptrs.insert(control.get());
+    controls.push_back(std::move(control));
+  }
+  const microcode::table::Table table = {.entries = {{
+                                             .instruction = instruction,
+                                             .step_index = Byte(0x01),
+                                             .statuses = {},
+                                             .controls = control_ptrs,
+                                         }}};
+  const auto encoder = ControlEncoder(table);
+  EXPECT_EQ(encoder.num_controls(), 64);
+  EXPECT_EQ(encoder.encode(control_ptrs), 0xFFFFFFFFFFFFFFFF);
+  EXPECT_THAT(encoder.decode(0xFFFFFFFFFFFFFFFF),
+              UnorderedElementsAreArray(control_ptrs));
+  EXPECT_THAT(encoder.encode({}), 0x0000000000000000);
+  EXPECT_THAT(encoder.decode(0x0000000000000000), IsEmpty());
+  EXPECT_THAT(encoder.encode({controls[0].get()}), 0x0000000000000001);
+  EXPECT_THAT(encoder.decode(0x0000000000000001),
+              UnorderedElementsAre(controls[0].get()));
+  EXPECT_THAT(encoder.encode({controls[63].get()}), 0x8000000000000000);
+  EXPECT_THAT(encoder.decode(0x8000000000000000),
+              UnorderedElementsAre(controls[63].get()));
 }
 
 TEST_F(ControlEncoderTest, NumControls) {

@@ -16,10 +16,10 @@ public:
   ControlEncoder &operator=(const ControlEncoder &) = delete;
 
   // Encodes the given controls into a value.
-  uint32_t encode(const std::set<const hdl::ControlDecl *> &controls) const;
+  uint64_t encode(const std::set<const hdl::ControlDecl *> &controls) const;
 
   // Decodes the given value into a set of controls.
-  std::set<const hdl::ControlDecl *> decode(uint32_t encoded_controls) const;
+  std::set<const hdl::ControlDecl *> decode(uint64_t encoded_controls) const;
 
   // Returns the number of controls in the table.
   size_t num_controls() const;

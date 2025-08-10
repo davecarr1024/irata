@@ -32,11 +32,11 @@ alu::ALU &Cpu::alu() { return alu_; }
 const Register &Cpu::a() const { return a_; }
 Register &Cpu::a() { return a_; }
 
-const Register &Cpu::x() const { return x_; }
-Register &Cpu::x() { return x_; }
+const Counter &Cpu::x() const { return x_; }
+Counter &Cpu::x() { return x_; }
 
-const Register &Cpu::y() const { return y_; }
-Register &Cpu::y() { return y_; }
+const Counter &Cpu::y() const { return y_; }
+Counter &Cpu::y() { return y_; }
 
 const WordCounter &Cpu::pc() const { return pc_; }
 WordCounter &Cpu::pc() { return pc_; }

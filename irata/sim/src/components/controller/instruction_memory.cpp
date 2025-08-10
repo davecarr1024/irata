@@ -23,10 +23,14 @@ memory::ROM encode_rom(const InstructionEncoder &encoder,
   return memory::ROM(1 << 16, "rom_" + std::to_string(rom_index), data);
 }
 
-std::array<memory::ROM, 4> encode_roms(const InstructionEncoder &encoder,
+std::array<memory::ROM, 8> encode_roms(const InstructionEncoder &encoder,
                                        const microcode::table::Table &table) {
-  return {encode_rom(encoder, table, 0), encode_rom(encoder, table, 1),
-          encode_rom(encoder, table, 2), encode_rom(encoder, table, 3)};
+  return {
+      encode_rom(encoder, table, 0), encode_rom(encoder, table, 1),
+      encode_rom(encoder, table, 2), encode_rom(encoder, table, 3),
+      encode_rom(encoder, table, 4), encode_rom(encoder, table, 5),
+      encode_rom(encoder, table, 6), encode_rom(encoder, table, 7),
+  };
 }
 
 } // namespace
@@ -40,11 +44,12 @@ InstructionMemory::InstructionMemory(const microcode::table::Table &table,
   }
 }
 
-uint32_t InstructionMemory::read(uint16_t address) const {
-  uint32_t value = 0;
+uint64_t InstructionMemory::read(uint16_t address) const {
+  uint64_t value = 0;
   for (size_t rom_index = 0; rom_index < roms_.size(); rom_index++) {
-    value |= roms_[rom_index].read(Word(address)).unsigned_value()
-             << (8 * rom_index);
+    const uint64_t rom_value = roms_[rom_index].read(address);
+    const uint64_t shifted_rom_value = rom_value << (8 * rom_index);
+    value |= shifted_rom_value;
   }
   return value;
 }

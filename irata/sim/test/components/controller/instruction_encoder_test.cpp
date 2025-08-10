@@ -111,6 +111,12 @@ TEST_F(InstructionEncoderTest, EncodeAndDecodeIrata) {
 
       const auto value = encoder.encode_value(entry.controls);
       EXPECT_EQ(encoder.decode_value(value), entry.controls);
+
+      if (entry.instruction.name() == "CMP") {
+        std::cerr << "entry = " << entry << ", address = " << address
+                  << ", statuses = " << statuses << ", value = " << value
+                  << std::endl;
+      }
     }
   }
 }

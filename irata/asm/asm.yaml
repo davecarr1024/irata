@@ -68,7 +68,24 @@ instructions:
     opcode: 0x98
     addressing_mode: none
     description: Transfer Y register to accumulator
-    
+
+  - name: INX
+    opcode: 0xE8
+    addressing_mode: none
+    description: Increment X register
+  - name: DEX
+    opcode: 0xCA
+    addressing_mode: none
+    description: Decrement X register
+  - name: INY
+    opcode: 0xC8
+    addressing_mode: none
+    description: Increment Y register
+  - name: DEY
+    opcode: 0x88
+    addressing_mode: none
+    description: Decrement Y register
+        
   - name: JMP
     opcode: 0x4C
     addressing_mode: absolute

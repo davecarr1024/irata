@@ -29,7 +29,7 @@ public:
                         Component *parent = nullptr);
   virtual ~WordRegister() = default;
 
-  hdl::ComponentType type() const override final;
+  hdl::ComponentType type() const override;
 
   // Returns the value of the register.
   Word value() const;

@@ -96,6 +96,20 @@ std::unique_ptr<const InstructionSet> build_irata() {
   instruction_set->create_instruction("tya", asm_::AddressingMode::NONE)
       ->copy(hdl::irata().cpu().y(), hdl::irata().cpu().a());
 
+  instruction_set->create_instruction("inx", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().x().increment());
+  instruction_set->create_instruction("dex", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().x().decrement());
+
+  instruction_set->create_instruction("iny", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().y().increment());
+  instruction_set->create_instruction("dey", asm_::AddressingMode::NONE)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().y().decrement());
+
   instruction_set->create_instruction("cmp", asm_::AddressingMode::IMMEDIATE)
       ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
       ->create_step()

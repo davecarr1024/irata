@@ -12,8 +12,12 @@ std::ostream &operator<<(std::ostream &os, ComponentType type) {
     return os << "Memory";
   case ComponentType::Register:
     return os << "Register";
+  case ComponentType::IncrementableRegister:
+    return os << "IncrementableRegister";
   case ComponentType::WordRegister:
     return os << "WordRegister";
+  case ComponentType::IncrementableWordRegister:
+    return os << "IncrementableWordRegister";
   case ComponentType::ByteBus:
     return os << "ByteBus";
   case ComponentType::WordBus:
@@ -32,8 +36,6 @@ std::ostream &operator<<(std::ostream &os, ComponentType type) {
     return os << "StatusRegister";
   case ComponentType::Unknown:
     return os << "Unknown";
-  default:
-    throw std::logic_error("Unknown component type");
   }
 }
 

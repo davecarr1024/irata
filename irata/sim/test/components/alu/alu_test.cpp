@@ -105,6 +105,24 @@ TEST_F(ALUTest, Opcode) {
               AllOf(ComponentHasName("opcode_3"), ControlHasValue(false)))));
 }
 
+TEST_F(ALUTest, EncodeAndDecodeOpcode) {
+  for (const auto &opcode : std::vector<hdl::AluOpcode>{
+           hdl::AluOpcode::Nop,
+           hdl::AluOpcode::Add,
+           hdl::AluOpcode::Subtract,
+           hdl::AluOpcode::And,
+           hdl::AluOpcode::Or,
+           hdl::AluOpcode::Xor,
+           hdl::AluOpcode::RotateLeft,
+           hdl::AluOpcode::RotateRight,
+           hdl::AluOpcode::ShiftLeft,
+           hdl::AluOpcode::ShiftRight,
+       }) {
+    alu.set_opcode(opcode);
+    EXPECT_EQ(alu.opcode(), opcode);
+  }
+}
+
 TEST_F(ALUTest, ControlsForOpcode) {
   EXPECT_THAT(alu.opcode_controls_for_opcode(hdl::AluOpcode::Nop), IsEmpty());
   EXPECT_THAT(alu.opcode_controls_for_opcode(hdl::AluOpcode::Add),

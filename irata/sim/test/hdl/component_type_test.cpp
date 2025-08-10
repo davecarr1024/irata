@@ -15,7 +15,11 @@ TEST(ComponentTypeTest, ToString) {
   EXPECT_EQ(to_string(ComponentType::Cpu), "Cpu");
   EXPECT_EQ(to_string(ComponentType::Memory), "Memory");
   EXPECT_EQ(to_string(ComponentType::Register), "Register");
+  EXPECT_EQ(to_string(ComponentType::IncrementableRegister),
+            "IncrementableRegister");
   EXPECT_EQ(to_string(ComponentType::WordRegister), "WordRegister");
+  EXPECT_EQ(to_string(ComponentType::IncrementableWordRegister),
+            "IncrementableWordRegister");
   EXPECT_EQ(to_string(ComponentType::ByteBus), "ByteBus");
   EXPECT_EQ(to_string(ComponentType::WordBus), "WordBus");
   EXPECT_EQ(to_string(ComponentType::Control), "Control");

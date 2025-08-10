@@ -2,6 +2,7 @@
 #include <iostream>
 #include <irata/sim/components/irata.hpp>
 #include <irata/sim/components/memory/rom.hpp>
+#include <irata/sim/hdl/irata_decl.hpp>
 
 using namespace irata::sim::components;
 
@@ -14,6 +15,8 @@ int main(int argc, char **argv) {
     rom = std::make_unique<memory::ROM>(0x1000, std::cin);
   }
   Irata irata(std::move(rom));
+  irata::sim::hdl::IrataDecl irata_decl;
+  irata_decl.verify(&irata);
   Irata::Result result;
   try {
     result = irata.tick_until_halt();

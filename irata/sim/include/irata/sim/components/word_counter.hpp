@@ -25,16 +25,26 @@ public:
                        Component *parent = nullptr);
   virtual ~WordCounter() = default;
 
+  hdl::ComponentType type() const override;
+
   // Returns the value of the increment control line.
   bool increment() const;
   // Sets the value of the increment control line.
   void set_increment(bool increment);
+  Control &increment_control();
+  const Control &increment_control() const;
+
+  bool decrement() const;
+  void set_decrement(bool decrement);
+  Control &decrement_control();
+  const Control &decrement_control() const;
 
 protected:
   void tick_process(Logger &logger) override;
 
 private:
   Control increment_;
+  Control decrement_;
 };
 
 } // namespace irata::sim::components

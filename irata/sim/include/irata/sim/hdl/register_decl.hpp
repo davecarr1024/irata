@@ -32,6 +32,8 @@ class RegisterWithIncrementDecl : public virtual RegisterDecl {
 public:
   const ProcessControlDecl &increment() const;
 
+  const ProcessControlDecl &decrement() const;
+
   void verify(const components::Component *component) const override;
 
 protected:
@@ -39,6 +41,7 @@ protected:
 
 private:
   const ProcessControlDecl increment_;
+  const ProcessControlDecl decrement_;
 };
 
 // RegisterWithBusDecl is a mixin for RegisterDecl that provides a bus
@@ -92,7 +95,7 @@ public:
 // component that is connected to a byte bus and has an increment control line.
 // This is used for the step counter register of the CPU.
 class IncrementableConnectedByteRegisterDecl final
-    : public ComponentWithParentDecl<ComponentType::Register>,
+    : public ComponentWithParentDecl<ComponentType::IncrementableRegister>,
       public RegisterWithResetDecl,
       public RegisterWithIncrementDecl,
       public RegisterWithByteBusDecl {
@@ -151,7 +154,7 @@ private:
 // This is a word register that has a reset, increment, and bus connection.
 // The low and high byte register are also connected to the data bus.
 class ProgramCounterDecl final
-    : public ComponentWithParentDecl<ComponentType::WordRegister>,
+    : public ComponentWithParentDecl<ComponentType::IncrementableWordRegister>,
       public RegisterWithResetDecl,
       public RegisterWithIncrementDecl,
       public RegisterWithWordBusDecl {

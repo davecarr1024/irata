@@ -23,13 +23,23 @@ public:
                    Component *parent = nullptr);
   virtual ~Counter() = default;
 
+  hdl::ComponentType type() const override;
+
   bool increment() const;
   void set_increment(bool increment);
+  Control &increment_control();
+  const Control &increment_control() const;
+
+  bool decrement() const;
+  void set_decrement(bool decrement);
+  Control &decrement_control();
+  const Control &decrement_control() const;
 
   void tick_process(Logger &logger) override;
 
 private:
   Control increment_;
+  Control decrement_;
 };
 
 } // namespace irata::sim::components

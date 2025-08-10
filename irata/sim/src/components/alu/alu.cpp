@@ -175,22 +175,28 @@ void ALU::set_opcode(hdl::AluOpcode opcode) {
   }
 }
 
-Module *ALU::module(hdl::AluOpcode opcode) {
-  for (auto &module : modules_) {
+namespace {
+Module *module_for_opcode(const ALU &alu, hdl::AluOpcode opcode) {
+  if (opcode == hdl::AluOpcode::Nop) {
+    return nullptr;
+  }
+  for (const auto &module : alu.modules()) {
     if (module->opcode() == opcode) {
       return module.get();
     }
   }
-  return nullptr;
+  std::ostringstream os;
+  os << "No alu module found for opcode " << std::to_string(int(opcode));
+  throw std::runtime_error(os.str());
+}
+} // namespace
+
+Module *ALU::module(hdl::AluOpcode opcode) {
+  return module_for_opcode(*this, opcode);
 }
 
 const Module *ALU::module(hdl::AluOpcode opcode) const {
-  for (const auto &module : modules_) {
-    if (module->opcode() == opcode) {
-      return module.get();
-    }
-  }
-  return nullptr;
+  return module_for_opcode(*this, opcode);
 }
 
 Module *ALU::module() { return module(opcode()); }

@@ -34,9 +34,9 @@ const ByteBusDecl &CpuDecl::data_bus() const { return data_bus_; }
 
 const ConnectedByteRegisterDecl &CpuDecl::a() const { return a_; }
 
-const ConnectedByteRegisterDecl &CpuDecl::x() const { return x_; }
+const IncrementableConnectedByteRegisterDecl &CpuDecl::x() const { return x_; }
 
-const ConnectedByteRegisterDecl &CpuDecl::y() const { return y_; }
+const IncrementableConnectedByteRegisterDecl &CpuDecl::y() const { return y_; }
 
 const ProgramCounterDecl &CpuDecl::pc() const { return pc_; }
 

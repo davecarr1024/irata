@@ -7,6 +7,12 @@
 
 namespace irata::sim::components {
 
+TEST(WordCounterTest, Properties) {
+  WordCounter counter("counter");
+  EXPECT_EQ(counter.name(), "counter");
+  EXPECT_EQ(counter.type(), hdl::ComponentType::IncrementableWordRegister);
+}
+
 TEST(WordCounterTest, Idle) {
   WordCounter counter("counter");
   EXPECT_EQ(counter.value(), Word(0));
@@ -46,6 +52,23 @@ TEST(WordCounterTest, IncrementOverflow) {
   counter.tick();
   EXPECT_EQ(counter.value(), Word(0));
   EXPECT_FALSE(counter.increment());
+}
+
+TEST(WordCounterTest, Decrement) {
+  WordCounter counter("counter");
+  counter.set_value(0x0001);
+  counter.set_decrement(true);
+  counter.tick();
+  EXPECT_EQ(counter.value(), 0x0000);
+  EXPECT_FALSE(counter.decrement());
+}
+
+TEST(WordCounterTest, DecrementUnderflow) {
+  WordCounter counter("counter");
+  counter.set_value(0x0000);
+  counter.set_decrement(true);
+  counter.tick();
+  EXPECT_EQ(counter.value(), 0xFFFF);
 }
 
 TEST(WordCounterTest, ResetOverridesIncrement) {

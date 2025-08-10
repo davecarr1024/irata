@@ -29,9 +29,9 @@ public:
 
 private:
   const InstructionEncoder encoder_;
-  std::array<memory::ROM, 4> roms_;
+  std::array<memory::ROM, 8> roms_;
 
-  uint32_t read(uint16_t address) const;
+  uint64_t read(uint16_t address) const;
 };
 
 } // namespace irata::sim::components::controller

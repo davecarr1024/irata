@@ -4,6 +4,7 @@
 #include <irata/sim/components/alu/module.hpp>
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/controller/controller.hpp>
+#include <irata/sim/components/counter.hpp>
 #include <irata/sim/components/register.hpp>
 #include <irata/sim/components/status.hpp>
 #include <irata/sim/components/status_register.hpp>
@@ -27,11 +28,11 @@ public:
   const Register &a() const;
   Register &a();
 
-  const Register &x() const;
-  Register &x();
+  const Counter &x() const;
+  Counter &x();
 
-  const Register &y() const;
-  Register &y();
+  const Counter &y() const;
+  Counter &y();
 
   const WordCounter &pc() const;
   WordCounter &pc();
@@ -51,8 +52,8 @@ public:
 private:
   controller::Controller controller_;
   Register a_;
-  Register x_;
-  Register y_;
+  Counter x_;
+  Counter y_;
   WordCounter pc_;
   Status carry_;
   alu::ALU alu_;

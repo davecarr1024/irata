@@ -26,9 +26,9 @@ public:
 
   const ConnectedByteRegisterDecl &a() const;
 
-  const ConnectedByteRegisterDecl &x() const;
+  const IncrementableConnectedByteRegisterDecl &x() const;
 
-  const ConnectedByteRegisterDecl &y() const;
+  const IncrementableConnectedByteRegisterDecl &y() const;
 
   const ProgramCounterDecl &pc() const;
 
@@ -51,8 +51,8 @@ private:
   const WordBusDecl &address_bus_;
   const ByteBusDecl &data_bus_;
   const ConnectedByteRegisterDecl a_;
-  const ConnectedByteRegisterDecl x_;
-  const ConnectedByteRegisterDecl y_;
+  const IncrementableConnectedByteRegisterDecl x_;
+  const IncrementableConnectedByteRegisterDecl y_;
   const ProgramCounterDecl pc_;
   const ControllerDecl controller_;
   const StatusDecl carry_;
