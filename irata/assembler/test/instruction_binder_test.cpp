@@ -162,6 +162,32 @@ TEST_F(InstructionBinderTest, Instruction_Equality) {
       InstructionBinder::Program::Label(0x1234, "label"));
 }
 
+TEST_F(InstructionBinderTest, Literal_Properties) {
+  const auto literal = InstructionBinder::Program::Literal(
+      0x1234, std::vector<common::bytes::Byte>{0x12, 0x34});
+  EXPECT_EQ(literal.address(), 0x1234);
+  EXPECT_EQ(literal.values(), (std::vector<common::bytes::Byte>{0x12, 0x34}));
+  EXPECT_EQ(literal.type(),
+            InstructionBinder::Program::Statement::Type::Literal);
+}
+
+TEST_F(InstructionBinderTest, Literal_Equality) {
+  EXPECT_EQ(InstructionBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+            InstructionBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}));
+  EXPECT_NE(InstructionBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+            InstructionBinder::Program::Literal(
+                0x1235, std::vector<common::bytes::Byte>{0x12, 0x34}));
+  EXPECT_NE(InstructionBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+            InstructionBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x35}));
+  EXPECT_NE(InstructionBinder::Program::Literal(0x1234, {}),
+            InstructionBinder::Program::Label(0x1234, "label"));
+}
+
 TEST_F(InstructionBinderTest, Program_Properties) {
   {
     std::vector<std::unique_ptr<InstructionBinder::Program::Statement>> lhs;
@@ -271,6 +297,19 @@ TEST_F(InstructionBinderTest, Bind_Instruction_AbsoluteLabel) {
       0x0000, lda_absolute,
       std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
           "label")));
+  EXPECT_EQ(program, InstructionBinder::Program(std::move(statements)));
+}
+
+TEST_F(InstructionBinderTest, Bind_ByteDirective) {
+  std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
+  parser_statements.push_back(
+      std::make_unique<Parser::Program::ByteDirective>(0x12));
+  const auto parser_program = Parser::Program(std::move(parser_statements));
+  const auto program = binder.bind(parser_program);
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(std::make_unique<InstructionBinder::Program::Literal>(
+      0x0000, std::vector<common::bytes::Byte>{0x12}));
   EXPECT_EQ(program, InstructionBinder::Program(std::move(statements)));
 }
 

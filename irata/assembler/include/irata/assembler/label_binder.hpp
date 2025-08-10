@@ -29,6 +29,7 @@ public:
     public:
       enum class Type {
         Instruction,
+        Literal,
       };
 
       virtual ~Statement() = default;
@@ -134,6 +135,22 @@ public:
       const std::unique_ptr<Arg> arg_;
     };
 
+    // A literal is a set of bytes that are inserted directly into the output.
+    class Literal final : public Statement {
+    public:
+      Literal(common::bytes::Word address,
+              std::vector<common::bytes::Byte> values);
+      Literal(common::bytes::Word address,
+              const InstructionBinder::Program::Literal &literal);
+
+      const std::vector<common::bytes::Byte> &values() const;
+
+      bool operator==(const Statement &other) const override final;
+
+    private:
+      const std::vector<common::bytes::Byte> values_;
+    };
+
     explicit Program(std::vector<std::unique_ptr<Statement>> statements);
 
     const std::vector<std::unique_ptr<Statement>> &statements() const;
@@ -165,6 +182,8 @@ std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Instruction::Arg &arg);
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Instruction &instruction);
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Literal &literal);
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Statement &statement);
 std::ostream &operator<<(std::ostream &os, const LabelBinder::Program &program);

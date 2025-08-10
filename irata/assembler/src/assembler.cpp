@@ -6,16 +6,16 @@ namespace irata::assembler {
 
 std::vector<common::bytes::Byte>
 Assembler::assemble(std::string_view input) const {
-  std::cerr << "assembling:" << std::endl << input << std::endl;
+  // std::cerr << "assembling:" << std::endl << input << std::endl;
   const auto parser_output = Parser().parse(input);
-  std::cerr << "parser output: " << parser_output << std::endl;
+  // std::cerr << "parser output: " << parser_output << std::endl;
   const auto instruction_binder_output =
       InstructionBinder().bind(parser_output);
-  std::cerr << "instruction binder output: " << instruction_binder_output
-            << std::endl;
+  // std::cerr << "instruction binder output: " << instruction_binder_output
+  //           << std::endl;
   const auto label_binder_output =
       LabelBinder().bind(instruction_binder_output);
-  std::cerr << "label binder output: " << label_binder_output << std::endl;
+  // std::cerr << "label binder output: " << label_binder_output << std::endl;
   const auto byte_encoder_output = ByteEncoder().encode(label_binder_output);
   if (byte_encoder_output.empty()) {
     return {};
@@ -37,13 +37,8 @@ void Assembler::assemble(std::string_view input, std::ostream &output) const {
   const auto bytes = assemble(input);
   std::vector<uint8_t> values;
   values.reserve(bytes.size());
-  uint32_t address = 0;
   for (const auto &byte : bytes) {
-    const auto value = byte.value();
-    std::cerr << "writing byte at address " << common::bytes::Word(address++)
-              << ": " << byte << std::endl;
-    values.push_back(value);
-    // values.push_back(byte.value());
+    values.push_back(byte);
   }
   output.write(reinterpret_cast<const char *>(values.data()), values.size());
 }

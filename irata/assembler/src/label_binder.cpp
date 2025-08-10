@@ -62,8 +62,10 @@ LabelBinder::Program::Statement::bind(
         dynamic_cast<const InstructionBinder::Program::Instruction &>(
             statement),
         context);
-  default:
-    throw std::logic_error("unknown statement type");
+  case InstructionBinder::Program::Statement::Type::Literal:
+    return std::make_unique<Literal>(
+        statement.address(),
+        dynamic_cast<const InstructionBinder::Program::Literal &>(statement));
   }
 }
 
@@ -108,8 +110,6 @@ LabelBinder::Program::Instruction::Arg::bind(
             const InstructionBinder::Program::Instruction::AbsoluteLabel &>(
             arg),
         context);
-  default:
-    throw std::logic_error("unknown arg type");
   }
 }
 
@@ -208,6 +208,25 @@ bool LabelBinder::Program::Instruction::operator==(
          *arg_ == *other_instruction.arg_;
 }
 
+LabelBinder::Program::Literal::Literal(common::bytes::Word address,
+                                       std::vector<common::bytes::Byte> values)
+    : Statement(Type::Literal, address), values_(std::move(values)) {}
+
+LabelBinder::Program::Literal::Literal(
+    common::bytes::Word address,
+    const InstructionBinder::Program::Literal &literal)
+    : Literal(address, literal.values()) {}
+
+bool LabelBinder::Program::Literal::operator==(const Statement &other) const {
+  return Statement::operator==(other) &&
+         values_ == dynamic_cast<const Literal &>(other).values_;
+}
+
+const std::vector<common::bytes::Byte> &
+LabelBinder::Program::Literal::values() const {
+  return values_;
+}
+
 LabelBinder::Program::Program(
     std::vector<std::unique_ptr<Statement>> statements)
     : statements_(std::move(statements)) {
@@ -257,8 +276,8 @@ std::ostream &operator<<(std::ostream &os,
   switch (type) {
   case LabelBinder::Program::Statement::Type::Instruction:
     return os << "Instruction";
-  default:
-    throw std::logic_error("unknown statement type");
+  case LabelBinder::Program::Statement::Type::Literal:
+    return os << "Literal";
   }
 }
 
@@ -272,8 +291,6 @@ operator<<(std::ostream &os,
     return os << "Immediate";
   case LabelBinder::Program::Instruction::Arg::Type::Absolute:
     return os << "Absolute";
-  default:
-    throw std::logic_error("unknown arg type");
   }
 }
 
@@ -307,8 +324,6 @@ std::ostream &operator<<(std::ostream &os,
     return os
            << dynamic_cast<const LabelBinder::Program::Instruction::Absolute &>(
                   arg);
-  default:
-    throw std::logic_error("unknown arg type");
   }
 }
 
@@ -319,13 +334,25 @@ std::ostream &operator<<(std::ostream &os,
 }
 
 std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Literal &literal) {
+  std::vector<std::string> value_strs;
+  for (const auto &value : literal.values()) {
+    std::ostringstream os;
+    os << value;
+    value_strs.push_back(os.str());
+  }
+  return os << "Literal(address = " << literal.address() << ", values = ["
+            << common::strings::join(value_strs, ", ") << "])";
+}
+
+std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Statement &statement) {
   switch (statement.type()) {
   case LabelBinder::Program::Statement::Type::Instruction:
     return os << dynamic_cast<const LabelBinder::Program::Instruction &>(
                statement);
-  default:
-    throw std::logic_error("unknown statement type");
+  case LabelBinder::Program::Statement::Type::Literal:
+    return os << dynamic_cast<const LabelBinder::Program::Literal &>(statement);
   }
 }
 

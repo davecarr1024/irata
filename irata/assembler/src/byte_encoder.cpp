@@ -44,8 +44,6 @@ void encode_arg(std::map<common::bytes::Word, common::bytes::Byte> &bytes,
     append_bytes(bytes, address, {high, low});
     break;
   }
-  default:
-    throw std::logic_error("unknown arg type");
   }
 }
 
@@ -65,8 +63,11 @@ void encode_statement(std::map<common::bytes::Word, common::bytes::Byte> &bytes,
         bytes,
         dynamic_cast<const LabelBinder::Program::Instruction &>(statement));
     break;
-  default:
-    throw std::logic_error("unknown statement type");
+  case LabelBinder::Program::Statement::Type::Literal:
+    append_bytes(bytes, statement.address(),
+                 dynamic_cast<const LabelBinder::Program::Literal &>(statement)
+                     .values());
+    break;
   }
 }
 

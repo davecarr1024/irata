@@ -7,8 +7,9 @@ namespace irata::sim::hdl {
 
 AluDecl::ModuleDecl::ModuleDecl(const AluDecl &parent, std::string_view name,
                                 AluOpcode opcode)
-    : ComponentWithParentDecl<ComponentType::AluModule>(name, parent),
-      ComponentWithTypeDecl<ComponentType::AluModule>(name), opcode_(opcode) {}
+    : ComponentWithTypeDecl<ComponentType::AluModule>(name),
+      ComponentWithParentDecl<ComponentType::AluModule>(name, parent),
+      opcode_(opcode) {}
 
 AluOpcode AluDecl::ModuleDecl::opcode() const { return opcode_; }
 
@@ -82,8 +83,8 @@ std::set<std::unique_ptr<AluDecl::ModuleDecl>> get_modules(const AluDecl &alu) {
 
 AluDecl::AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus,
                  const StatusDecl &carry_in)
-    : ComponentWithParentDecl<ComponentType::Alu>("alu", parent),
-      ComponentWithTypeDecl<ComponentType::Alu>("alu"),
+    : ComponentWithTypeDecl<ComponentType::Alu>("alu"),
+      ComponentWithParentDecl<ComponentType::Alu>("alu", parent),
       modules_(get_modules(*this)), max_opcode_(get_max_opcode(modules_)),
       opcode_controls_(
           get_opcode_controls(*this, get_num_opcode_controls(max_opcode_))),

@@ -63,6 +63,10 @@ TEST_F(AssemblerTest, Assemble_SingleInstruction_AbsoluteLabel) {
               ElementsAre(lda_absolute.opcode(), 0x80, 0x00));
 }
 
+TEST_F(AssemblerTest, Assemble_ByteDirective) {
+  EXPECT_THAT(assembler.assemble(".byte $12"), ElementsAre(0x12));
+}
+
 TEST_F(AssemblerTest, Assemble_MultipleInstructions) {
   EXPECT_THAT(assembler.assemble(R"(
         ; this is my program
@@ -71,10 +75,11 @@ TEST_F(AssemblerTest, Assemble_MultipleInstructions) {
         lda #$12 ; load immediate
         another_unused_label_on_this_line: lda $1234 ; load absolute literal
         two_labels: on_one_line: lda label ; load absolute label
+        .byte $AB ; a byte directive
         )"),
               ElementsAre(hlt.opcode(), lda_immediate.opcode(), 0x12,
                           lda_absolute.opcode(), 0x12, 0x34,
-                          lda_absolute.opcode(), 0x80, 0x01));
+                          lda_absolute.opcode(), 0x80, 0x01, 0xAB));
 }
 
 TEST_F(AssemblerTest, Assemble_InvalidInstruction) {

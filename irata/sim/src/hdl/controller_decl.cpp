@@ -5,8 +5,8 @@ namespace irata::sim::hdl {
 ControllerDecl::ControllerDecl(const std::string &name,
                                const ComponentDecl &parent,
                                const ByteBusDecl &data_bus)
-    : ComponentWithParentDecl<ComponentType::Controller>(name, parent),
-      ComponentWithTypeDecl<ComponentType::Controller>(name),
+    : ComponentWithTypeDecl<ComponentType::Controller>(name),
+      ComponentWithParentDecl<ComponentType::Controller>(name, parent),
       data_bus_(data_bus), step_counter_("step_counter", *this, data_bus),
       opcode_("opcode", *this, data_bus) {}
 

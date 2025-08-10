@@ -24,9 +24,8 @@ std::ostream &operator<<(std::ostream &os, AluOpcode opcode) {
     return os << "ShiftLeft";
   case AluOpcode::ShiftRight:
     return os << "ShiftRight";
-  default:
-    throw std::logic_error("Invalid AluOpcode value: " +
-                           std::to_string(static_cast<int>(opcode)));
+  case AluOpcode::Nop:
+    return os << "Nop";
   }
 }
 

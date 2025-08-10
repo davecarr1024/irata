@@ -4,8 +4,8 @@ namespace irata::sim::hdl {
 
 CpuDecl::CpuDecl(const ComponentDecl &parent, const WordBusDecl &address_bus,
                  const ByteBusDecl &data_bus)
-    : ComponentWithParentDecl<ComponentType::Cpu>("cpu", parent),
-      ComponentWithTypeDecl<ComponentType::Cpu>("cpu"),
+    : ComponentWithTypeDecl<ComponentType::Cpu>("cpu"),
+      ComponentWithParentDecl<ComponentType::Cpu>("cpu", parent),
       address_bus_(address_bus), data_bus_(data_bus), a_("a", *this, data_bus_),
       x_("x", *this, data_bus_), y_("y", *this, data_bus_),
       pc_("pc", *this, address_bus_, data_bus_),

@@ -27,8 +27,8 @@ RegisterWithIncrementDecl::RegisterWithIncrementDecl()
 
 DisconnectedByteRegisterDecl::DisconnectedByteRegisterDecl(
     std::string_view name, const ComponentDecl &parent)
-    : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-      ComponentWithTypeDecl<ComponentType::Register>(name) {}
+    : ComponentWithTypeDecl<ComponentType::Register>(name),
+      ComponentWithParentDecl<ComponentType::Register>(name, parent) {}
 
 void DisconnectedByteRegisterDecl::verify(
     const components::Component *component) const {
@@ -38,9 +38,10 @@ void DisconnectedByteRegisterDecl::verify(
 
 ConnectedByteRegisterDecl::ConnectedByteRegisterDecl(
     std::string_view name, const ComponentDecl &parent, const ByteBusDecl &bus)
-    : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-      ComponentWithTypeDecl<ComponentType::Register>(name),
-      ComponentWithByteBusDecl(bus), RegisterWithByteBusDecl(bus) {}
+    : ComponentWithTypeDecl<ComponentType::Register>(name),
+      ComponentWithByteBusDecl(bus),
+      ComponentWithParentDecl<ComponentType::Register>(name, parent),
+      RegisterWithByteBusDecl(bus) {}
 
 void ConnectedByteRegisterDecl::verify(
     const components::Component *component) const {
@@ -51,9 +52,10 @@ void ConnectedByteRegisterDecl::verify(
 
 IncrementableConnectedByteRegisterDecl::IncrementableConnectedByteRegisterDecl(
     std::string_view name, const ComponentDecl &parent, const ByteBusDecl &bus)
-    : ComponentWithParentDecl<ComponentType::Register>(name, parent),
-      ComponentWithTypeDecl<ComponentType::Register>(name),
-      ComponentWithByteBusDecl(bus), RegisterWithByteBusDecl(bus) {}
+    : ComponentWithTypeDecl<ComponentType::Register>(name),
+      ComponentWithByteBusDecl(bus),
+      ComponentWithParentDecl<ComponentType::Register>(name, parent),
+      RegisterWithByteBusDecl(bus) {}
 
 void IncrementableConnectedByteRegisterDecl::verify(
     const components::Component *component) const {
@@ -65,10 +67,10 @@ void IncrementableConnectedByteRegisterDecl::verify(
 
 ConnectedWordRegisterDecl::ConnectedWordRegisterDecl(
     std::string_view name, const ComponentDecl &parent, const WordBusDecl &bus)
-    : ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
-      ComponentWithTypeDecl<ComponentType::WordRegister>(name),
-      ComponentWithWordBusDecl(bus), RegisterWithWordBusDecl(bus),
-      low_("low", *this), high_("high", *this) {}
+    : ComponentWithTypeDecl<ComponentType::WordRegister>(name),
+      ComponentWithWordBusDecl(bus),
+      ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
+      RegisterWithWordBusDecl(bus), low_("low", *this), high_("high", *this) {}
 
 const DisconnectedByteRegisterDecl &ConnectedWordRegisterDecl::low() const {
   return low_;
@@ -90,9 +92,9 @@ void ConnectedWordRegisterDecl::verify(
 DataAndAddressBusWordRegisterDecl::DataAndAddressBusWordRegisterDecl(
     std::string_view name, const ComponentDecl &parent,
     const WordBusDecl &address_bus, const ByteBusDecl &data_bus)
-    : ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
-      ComponentWithTypeDecl<ComponentType::WordRegister>(name),
+    : ComponentWithTypeDecl<ComponentType::WordRegister>(name),
       ComponentWithWordBusDecl(address_bus),
+      ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
       RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
       high_("high", *this, data_bus) {}
 
@@ -119,9 +121,9 @@ ProgramCounterDecl::ProgramCounterDecl(std::string_view name,
                                        const ComponentDecl &parent,
                                        const WordBusDecl &address_bus,
                                        const ByteBusDecl &data_bus)
-    : ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
-      ComponentWithTypeDecl<ComponentType::WordRegister>(name),
+    : ComponentWithTypeDecl<ComponentType::WordRegister>(name),
       ComponentWithWordBusDecl(address_bus),
+      ComponentWithParentDecl<ComponentType::WordRegister>(name, parent),
       RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
       high_("high", *this, data_bus) {}
 

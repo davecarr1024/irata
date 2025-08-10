@@ -3,11 +3,11 @@
 namespace irata::sim::hdl {
 
 ByteBusDecl::ByteBusDecl(std::string_view name, const ComponentDecl &parent)
-    : ComponentWithParentDecl<ComponentType::ByteBus>(name, parent),
-      ComponentWithTypeDecl<ComponentType::ByteBus>(name) {}
+    : ComponentWithTypeDecl<ComponentType::ByteBus>(name),
+      ComponentWithParentDecl<ComponentType::ByteBus>(name, parent) {}
 
 WordBusDecl::WordBusDecl(std::string_view name, const ComponentDecl &parent)
-    : ComponentWithParentDecl<ComponentType::WordBus>(name, parent),
-      ComponentWithTypeDecl<ComponentType::WordBus>(name) {}
+    : ComponentWithTypeDecl<ComponentType::WordBus>(name),
+      ComponentWithParentDecl<ComponentType::WordBus>(name, parent) {}
 
 } // namespace irata::sim::hdl

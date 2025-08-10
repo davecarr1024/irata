@@ -149,7 +149,7 @@ void Component::tick(std::ostream &log_output) {
 
 Component::Logger::Logger(std::ostream &output, hdl::TickPhase tick_phase,
                           const Component &component)
-    : output_(output), tick_phase_(tick_phase), component_(component) {}
+    : tick_phase_(tick_phase), component_(component), output_(output) {}
 
 Component::Logger::~Logger() {
   if (!logged_) {

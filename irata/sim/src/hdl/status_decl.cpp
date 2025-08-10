@@ -3,7 +3,7 @@
 namespace irata::sim::hdl {
 
 StatusDecl::StatusDecl(std::string_view name, const ComponentDecl &parent)
-    : ComponentWithParentDecl<ComponentType::Status>(name, parent),
-      ComponentWithTypeDecl<ComponentType::Status>(name) {}
+    : ComponentWithTypeDecl<ComponentType::Status>(name),
+      ComponentWithParentDecl<ComponentType::Status>(name, parent) {}
 
 } // namespace irata::sim::hdl

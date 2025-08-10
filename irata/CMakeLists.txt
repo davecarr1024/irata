@@ -26,6 +26,7 @@ if(IRATA_ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   target_link_options(irata_build_flags INTERFACE -fprofile-instr-generate)
 endif()
 
+target_compile_options(irata_build_flags INTERFACE -Wall -Werror -Wswitch-enum -Wunreachable-code)
 
 # ---- Add subprojects ----
 add_subdirectory(common)

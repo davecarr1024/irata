@@ -88,6 +88,22 @@ TEST_F(ParserTest, AbsoluteLabel_Equality) {
             Parser::Program::Instruction::None());
 }
 
+TEST_F(ParserTest, ByteDirective_Properties) {
+  const Parser::Program::ByteDirective byte_directive(0x12);
+  EXPECT_EQ(byte_directive.value(), 0x12);
+  EXPECT_EQ(byte_directive.type(),
+            Parser::Program::Statement::Type::ByteDirective);
+}
+
+TEST_F(ParserTest, ByteDirective_Equality) {
+  EXPECT_EQ(Parser::Program::ByteDirective(0x12),
+            Parser::Program::ByteDirective(0x12));
+  EXPECT_NE(Parser::Program::ByteDirective(0x12),
+            Parser::Program::ByteDirective(0x34));
+  EXPECT_NE(Parser::Program::ByteDirective(0x12),
+            Parser::Program::Comment("hello"));
+}
+
 TEST_F(ParserTest, Program_NullStatement) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(nullptr);
@@ -212,6 +228,58 @@ TEST_F(ParserTest, Parse_MultipleStatements_SameLine) {
   statements.push_back(std::make_unique<Parser::Program::Comment>("a comment"));
   EXPECT_EQ(parser.parse("my_label: nop ; a comment"),
             Parser::Program(std::move(statements)));
+}
+
+TEST_F(ParserTest, Parse_InvalidInstruction_InvalidNumericValue) {
+  EXPECT_THROW(parser.parse("lda #$1234"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_InvalidInstruction_InvalidNumericFormat) {
+  EXPECT_THROW(parser.parse("lda #1x"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_InvalidInstruction_TooManyTokens) {
+  EXPECT_THROW(parser.parse("lda #12 #13"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_InvalidInstruction_EmptyNumericLiteral) {
+  EXPECT_THROW(parser.parse("lda #"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Empty) {
+  EXPECT_THROW(parser.parse("."), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Unknown) {
+  EXPECT_THROW(parser.parse(".unknown"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Byte_Empty) {
+  EXPECT_THROW(parser.parse(".byte"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Byte_TooManyTokens) {
+  EXPECT_THROW(parser.parse(".byte 1 2"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Byte_InvalidNumericFormat) {
+  EXPECT_THROW(parser.parse(".byte 1x"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Byte_InvalidNumericValue) {
+  EXPECT_THROW(parser.parse(".byte $1234"), std::invalid_argument);
+}
+
+TEST_F(ParserTest, Parse_Directive_Byte_Decimal) {
+  std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
+  statements.push_back(std::make_unique<Parser::Program::ByteDirective>(0x12));
+  EXPECT_EQ(parser.parse(".byte 18"), Parser::Program(std::move(statements)));
+}
+
+TEST_F(ParserTest, Parse_Directive_Byte_Hex) {
+  std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
+  statements.push_back(std::make_unique<Parser::Program::ByteDirective>(0x12));
+  EXPECT_EQ(parser.parse(".byte $12"), Parser::Program(std::move(statements)));
 }
 
 } // namespace irata::assembler

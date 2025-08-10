@@ -16,19 +16,20 @@ StatusRegisterDecl::StatusRegisterDecl(const ComponentDecl &parent,
                                        const StatusDecl &overflow_in,
                                        const StatusDecl &zero_in,
                                        const StatusDecl &carry_out)
-    : ComponentWithParentDecl<ComponentType::StatusRegister>("status_register",
+    : ComponentWithTypeDecl<ComponentType::StatusRegister>("status_register"),
+      ComponentWithByteBusDecl(bus),
+      ComponentWithParentDecl<ComponentType::StatusRegister>("status_register",
                                                              parent),
-      ComponentWithTypeDecl<ComponentType::StatusRegister>("status_register"),
-      RegisterWithByteBusDecl(bus), ComponentWithByteBusDecl(bus),
-      carry_in_(carry_in), negative_in_(negative_in), overflow_in_(overflow_in),
-      zero_in_(zero_in), carry_out_(carry_out),
-      negative_out_("negative", *this), overflow_out_("overflow", *this),
-      zero_out_("zero", *this), latch_("latch", *this), status_indices_({
-                                                            {&carry_in_, 0},
-                                                            {&negative_in_, 7},
-                                                            {&overflow_in_, 6},
-                                                            {&zero_in_, 1},
-                                                        }),
+      RegisterWithByteBusDecl(bus), carry_in_(carry_in),
+      negative_in_(negative_in), overflow_in_(overflow_in), zero_in_(zero_in),
+      carry_out_(carry_out), negative_out_("negative", *this),
+      overflow_out_("overflow", *this), zero_out_("zero", *this),
+      latch_("latch", *this), status_indices_({
+                                  {&carry_in_, 0},
+                                  {&negative_in_, 7},
+                                  {&overflow_in_, 6},
+                                  {&zero_in_, 1},
+                              }),
       set_carry_("set_carry", *this), clear_carry_("clear_carry", *this) {}
 
 void StatusRegisterDecl::verify(const components::Component *component) const {

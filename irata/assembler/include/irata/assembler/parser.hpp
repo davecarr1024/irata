@@ -23,32 +23,34 @@ public:
         Comment,
         Label,
         Instruction,
+        ByteDirective,
       };
 
       virtual ~Statement() = default;
 
-      virtual Type type() const = 0;
+      Type type() const;
 
       virtual bool operator==(const Statement &other) const;
       virtual bool operator!=(const Statement &other) const;
 
+      static void parse(std::vector<std::unique_ptr<Statement>> &statements,
+                        std::string_view line);
+
     protected:
-      Statement() = default;
+      explicit Statement(Type type);
+
+    private:
+      const Type type_;
     };
 
-    template <Statement::Type StatementType>
-    class StatementWithType : public virtual Statement {
+    class StatementWithValue : public Statement {
     public:
-      Type type() const override final { return StatementType; }
-    };
-
-    class StatementWithValue : public virtual Statement {
-    public:
-      StatementWithValue(std::string_view value);
-
       std::string value() const;
 
       bool operator==(const Statement &other) const override;
+
+    protected:
+      StatementWithValue(Type type, std::string_view value);
 
     private:
       std::string value_;
@@ -56,23 +58,20 @@ public:
 
     // A comment in a program, of the form ";  the comment", alone on a line or
     // at the end of a line.
-    class Comment final : public StatementWithType<Statement::Type::Comment>,
-                          public StatementWithValue {
+    class Comment final : public StatementWithValue {
     public:
       explicit Comment(std::string_view value);
     };
 
     // A label in a program, of the form "label:", alone on a line or at the
     // start of a line.
-    class Label final : public StatementWithType<Statement::Type::Label>,
-                        public StatementWithValue {
+    class Label final : public StatementWithValue {
     public:
       explicit Label(std::string_view value);
     };
 
     // An instruction in a program, of the form "instruction arg".
-    class Instruction final
-        : public StatementWithType<Statement::Type::Instruction> {
+    class Instruction final : public Statement {
     public:
       // An argument to an instruction.
       class Arg {
@@ -86,41 +85,33 @@ public:
 
         virtual ~Arg() = default;
 
-        virtual asm_::AddressingMode addressing_mode() const = 0;
+        static std::unique_ptr<Arg> parse(std::string_view arg);
 
-        virtual Type type() const = 0;
+        Type type() const;
+
+        asm_::AddressingMode addressing_mode() const;
 
         virtual bool operator==(const Arg &other) const;
         bool operator!=(const Arg &other) const;
 
       protected:
-        Arg() = default;
-      };
+        Arg(Type type, asm_::AddressingMode addressing_mode);
 
-      template <Arg::Type ArgType> class ArgWithType : public virtual Arg {
-      public:
-        Type type() const override final { return ArgType; }
-      };
-
-      template <asm_::AddressingMode AddressingMode>
-      class ArgWithAddressingMode : public virtual Arg {
-      public:
-        asm_::AddressingMode addressing_mode() const override final {
-          return AddressingMode;
-        }
+      private:
+        const Type type_;
+        const asm_::AddressingMode addressing_mode_;
       };
 
       // No argument to an instruction. Of the form "instruction".
-      class None final
-          : public ArgWithType<Arg::Type::None>,
-            public ArgWithAddressingMode<asm_::AddressingMode::NONE> {
+      class None final : public Arg {
       public:
-        None() = default;
+        None();
       };
 
-      template <typename T> class ArgWithValue : public virtual Arg {
+      template <typename T> class ArgWithValue : public Arg {
       public:
-        explicit ArgWithValue(T value) : value_(value) {}
+        ArgWithValue(Type type, asm_::AddressingMode addressing_mode, T value)
+            : Arg(type, addressing_mode), value_(value) {}
 
         T value() const { return value_; }
 
@@ -130,46 +121,33 @@ public:
         }
 
       private:
-        T value_;
+        const T value_;
       };
 
       // An immediate argument to an instruction. Of the form "instruction
       // #value". Note that value can be #decimal or #$hex.
-      class Immediate final
-          : public ArgWithType<Arg::Type::Immediate>,
-            public ArgWithAddressingMode<asm_::AddressingMode::IMMEDIATE>,
-            public ArgWithValue<common::bytes::Byte> {
+      class Immediate final : public ArgWithValue<common::bytes::Byte> {
       public:
         explicit Immediate(common::bytes::Byte value);
-
-        bool operator==(const Arg &other) const override final;
       };
 
       // An absolute literal argument to an instruction. Of the form
       // "instruction value". Note that value can be decimal or $hex.
-      class AbsoluteLiteral final
-          : public ArgWithType<Arg::Type::AbsoluteLiteral>,
-            public ArgWithAddressingMode<asm_::AddressingMode::ABSOLUTE>,
-            public ArgWithValue<common::bytes::Word> {
+      class AbsoluteLiteral final : public ArgWithValue<common::bytes::Word> {
       public:
         explicit AbsoluteLiteral(common::bytes::Word value);
-
-        bool operator==(const Arg &other) const override final;
       };
 
       // An absolute label argument to an instruction. Of the form
       // "instruction label".
-      class AbsoluteLabel
-          : public ArgWithType<Arg::Type::AbsoluteLabel>,
-            public ArgWithAddressingMode<asm_::AddressingMode::ABSOLUTE>,
-            public ArgWithValue<std::string> {
+      class AbsoluteLabel : public ArgWithValue<std::string> {
       public:
         explicit AbsoluteLabel(std::string_view value);
-
-        bool operator==(const Arg &other) const override final;
       };
 
       Instruction(std::string_view instruction, std::unique_ptr<Arg> arg);
+
+      static std::unique_ptr<Instruction> parse(std::string_view line);
 
       bool operator==(const Statement &other) const override final;
 
@@ -178,11 +156,25 @@ public:
       const Arg &arg() const;
 
     private:
-      std::string instruction_;
-      std::unique_ptr<Arg> arg_;
+      const std::string instruction_;
+      const std::unique_ptr<Arg> arg_;
+    };
+
+    class ByteDirective final : public Statement {
+    public:
+      explicit ByteDirective(common::bytes::Byte value);
+
+      common::bytes::Byte value() const;
+
+      bool operator==(const Statement &other) const override final;
+
+    private:
+      const common::bytes::Byte value_;
     };
 
     explicit Program(std::vector<std::unique_ptr<Statement>> statements);
+
+    static Program parse(std::string_view input);
 
     const std::vector<std::unique_ptr<Statement>> &statements() const;
 
@@ -218,6 +210,8 @@ std::ostream &operator<<(std::ostream &os,
 std::ostream &operator<<(std::ostream &os, const Parser::Program::Label &label);
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction &instruction);
+std::ostream &operator<<(std::ostream &os,
+                         const Parser::Program::ByteDirective &statement);
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Statement &statement);
 std::ostream &operator<<(std::ostream &os, const Parser::Program &program);

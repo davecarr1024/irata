@@ -106,6 +106,32 @@ TEST_F(LabelBinderTest, Instruction_Equality) {
                     0x12)));
 }
 
+TEST_F(LabelBinderTest, Literal_Properties) {
+  const auto literal = LabelBinder::Program::Literal(
+      0x1234, std::vector<common::bytes::Byte>{0x12, 0x34});
+  EXPECT_EQ(literal.type(), LabelBinder::Program::Statement::Type::Literal);
+  EXPECT_EQ(literal.address(), 0x1234);
+  EXPECT_EQ(literal.values(), (std::vector<common::bytes::Byte>{0x12, 0x34}));
+}
+
+TEST_F(LabelBinderTest, Literal_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+            LabelBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}));
+  EXPECT_NE(LabelBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+            LabelBinder::Program::Literal(
+                0x5678, std::vector<common::bytes::Byte>{0x12, 0x34}));
+  EXPECT_NE(LabelBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+            LabelBinder::Program::Literal(0x1234, {}));
+  EXPECT_NE(LabelBinder::Program::Literal(0x1234, {}),
+            LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>()));
+}
+
 TEST_F(LabelBinderTest, Program_Equality) {
   {
     std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
@@ -293,6 +319,19 @@ TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1237, lda_absolute,
       std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xC321)));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_Literal) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(std::make_unique<InstructionBinder::Program::Literal>(
+      0x1234, std::vector<common::bytes::Byte>{0xBE, 0xEF}));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Literal>(
+      0x1234, std::vector<common::bytes::Byte>{0xBE, 0xEF}));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
