@@ -16,3 +16,7 @@ add_test(NAME sim_tests COMMAND sim_tests)
 add_executable(sim ${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp)
 target_link_libraries(sim PUBLIC irata_sim irata_asm irata_common gtest gmock gtest_main)
 target_link_libraries(sim PRIVATE irata_build_flags)
+
+add_executable(microcode ${CMAKE_CURRENT_SOURCE_DIR}/microcode.cpp)
+target_link_libraries(microcode PUBLIC irata_sim irata_asm irata_common gtest gmock gtest_main)
+target_link_libraries(microcode PRIVATE irata_build_flags)

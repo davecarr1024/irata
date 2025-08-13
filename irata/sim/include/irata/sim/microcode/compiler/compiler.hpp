@@ -16,6 +16,9 @@ public:
 
   static const Compiler &irata();
 
+  ir::InstructionSet
+  compile_to_ir(const dsl::InstructionSet &instruction_set) const;
+
   table::Table compile(const dsl::InstructionSet &instruction_set) const;
 
   static table::Table compile_irata();

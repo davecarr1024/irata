@@ -48,11 +48,7 @@ Compiler::Compiler(std::vector<std::unique_ptr<passes::Pass>> passes)
 
 table::Table
 Compiler::compile(const dsl::InstructionSet &instruction_set) const {
-  ir::InstructionSet ir = convert_input(instruction_set);
-  for (const auto &pass : passes_) {
-    ir = pass->run(ir);
-  }
-  return convert_output(ir);
+  return convert_output(compile_to_ir(instruction_set));
 }
 
 const Compiler &Compiler::irata() {
@@ -85,6 +81,15 @@ const Compiler &Compiler::irata() {
 
   static const Compiler compiler(std::move(passes));
   return compiler;
+}
+
+ir::InstructionSet
+Compiler::compile_to_ir(const dsl::InstructionSet &instruction_set) const {
+  ir::InstructionSet ir = convert_input(instruction_set);
+  for (const auto &pass : passes_) {
+    ir = pass->run(ir);
+  }
+  return ir;
 }
 
 table::Table Compiler::compile_irata() {
