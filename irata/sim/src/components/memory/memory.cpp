@@ -23,8 +23,7 @@ Memory::Memory(std::string_view name,
                std::vector<std::unique_ptr<Region>> regions,
                Bus<Word> &address_bus, Bus<Byte> &data_bus, Component *parent)
     : Component(name, parent), address_bus_(address_bus), data_bus_(data_bus),
-      regions_(std::move(regions)),
-      address_("address", &address_bus_, nullptr, this),
+      regions_(std::move(regions)), address_(*this, address_bus_, data_bus),
       write_("write", hdl::TickPhase::Write, this),
       read_("read", hdl::TickPhase::Read, this) {
   // Throw an exception if any regions are null.
@@ -60,8 +59,8 @@ Bus<Word> &Memory::address_bus() { return address_bus_; }
 const Bus<Byte> &Memory::data_bus() const { return data_bus_; }
 Bus<Byte> &Memory::data_bus() { return data_bus_; }
 
-const WordRegister &Memory::address_register() const { return address_; }
-WordRegister &Memory::address_register() { return address_; }
+const Address &Memory::address_register() const { return address_; }
+Address &Memory::address_register() { return address_; }
 
 Word Memory::address() const { return address_.value(); }
 void Memory::set_address(Word address) { address_.set_value(address); }
@@ -104,6 +103,8 @@ void Memory::tick_write(Logger &logger) {
     auto &region = this->region(address);
     const auto data = region.read(address);
     data_bus_.set_value(data, *this);
+    logger << "Read " << data << " from address " << address << " in region "
+           << region.path() << ", writing it to " << data_bus_.path();
   }
 }
 
@@ -122,6 +123,9 @@ void Memory::tick_read(Logger &logger) {
                                " but no data was written to the bus");
     }
     region.write(address, *data);
+    logger << "Read " << *data << " from " << data_bus_.path()
+           << " and wrote it to address " << address << " in region "
+           << region.path();
   }
 }
 

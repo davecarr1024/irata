@@ -5,6 +5,7 @@
 #include <irata/sim/components/bus.hpp>
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/control.hpp>
+#include <irata/sim/components/memory/address.hpp>
 #include <irata/sim/components/memory/region.hpp>
 #include <irata/sim/components/memory/rom.hpp>
 #include <irata/sim/components/word_register.hpp>
@@ -47,8 +48,8 @@ public:
   Bus<Byte> &data_bus();
 
   // Returns the address register.
-  const WordRegister &address_register() const;
-  WordRegister &address_register();
+  const Address &address_register() const;
+  Address &address_register();
   // Returns the value of the address register.
   Word address() const;
   // Sets the value of the address register.
@@ -75,7 +76,7 @@ private:
   Bus<Word> &address_bus_;
   Bus<Byte> &data_bus_;
   std::vector<std::unique_ptr<Region>> regions_;
-  WordRegister address_;
+  Address address_;
   Control write_;
   Control read_;
 

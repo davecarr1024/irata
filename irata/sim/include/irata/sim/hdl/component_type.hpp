@@ -21,6 +21,7 @@ enum class ComponentType {
   Control,
   Status,
   StatusRegister,
+  MemoryAddress,
 };
 
 std::ostream &operator<<(std::ostream &os, ComponentType type);

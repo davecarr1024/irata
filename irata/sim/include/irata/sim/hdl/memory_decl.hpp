@@ -20,12 +20,12 @@ public:
   // A word register that is connected to the address bus.
   // It is used to store the address of the memory region to read from or write
   // to.
-  const ConnectedWordRegisterDecl &address() const;
+  const MemoryAddressRegisterDecl &address() const;
 
   void verify(const components::Component *component) const override final;
 
 private:
-  const ConnectedWordRegisterDecl address_;
+  const MemoryAddressRegisterDecl address_;
 };
 
 } // namespace irata::sim::hdl

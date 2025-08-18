@@ -154,4 +154,54 @@ Instruction *Instruction::unary_alu_operation_no_result(
   return copy(operand, hdl::irata().cpu().alu().lhs())->alu_operation(opcode);
 }
 
+namespace {
+
+// Increment the stack pointer.
+Instruction *increment_sp(Instruction *instruction) {
+  return instruction->create_step()
+      ->with_control(hdl::irata().cpu().stack_pointer().increment())
+      ->instruction();
+}
+
+// Decrement the stack pointer.
+Instruction *decrement_sp(Instruction *instruction) {
+  return instruction->create_step()
+      ->with_control(hdl::irata().cpu().stack_pointer().decrement())
+      ->instruction();
+}
+
+// Copy the stack pointer to the low byte of the memory address register.
+Instruction *copy_sp_to_mar_low(Instruction *instruction) {
+  return instruction->copy(hdl::irata().cpu().stack_pointer(),
+                           hdl::irata().memory().address().low());
+}
+
+// Set the high byte of the memory address register to the stack page.
+Instruction *set_mar_high_to_stack_page(Instruction *instruction) {
+  return instruction->create_step()
+      ->with_control(hdl::irata().memory().address().high().reset())
+      ->with_control(hdl::irata().memory().address().high().increment())
+      ->instruction();
+}
+
+} // namespace
+
+Instruction *Instruction::push(const hdl::ComponentWithByteBusDecl &source) {
+  Instruction *instruction = this;
+  instruction = copy_sp_to_mar_low(instruction);
+  instruction = set_mar_high_to_stack_page(instruction);
+  instruction = decrement_sp(instruction);
+  instruction = copy(source, hdl::irata().memory());
+  return instruction;
+}
+
+Instruction *Instruction::pop(const hdl::ComponentWithByteBusDecl &dest) {
+  Instruction *instruction = this;
+  instruction = increment_sp(instruction);
+  instruction = set_mar_high_to_stack_page(instruction);
+  instruction = copy_sp_to_mar_low(instruction);
+  instruction = copy(hdl::irata().memory(), dest);
+  return instruction;
+}
+
 } // namespace irata::sim::microcode::dsl

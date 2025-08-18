@@ -7,9 +7,9 @@ MemoryDecl::MemoryDecl(const std::string &name, const ComponentDecl &parent,
                        const ByteBusDecl &data_bus)
     : ComponentWithTypeDecl<ComponentType::Memory>(name),
       ComponentWithByteBusDecl(data_bus), ComponentWithParentDecl(name, parent),
-      address_(ConnectedWordRegisterDecl("address", *this, address_bus)) {}
+      address_("address", *this, address_bus, data_bus) {}
 
-const ConnectedWordRegisterDecl &MemoryDecl::address() const {
+const MemoryAddressRegisterDecl &MemoryDecl::address() const {
   return address_;
 }
 

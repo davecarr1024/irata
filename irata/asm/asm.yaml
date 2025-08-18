@@ -168,3 +168,36 @@ instructions:
     opcode: 0x6A
     addressing_mode: none
     description: Rotate right accumulator
+
+  - name: PHA
+    opcode: 0x48
+    addressing_mode: none
+    description: Push accumulator onto stack
+  - name: PLA
+    opcode: 0x68
+    addressing_mode: none
+    description: Pull accumulator from stack
+  - name: PHX
+    opcode: 0xDA
+    addressing_mode: none
+    description: Push X register onto stack
+  - name: PLX
+    opcode: 0xFA
+    addressing_mode: none
+    description: Pull X register from stack
+  - name: PHY
+    opcode: 0x5A
+    addressing_mode: none
+    description: Push Y register onto stack
+  - name: PLY
+    opcode: 0x7A
+    addressing_mode: none
+    description: Pull Y register from stack
+  - name: PHP
+    opcode: 0x08
+    addressing_mode: none
+    description: Push processor status onto stack
+  - name: PLP
+    opcode: 0x28
+    addressing_mode: none
+    description: Pull processor status from stack

@@ -117,6 +117,12 @@ public:
   unary_alu_operation_no_result(hdl::AluOpcode opcode,
                                 const hdl::ComponentWithByteBusDecl &operand);
 
+  // Push the value of the source register onto the stack.
+  Instruction *push(const hdl::ComponentWithByteBusDecl &source);
+
+  // Pop the value from the stack into the destination register.
+  Instruction *pop(const hdl::ComponentWithByteBusDecl &dest);
+
   int stage() const;
 
   Instruction *next_stage();

@@ -36,6 +36,8 @@ std::ostream &operator<<(std::ostream &os, ComponentType type) {
     return os << "StatusRegister";
   case ComponentType::Unknown:
     return os << "Unknown";
+  case ComponentType::MemoryAddress:
+    return os << "MemoryAddress";
   }
 }
 

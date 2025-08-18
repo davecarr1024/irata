@@ -47,6 +47,8 @@ public:
 
   const DataAndAddressBusWordRegisterDecl &buffer() const;
 
+  const IncrementableConnectedByteRegisterDecl &stack_pointer() const;
+
 private:
   const WordBusDecl &address_bus_;
   const ByteBusDecl &data_bus_;
@@ -59,6 +61,7 @@ private:
   const AluDecl alu_;
   const StatusRegisterDecl status_register_;
   const DataAndAddressBusWordRegisterDecl buffer_;
+  const IncrementableConnectedByteRegisterDecl stack_pointer_;
 };
 
 } // namespace irata::sim::hdl

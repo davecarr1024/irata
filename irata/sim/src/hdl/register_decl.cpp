@@ -153,4 +153,32 @@ void ProgramCounterDecl::verify(const components::Component *component) const {
   verify_child(high_, component);
 }
 
+MemoryAddressRegisterDecl::MemoryAddressRegisterDecl(
+    std::string_view name, const ComponentDecl &parent,
+    const WordBusDecl &address_bus, const ByteBusDecl &data_bus)
+    : ComponentWithTypeDecl<ComponentType::MemoryAddress>(name),
+      ComponentWithWordBusDecl(address_bus),
+      ComponentWithParentDecl<ComponentType::MemoryAddress>(name, parent),
+      RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
+      high_("high", *this, data_bus) {}
+
+const IncrementableConnectedByteRegisterDecl &
+MemoryAddressRegisterDecl::low() const {
+  return low_;
+}
+
+const IncrementableConnectedByteRegisterDecl &
+MemoryAddressRegisterDecl::high() const {
+  return high_;
+}
+
+void MemoryAddressRegisterDecl::verify(
+    const components::Component *component) const {
+  ComponentWithParentDecl<ComponentType::MemoryAddress>::verify(component);
+  RegisterWithResetDecl::verify(component);
+  RegisterWithWordBusDecl::verify(component);
+  verify_child(low_, component);
+  verify_child(high_, component);
+}
+
 } // namespace irata::sim::hdl

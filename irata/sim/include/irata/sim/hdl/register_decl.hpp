@@ -174,4 +174,23 @@ private:
   const ConnectedByteRegisterDecl high_;
 };
 
+class MemoryAddressRegisterDecl final
+    : public ComponentWithParentDecl<ComponentType::MemoryAddress>,
+      public RegisterWithResetDecl,
+      public RegisterWithWordBusDecl {
+public:
+  MemoryAddressRegisterDecl(std::string_view name, const ComponentDecl &parent,
+                            const WordBusDecl &address_bus,
+                            const ByteBusDecl &data_bus);
+
+  const IncrementableConnectedByteRegisterDecl &low() const;
+  const IncrementableConnectedByteRegisterDecl &high() const;
+
+  void verify(const components::Component *component) const override final;
+
+private:
+  const IncrementableConnectedByteRegisterDecl low_;
+  const IncrementableConnectedByteRegisterDecl high_;
+};
+
 } // namespace irata::sim::hdl

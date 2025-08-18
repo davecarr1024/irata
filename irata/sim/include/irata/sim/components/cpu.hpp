@@ -14,11 +14,10 @@ namespace irata::sim::components {
 class Cpu final : public Component {
 public:
   Cpu(microcode::table::Table microcode_table, ByteBus &data_bus,
-      WordBus &address_bus, Component *parent = nullptr,
-      std::string_view name = "cpu");
+      WordBus &address_bus, Component *parent = nullptr);
 
   static Cpu irata(ByteBus &data_bus, WordBus &address_bus,
-                   Component *parent = nullptr, std::string_view name = "cpu");
+                   Component *parent = nullptr);
 
   hdl::ComponentType type() const override final;
 
@@ -49,6 +48,9 @@ public:
   const WordRegister &buffer() const;
   WordRegister &buffer();
 
+  const Counter &stack_pointer() const;
+  Counter &stack_pointer();
+
 private:
   controller::Controller controller_;
   Register a_;
@@ -59,6 +61,7 @@ private:
   alu::ALU alu_;
   StatusRegister status_register_;
   WordRegister buffer_;
+  Counter stack_pointer_;
 };
 
 } // namespace irata::sim::components

@@ -12,6 +12,7 @@ Irata now supports tests for absolute addressing instructions:
 * Absolute modes for LDA, ADC, SBC, AND, ORA, and EOR are all implemented and tested using test programs.
 * Register management: LDA, LDX, LDY, STA, STX, STY, TAX, TXA, TAY, TYA
 * Increment: INC, DEC, INX, DEX, INY, DEY
+* Stack operations for A: PHA, PLA
 
 The development loop of testing through test programs has enabled quick progress for implementing and testing new instructions.
 
@@ -50,5 +51,5 @@ The development loop of testing through test programs has enabled quick progress
 
 ## In Progress
 
-* Stack management: PHA, PLA, PHX, PLX, PHY, PLY, PHP, PLP
+* More stack management: PHX, PLX, PHY, PLY, PHP, PLP
 * Subroutine support: JSR, RTS

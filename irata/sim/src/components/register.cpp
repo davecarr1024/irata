@@ -49,7 +49,7 @@ void Register::set_reset(bool value) { reset_.set_value(value); }
 void Register::tick_write(Logger &logger) {
   if (const auto write = this->write(); write && *write) {
     bus_->set_value(value_, *this);
-    logger << "wrote " << value_ << " to bus";
+    logger << "wrote " << value_ << " to " << bus_->path();
   }
 }
 
@@ -57,6 +57,7 @@ void Register::tick_read(Logger &logger) {
   if (const auto read = this->read(); read && *read) {
     if (const auto value = bus_->value(); value) {
       set_value(*value);
+      logger << "read " << value_ << " from " << bus_->path();
     } else {
       throw std::logic_error(path() + " reading from open bus");
     }

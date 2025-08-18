@@ -247,6 +247,26 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->create_step()
       ->with_control(hdl::irata().cpu().status_register().clear_carry());
 
+  instruction_set->create_instruction("pha", asm_::AddressingMode::NONE)
+      ->push(hdl::irata().cpu().a());
+  instruction_set->create_instruction("pla", asm_::AddressingMode::NONE)
+      ->pop(hdl::irata().cpu().a());
+
+  instruction_set->create_instruction("phx", asm_::AddressingMode::NONE)
+      ->push(hdl::irata().cpu().x());
+  instruction_set->create_instruction("plx", asm_::AddressingMode::NONE)
+      ->pop(hdl::irata().cpu().x());
+
+  instruction_set->create_instruction("phy", asm_::AddressingMode::NONE)
+      ->push(hdl::irata().cpu().y());
+  instruction_set->create_instruction("ply", asm_::AddressingMode::NONE)
+      ->pop(hdl::irata().cpu().y());
+
+  instruction_set->create_instruction("php", asm_::AddressingMode::NONE)
+      ->push(hdl::irata().cpu().status_register());
+  instruction_set->create_instruction("plp", asm_::AddressingMode::NONE)
+      ->pop(hdl::irata().cpu().status_register());
+
   return instruction_set;
 }
 
