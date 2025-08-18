@@ -267,6 +267,17 @@ std::unique_ptr<const InstructionSet> build_irata() {
   instruction_set->create_instruction("plp", asm_::AddressingMode::NONE)
       ->pop(hdl::irata().cpu().status_register());
 
+  instruction_set->create_instruction("jsr", asm_::AddressingMode::ABSOLUTE)
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->push(hdl::irata().cpu().pc().high())
+      ->push(hdl::irata().cpu().pc().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
+
+  instruction_set->create_instruction("rts", asm_::AddressingMode::NONE)
+      ->pop(hdl::irata().cpu().pc().low())
+      ->pop(hdl::irata().cpu().pc().high());
+
   return instruction_set;
 }
 

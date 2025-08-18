@@ -201,3 +201,12 @@ instructions:
     opcode: 0x28
     addressing_mode: none
     description: Pull processor status from stack
+
+  - name: JSR
+    opcode: 0x20
+    addressing_mode: absolute
+    description: Jump to subroutine
+  - name: RTS
+    opcode: 0x60
+    addressing_mode: none
+    description: Return from subroutine
