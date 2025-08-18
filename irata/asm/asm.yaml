@@ -21,10 +21,18 @@ instructions:
     opcode: 0xAD
     addressing_mode: absolute
     description: Load accumulator from memory
+  - name: LDA
+    opcode: 0xA5
+    addressing_mode: zero_page
+    description: Load accumulator from zero page memory
   - name: STA
     opcode: 0x8D
     addressing_mode: absolute
     description: Store accumulator in memory
+  - name: STA
+    opcode: 0x85
+    addressing_mode: zero_page
+    description: Store accumulator in zero page memory
 
   - name: LDX
     opcode: 0xA2
@@ -34,10 +42,18 @@ instructions:
     opcode: 0xAE
     addressing_mode: absolute
     description: Load X register from memory
+  - name: LDX
+    opcode: 0xA6
+    addressing_mode: zero_page
+    description: Load X register from zero page memory
   - name: STX
     opcode: 0x8E
     addressing_mode: absolute
     description: Store X register in memory
+  - name: STX
+    opcode: 0x86
+    addressing_mode: zero_page
+    description: Store X register in zero page memory
 
   - name: LDY
     opcode: 0xA0
@@ -47,10 +63,18 @@ instructions:
     opcode: 0xAC
     addressing_mode: absolute
     description: Load Y register from memory
+  - name: LDY
+    opcode: 0xA4
+    addressing_mode: zero_page
+    description: Load Y register from zero page memory
   - name: STY
     opcode: 0x8C
     addressing_mode: absolute
     description: Store Y register in memory
+  - name: STY
+    opcode: 0x84
+    addressing_mode: zero_page
+    description: Store Y register in zero page memory
 
   - name: TAX
     opcode: 0xAA
@@ -120,6 +144,10 @@ instructions:
     opcode: 0x6D
     addressing_mode: absolute
     description: Add memory to accumulator with carry
+  - name: ADC
+    opcode: 0x65
+    addressing_mode: zero_page
+    description: Add zero page memory to accumulator with carry
   - name: SBC
     opcode: 0xE9
     addressing_mode: immediate
@@ -128,6 +156,10 @@ instructions:
     opcode: 0xED
     addressing_mode: absolute
     description: Subtract memory from accumulator with borrow
+  - name: SBC
+    opcode: 0xE5
+    addressing_mode: zero_page
+    description: Subtract zero page memory from accumulator with borrow
   - name: AND
     opcode: 0x29
     addressing_mode: immediate
@@ -136,6 +168,10 @@ instructions:
     opcode: 0x2D
     addressing_mode: absolute
     description: AND memory with accumulator
+  - name: AND
+    opcode: 0x25
+    addressing_mode: zero_page
+    description: AND zero page memory with accumulator
   - name: ORA
     opcode: 0x09
     addressing_mode: immediate
@@ -144,6 +180,10 @@ instructions:
     opcode: 0x0D
     addressing_mode: absolute
     description: OR memory with accumulator
+  - name: ORA
+    opcode: 0x05
+    addressing_mode: zero_page
+    description: OR zero page memory with accumulator
   - name: EOR
     opcode: 0x49
     addressing_mode: immediate
@@ -152,6 +192,10 @@ instructions:
     opcode: 0x4D
     addressing_mode: absolute
     description: XOR memory with accumulator
+  - name: EOR
+    opcode: 0x45
+    addressing_mode: zero_page
+    description: XOR zero page memory with accumulator
   - name: ASL
     opcode: 0x0A
     addressing_mode: none

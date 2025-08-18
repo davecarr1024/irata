@@ -6,6 +6,14 @@ txa
 cmp #$12
 jne fail
 
+ldx #$34
+stx $00
+ldx #$00
+ldx $00
+txa
+cmp #$34
+jne fail
+
 hlt
 
 fail: crs

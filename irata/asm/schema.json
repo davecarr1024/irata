@@ -25,7 +25,8 @@
             "enum": [
               "none",
               "immediate",
-              "absolute"
+              "absolute",
+              "zero_page"
             ],
             "description": "How the instruction addresses memory"
           },

@@ -3,12 +3,20 @@ ora #$34
 cmp #$36
 jne fail
 
-lda #$12
+lda #$0F
 ora data
-cmp #$BB
+cmp #$FF
+jne fail
+
+lda #$FF
+sta $00
+lda #$F0
+ora $00
+cmp #$FF
+jne fail
 
 hlt
 
 fail: crs
 
-data: .byte 0xAB
+data: .byte 0xFF

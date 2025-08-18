@@ -82,20 +82,57 @@ public:
   Instruction *read_memory(const hdl::ComponentWithWordBusDecl &address_source,
                            const hdl::ComponentWithByteBusDecl &data_dest);
 
+  // Writes the value from the source register to the memory at the address
+  // specified by the destination register.
+  Instruction *write_memory(const hdl::ComponentWithWordBusDecl &address_source,
+                            const hdl::ComponentWithByteBusDecl &data_source);
+
   // Read the value from the memory at the address in the program counter into
   // the destination register, and increment the program counter.
   Instruction *
   read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
+
+  // Write the value from the source register to the memory at the address in
+  // the program counter, and increment the program counter.
+  Instruction *write_memory_at_pc(const hdl::ComponentWithByteBusDecl &source);
 
   // Read the value from memory at the address in the next two bytes of the
   // program.
   Instruction *
   indirect_read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
 
+  // Read the value from memory at the address in the next two bytes of the
+  // program, and write the value from the source register to that address.
+  Instruction *
+  indirect_write_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_source);
+
   // Perform an ALU operation with the given opcode.
   // This assumes that the operands are ready in the alu lhs and rhs registers.
   // After this step, the result will be in the alu result register.
   Instruction *alu_operation(hdl::AluOpcode opcode);
+
+  // Read the value from the zero page in memory at the address specified by the
+  // source.
+  Instruction *
+  read_memory_zero_page(const hdl::ComponentWithByteBusDecl &address_source,
+                        const hdl::ComponentWithByteBusDecl &data_dest);
+
+  // Write the value from the source register to the zero page in memory at the
+  // address specified by the destination.
+  Instruction *
+  write_memory_zero_page(const hdl::ComponentWithByteBusDecl &address_source,
+                         const hdl::ComponentWithByteBusDecl &data_source);
+
+  // Read the next byte of the program to get the zero page address, then read
+  // the value from the zero page in memory at that address.
+  Instruction *indirect_read_memory_zero_page_at_pc(
+      const hdl::ComponentWithByteBusDecl &data_dest);
+
+  // Read the next byte of the program to get the zero page address, then write
+  // the value from the source register to the zero page in memory at that
+  // address.
+  Instruction *indirect_write_memory_zero_page_at_pc(
+      const hdl::ComponentWithByteBusDecl &data_source);
 
   // Perform an ALU operation with the given opcode, lhs, rhs, and result.
   Instruction *

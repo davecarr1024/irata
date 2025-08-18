@@ -1,20 +1,36 @@
 # Irata Project Status
 
-_Last updated: August 10, 2025_
+_Last updated: August 18, 2025_
 
 ---
 
-## Major Milestone: Implementing Absolute Instructions
+## Major Milestone: Programs
 
-Irata now supports tests for absolute addressing instructions:
+```
+ldx #$03
+ldy #$04
+jsr add_x_and_y
+cmp #$07
+jne fail
 
-* The assembler supports the .byte directive for directly embedding data.
-* Absolute modes for LDA, ADC, SBC, AND, ORA, and EOR are all implemented and tested using test programs.
-* Register management: LDA, LDX, LDY, STA, STX, STY, TAX, TXA, TAY, TYA
-* Increment: INC, DEC, INX, DEX, INY, DEY
-* Stack operations for A: PHA, PLA
+hlt
 
-The development loop of testing through test programs has enabled quick progress for implementing and testing new instructions.
+fail:
+crs
+
+add_x_and_y:
+txa
+sta $00
+tya
+adc $00
+rts
+```
+
+Compiles, runs, and passes. This calculation of `3 + 4 = 7` sits on top of ~20k lines of code, a functional language, and a simulated computer. The instruction set is growing rapidly and currently sits at 63 with basic ALU, stack, and register operations with multiple addressing modes. 
+
+Focused project planning has gotten to the point where vertical slices of the system can be easily modified together as one unit, allowing amazing feature velocity. I'm excited about how fast the project is moving and where it can go next. 
+
+This is now about as far as flip got when it destabilized and bogged down, and irata shows no signs of stopping.
 
 ---
 
@@ -51,5 +67,15 @@ The development loop of testing through test programs has enabled quick progress
 
 ## In Progress
 
-* More stack management: PHX, PLX, PHY, PLY, PHP, PLP
-* Subroutine support: JSR, RTS
+Irata assembly goals:
+
+* Indexed addressing modes.
+* More branching modes: BCS, BVS, BPL, etc.
+* Setting Z/V status bits for most operations and not just ALU operations.
+* Interrupts?
+
+Since irata assembly is getting to a functional point and I'm able to write simple programs, I think it might also be time to think about some higher level goals, such as:
+
+* Simple memory mapped devices such as a text display or controller input.
+* A rough draft of the irata-c compiler.
+* A debugging interface.

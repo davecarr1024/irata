@@ -6,6 +6,14 @@ tya
 cmp #$12
 jne fail
 
+ldy #$34
+sty $00
+ldy #$00
+ldy $00
+tya
+cmp #$34
+jne fail
+
 hlt
 
 fail: crs

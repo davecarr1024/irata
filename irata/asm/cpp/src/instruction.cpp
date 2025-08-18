@@ -13,8 +13,8 @@ std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode) {
   case AddressingMode::NONE:
     os << "NONE";
     break;
-  default:
-    os << "UNKNOWN";
+  case AddressingMode::ZERO_PAGE:
+    os << "ZERO_PAGE";
     break;
   }
   return os;

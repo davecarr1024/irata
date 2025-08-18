@@ -88,6 +88,13 @@ Instruction::read_memory(const hdl::ComponentWithWordBusDecl &address_source,
 }
 
 Instruction *
+Instruction::write_memory(const hdl::ComponentWithWordBusDecl &address_source,
+                          const hdl::ComponentWithByteBusDecl &data_source) {
+  return copy(address_source, hdl::irata().memory().address())
+      ->copy(data_source, hdl::irata().memory());
+}
+
+Instruction *
 Instruction::read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest) {
   return read_memory(hdl::irata().cpu().pc(), data_dest)
       ->create_step()
@@ -95,12 +102,39 @@ Instruction::read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest) {
       ->instruction();
 }
 
+Instruction *
+Instruction::write_memory_at_pc(const hdl::ComponentWithByteBusDecl &source) {
+  return write_memory(hdl::irata().cpu().pc(), source)
+      ->create_step()
+      ->with_control(hdl::irata().cpu().pc().increment())
+      ->instruction();
+}
+
+namespace {
+
+// Read the next two bytes of the program into MAR.
+Instruction *read_address_at_pc(Instruction *instruction) {
+  return instruction->read_memory_at_pc(hdl::irata().cpu().buffer().high())
+      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address());
+}
+
+} // namespace
+
 Instruction *Instruction::indirect_read_memory_at_pc(
     const hdl::ComponentWithByteBusDecl &data_dest) {
-  return read_memory_at_pc(hdl::irata().cpu().buffer().high())
-      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
-      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address())
-      ->copy(hdl::irata().memory(), data_dest);
+  auto *instruction = this;
+  instruction = read_address_at_pc(instruction);
+  instruction = instruction->copy(hdl::irata().memory(), data_dest);
+  return instruction;
+}
+
+Instruction *Instruction::indirect_write_memory_at_pc(
+    const hdl::ComponentWithByteBusDecl &data_source) {
+  auto *instruction = this;
+  instruction = read_address_at_pc(instruction);
+  instruction = instruction->copy(data_source, hdl::irata().memory());
+  return instruction;
 }
 
 int Instruction::stage() const { return stage_; }
@@ -201,6 +235,79 @@ Instruction *Instruction::pop(const hdl::ComponentWithByteBusDecl &dest) {
   instruction = set_mar_high_to_stack_page(instruction);
   instruction = copy_sp_to_mar_low(instruction);
   instruction = copy(hdl::irata().memory(), dest);
+  return instruction;
+}
+
+namespace {
+
+Instruction *set_mar_high_to_zero_page(Instruction *instruction) {
+  return instruction->create_step()
+      ->with_control(hdl::irata().memory().address().high().reset())
+      ->instruction();
+}
+
+Instruction *
+set_mar_to_zero_page(Instruction *instruction,
+                     const hdl::ComponentWithByteBusDecl &address_source) {
+  instruction =
+      instruction->copy(address_source, hdl::irata().memory().address().low());
+  instruction = set_mar_high_to_zero_page(instruction);
+  return instruction;
+}
+
+} // namespace
+
+Instruction *Instruction::read_memory_zero_page(
+    const hdl::ComponentWithByteBusDecl &address_source,
+    const hdl::ComponentWithByteBusDecl &data_dest) {
+  Instruction *instruction = this;
+  instruction = set_mar_to_zero_page(instruction, address_source);
+  instruction = copy(hdl::irata().memory(), data_dest);
+  return instruction;
+}
+
+Instruction *Instruction::write_memory_zero_page(
+    const hdl::ComponentWithByteBusDecl &address_source,
+    const hdl::ComponentWithByteBusDecl &data_source) {
+  Instruction *instruction = this;
+  instruction = set_mar_to_zero_page(instruction, address_source);
+  instruction = copy(data_source, hdl::irata().memory());
+  return instruction;
+}
+
+namespace {
+
+Instruction *read_zero_page_address_at_pc(Instruction *instruction) {
+  // Read next byte of program to get zero page address.
+  // Note that this is reading from memory into the MAR, which is ok because the
+  // memory write to the bus happens during the write phase when the MAR hasn't
+  // been changed, and the read from the bus happens during the read phase.
+  instruction =
+      instruction->read_memory_at_pc(hdl::irata().memory().address().low());
+  // Set MAR high to zero page.
+  instruction = set_mar_high_to_zero_page(instruction);
+  return instruction;
+}
+
+} // namespace
+
+Instruction *Instruction::indirect_read_memory_zero_page_at_pc(
+    const hdl::ComponentWithByteBusDecl &data_dest) {
+  Instruction *instruction = this;
+  // Set MAR to zero page address based on the next byte of the program.
+  instruction = read_zero_page_address_at_pc(instruction);
+  // Read from memory.
+  instruction = instruction->copy(hdl::irata().memory(), data_dest);
+  return instruction;
+}
+
+Instruction *Instruction::indirect_write_memory_zero_page_at_pc(
+    const hdl::ComponentWithByteBusDecl &data_source) {
+  Instruction *instruction = this;
+  // Set MAR to zero page address based on the next byte of the program.
+  instruction = read_zero_page_address_at_pc(instruction);
+  // Write to memory.
+  instruction = instruction->copy(data_source, hdl::irata().memory());
   return instruction;
 }
 

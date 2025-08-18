@@ -8,6 +8,13 @@ eor data
 cmp #$44
 jne fail
 
+lda #$AB
+sta $00
+lda #$BC
+eor $00
+cmp #$17
+jne fail
+
 hlt
 
 fail: crs

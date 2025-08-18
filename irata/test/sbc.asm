@@ -16,6 +16,14 @@ sbc data
 cmp #$41
 jne fail
 
+lda #$53
+sta $00
+lda #$64
+sec
+sbc $00
+cmp #$11
+jne fail
+
 hlt
 
 fail: crs

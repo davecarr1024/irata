@@ -16,6 +16,14 @@ adc data
 cmp #$68
 jne fail
 
+lda #$21
+sta $00
+lda #$43
+clc
+adc $00
+cmp #$64
+jne fail
+
 hlt
 
 fail: crs
