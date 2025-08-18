@@ -95,17 +95,30 @@ TEST_F(CounterTest, Reset) {
   EXPECT_FALSE(counter.reset());
 }
 
-TEST_F(CounterTest, ResetOverridesIncrement) {
+TEST_F(CounterTest, ResetAndIncrement) {
   counter.set_reset(true);
   counter.set_increment(true);
-  counter.set_value(Byte::from_unsigned(1));
-  EXPECT_EQ(counter.value(), Byte::from_unsigned(1));
+  counter.set_value(2);
+  EXPECT_EQ(counter.value(), 2);
   EXPECT_TRUE(counter.reset());
   EXPECT_TRUE(counter.increment());
   counter.tick();
-  EXPECT_EQ(counter.value(), Byte::from_unsigned(0));
+  EXPECT_EQ(counter.value(), 1);
   EXPECT_FALSE(counter.reset());
   EXPECT_FALSE(counter.increment());
+}
+
+TEST_F(CounterTest, ResetAndDecrement) {
+  counter.set_reset(true);
+  counter.set_decrement(true);
+  counter.set_value(2);
+  EXPECT_EQ(counter.value(), 2);
+  EXPECT_TRUE(counter.reset());
+  EXPECT_TRUE(counter.decrement());
+  counter.tick();
+  EXPECT_EQ(counter.value(), 0xFF);
+  EXPECT_FALSE(counter.reset());
+  EXPECT_FALSE(counter.decrement());
 }
 
 } // namespace irata::sim::components

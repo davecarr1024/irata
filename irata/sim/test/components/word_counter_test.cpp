@@ -71,18 +71,32 @@ TEST(WordCounterTest, DecrementUnderflow) {
   EXPECT_EQ(counter.value(), 0xFFFF);
 }
 
-TEST(WordCounterTest, ResetOverridesIncrement) {
+TEST(WordCounterTest, ResetAndIncrement) {
   WordCounter counter("counter");
-  counter.set_value(Word(1));
-  EXPECT_EQ(counter.value(), Word(1));
+  counter.set_value(2);
   counter.set_reset(true);
-  EXPECT_TRUE(counter.reset());
   counter.set_increment(true);
+  EXPECT_TRUE(counter.reset());
   EXPECT_TRUE(counter.increment());
+  EXPECT_EQ(counter.value(), 2);
   counter.tick();
-  EXPECT_EQ(counter.value(), Word(0));
+  EXPECT_EQ(counter.value(), 1);
   EXPECT_FALSE(counter.reset());
   EXPECT_FALSE(counter.increment());
+}
+
+TEST(WordCounterTest, ResetAndDecrement) {
+  WordCounter counter("counter");
+  counter.set_value(2);
+  counter.set_reset(true);
+  counter.set_decrement(true);
+  EXPECT_TRUE(counter.reset());
+  EXPECT_TRUE(counter.decrement());
+  EXPECT_EQ(counter.value(), 2);
+  counter.tick();
+  EXPECT_EQ(counter.value(), 0xFFFF);
+  EXPECT_FALSE(counter.reset());
+  EXPECT_FALSE(counter.decrement());
 }
 
 } // namespace irata::sim::components

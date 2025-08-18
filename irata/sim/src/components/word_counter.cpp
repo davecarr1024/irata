@@ -36,10 +36,12 @@ void WordCounter::tick_process(Logger &logger) {
   if (reset()) {
     logger << "Resetting to 0";
     set_value(Word(0));
-  } else if (increment()) {
+  }
+  if (increment()) {
     logger << "Incrementing by 1";
     set_value(Word(value().value() + 1));
-  } else if (decrement()) {
+  }
+  if (decrement()) {
     logger << "Decrementing by 1";
     set_value(Word(value().value() - 1));
   }
