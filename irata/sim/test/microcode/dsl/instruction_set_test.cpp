@@ -63,6 +63,15 @@ TEST_F(MicrocodeDslInstructionSetTest, CreateInstructionByName) {
                         InstructionHasInstructionSet(&instruction_set)))));
 }
 
+TEST_F(MicrocodeDslInstructionSetTest, ContainsInstruction) {
+  InstructionSet instruction_set;
+  const auto &descriptor = asm_::InstructionSet::irata().get_instruction(
+      "lda", asm_::AddressingMode::IMMEDIATE);
+  EXPECT_FALSE(instruction_set.contains_instruction(descriptor));
+  instruction_set.create_instruction(descriptor);
+  EXPECT_TRUE(instruction_set.contains_instruction(descriptor));
+}
+
 TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByDescriptor) {
   InstructionSet instruction_set;
   const asm_::Instruction &instruction_descriptor =

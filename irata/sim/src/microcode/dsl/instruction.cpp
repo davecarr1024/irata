@@ -36,6 +36,10 @@ Step *Instruction::create_step() {
   return steps_.emplace_back(std::make_unique<Step>(this, stage_)).get();
 }
 
+Instruction *Instruction::with_control(const hdl::ControlDecl &control) {
+  return create_step()->with_control(control)->instruction();
+}
+
 const std::vector<std::unique_ptr<Step>> &Instruction::steps() const {
   return steps_;
 }

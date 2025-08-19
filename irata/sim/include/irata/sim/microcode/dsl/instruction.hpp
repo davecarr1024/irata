@@ -43,6 +43,9 @@ public:
 
   // Creates a new instruction with the given instruction descriptor. The new
   // instruction is owned by the same instruction set as this instruction.
+  // Note that this creates a step in isolation from other steps, which requires
+  // consideration of the merging behavior of the compiler to make sure too many
+  // steps aren't created.
   Instruction *create_instruction(const asm_::Instruction &instruction);
 
   // Creates a new instruction with the given instruction name and addressing
@@ -53,6 +56,10 @@ public:
 
   // Creates a new step. The new step is owned by this instruction.
   Step *create_step();
+
+  // Creates a new step with the given control line. The new step is owned by
+  // this instruction.
+  Instruction *with_control(const hdl::ControlDecl &control);
 
   // Returns the steps in the instruction.
   const std::vector<std::unique_ptr<Step>> &steps() const;

@@ -25,6 +25,10 @@ public:
   // Returns the instruction set for the Irata CPU.
   static const InstructionSet &irata();
 
+  // Returns true if the instruction set contains an instruction
+  // with the given instruction descriptor.
+  bool contains_instruction(const asm_::Instruction &descriptor) const;
+
   // Adds an instruction to the instruction set with the given instruction
   // descriptor. The new instruction is owned by this instruction set.
   Instruction *create_instruction(const asm_::Instruction &descriptor);
