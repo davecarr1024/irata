@@ -10,7 +10,8 @@ from loader import load_and_validate
 
 
 def format_addressing_mode(addressing_mode) -> str:
-    return f'AddressingMode::{addressing_mode.upper()}'
+    tokens = addressing_mode.split('_')
+    return f"AddressingMode::{''.join(token.capitalize() for token in tokens)}"
 
 
 def format_instruction(instruction) -> str:

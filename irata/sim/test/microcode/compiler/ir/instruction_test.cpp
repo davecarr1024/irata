@@ -19,7 +19,7 @@ class MicrocodeIrInstructionTest : public ::testing::Test {
 protected:
   const dsl::Instruction &dsl_instruction_ =
       dsl::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
 
   template <typename Matcher> auto StepHasControls(Matcher matcher) {
     return Property("controls", &Step::controls, matcher);
@@ -56,7 +56,7 @@ TEST_F(MicrocodeIrInstructionTest, ConstructFromDsl) {
 TEST_F(MicrocodeIrInstructionTest, ConstructDirectly) {
   const asm_::Instruction &descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   const std::vector<Step> steps = {Step(
       {
           &hdl::irata().cpu().pc().increment(),

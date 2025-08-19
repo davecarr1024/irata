@@ -18,17 +18,17 @@ protected:
   }
 
   const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
-      "HLT", asm_::AddressingMode::NONE);
+      "HLT", asm_::AddressingMode::None);
   const asm_::Instruction &crs = asm_::InstructionSet::irata().get_instruction(
-      "CRS", asm_::AddressingMode::NONE);
+      "CRS", asm_::AddressingMode::None);
   const asm_::Instruction &lda = asm_::InstructionSet::irata().get_instruction(
-      "LDA", asm_::AddressingMode::IMMEDIATE);
+      "LDA", asm_::AddressingMode::Immediate);
   const asm_::Instruction &cmp = asm_::InstructionSet::irata().get_instruction(
-      "CMP", asm_::AddressingMode::IMMEDIATE);
+      "CMP", asm_::AddressingMode::Immediate);
   const asm_::Instruction &sec = asm_::InstructionSet::irata().get_instruction(
-      "SEC", asm_::AddressingMode::NONE);
+      "SEC", asm_::AddressingMode::None);
   const asm_::Instruction &clc = asm_::InstructionSet::irata().get_instruction(
-      "CLC", asm_::AddressingMode::NONE);
+      "CLC", asm_::AddressingMode::None);
 };
 
 } // namespace

@@ -11,10 +11,10 @@ namespace irata::asm_ {
 using Byte = common::bytes::Byte;
 
 enum class AddressingMode {
-  NONE,
-  IMMEDIATE,
-  ABSOLUTE,
-  ZERO_PAGE,
+  None,
+  Immediate,
+  Absolute,
+  ZeroPage,
 };
 
 std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode);

@@ -20,7 +20,7 @@ protected:
   const hdl::StatusDecl status2 = hdl::StatusDecl("status2", hdl::irata());
   const microcode::table::Entry entry = {
       .instruction = asm_::Instruction("instruction", Byte(0x0F),
-                                       asm_::AddressingMode::IMMEDIATE, ""),
+                                       asm_::AddressingMode::Immediate, ""),
       .step_index = Byte(0x05),
       .statuses = {{&status1, false}, {&status2, true}},
   };

@@ -18,7 +18,7 @@ protected:
   const hdl::StatusDecl status1 = hdl::StatusDecl("status1", hdl::irata());
   const hdl::StatusDecl status2 = hdl::StatusDecl("status2", hdl::irata());
   const asm_::Instruction instruction = asm_::Instruction(
-      "instruction", Byte(0x01), asm_::AddressingMode::IMMEDIATE, "");
+      "instruction", Byte(0x01), asm_::AddressingMode::Immediate, "");
   const microcode::table::Table table = {
       .entries = {
           {

@@ -17,7 +17,7 @@ class FetchStageValidatorTest : public ::testing::Test {
 protected:
   const asm_::Instruction &descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   const hdl::ProcessControlDecl control1 = {"control1", hdl::irata()};
   const hdl::ProcessControlDecl control2 = {"control2", hdl::irata()};
   const hdl::ProcessControlDecl control3 = {"control3", hdl::irata()};

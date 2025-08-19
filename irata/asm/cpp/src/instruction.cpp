@@ -4,20 +4,15 @@ namespace irata::asm_ {
 
 std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode) {
   switch (addressing_mode) {
-  case AddressingMode::IMMEDIATE:
-    os << "IMMEDIATE";
-    break;
-  case AddressingMode::ABSOLUTE:
-    os << "ABSOLUTE";
-    break;
-  case AddressingMode::NONE:
-    os << "NONE";
-    break;
-  case AddressingMode::ZERO_PAGE:
-    os << "ZERO_PAGE";
-    break;
+  case AddressingMode::Immediate:
+    return os << "Immedate";
+  case AddressingMode::Absolute:
+    return os << "Absolute";
+  case AddressingMode::None:
+    return os << "None";
+  case AddressingMode::ZeroPage:
+    return os << "ZeroPage";
   }
-  return os;
 }
 
 Instruction::Instruction(std::string_view name, Byte opcode,

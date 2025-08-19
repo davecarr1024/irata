@@ -20,11 +20,11 @@ protected:
   const hdl::ProcessControlDecl control2_decl =
       hdl::ProcessControlDecl("control2", hdl::irata());
   const asm_::Instruction instruction1 = asm_::Instruction(
-      "instruction", Byte(0x10), asm_::AddressingMode::IMMEDIATE,
+      "instruction", Byte(0x10), asm_::AddressingMode::Immediate,
       "instruction1 is a sequential instruction with two steps that set "
       "control1 and then control2.");
   const asm_::Instruction instruction2 = asm_::Instruction(
-      "instruction", Byte(0x20), asm_::AddressingMode::IMMEDIATE,
+      "instruction", Byte(0x20), asm_::AddressingMode::Immediate,
       "instruction2 is a branching instruction with one step that sets "
       "control1 if status1 is true and control2 if status1 is false.");
   const microcode::table::Table table = {{

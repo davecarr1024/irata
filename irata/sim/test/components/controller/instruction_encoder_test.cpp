@@ -25,7 +25,7 @@ protected:
   const hdl::ProcessControlDecl control2 =
       hdl::ProcessControlDecl("control2", hdl::irata());
   const asm_::Instruction instruction = asm_::Instruction(
-      "instruction", Byte(0x0F), asm_::AddressingMode::IMMEDIATE, "");
+      "instruction", Byte(0x0F), asm_::AddressingMode::Immediate, "");
   const microcode::table::Entry entry = {
       .instruction = instruction,
       .step_index = Byte(0x05),
@@ -52,7 +52,7 @@ TEST_F(InstructionEncoderTest, TooManyAddressBits) {
   // This is too many bits to encode in a 16-bit address.
   const microcode::table::Entry entry = {
       .instruction = asm_::Instruction("instruction", Byte(0xFF),
-                                       asm_::AddressingMode::IMMEDIATE, ""),
+                                       asm_::AddressingMode::Immediate, ""),
       .step_index = Byte(0xFF),
       .statuses = {{&status1, false}},
   };

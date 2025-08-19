@@ -14,12 +14,12 @@ protected:
 
   const asm_::Instruction &lda_immediate =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   const asm_::Instruction &lda_absolute =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::ABSOLUTE);
+          "lda", asm_::AddressingMode::Absolute);
   const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
-      "hlt", asm_::AddressingMode::NONE);
+      "hlt", asm_::AddressingMode::None);
 };
 
 } // namespace

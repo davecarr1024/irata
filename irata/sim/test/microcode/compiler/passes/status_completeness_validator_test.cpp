@@ -27,7 +27,7 @@ protected:
   dsl::InstructionSet instruction_set_;
   const asm_::Instruction &instruction_descriptor_ =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
 
   StatusCompletenessValidator validator_;
   const hdl::StatusDecl status = {"status", hdl::irata()};

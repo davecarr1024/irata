@@ -23,7 +23,7 @@ protected:
       hdl::irata().cpu().pc().increment();
   const asm_::Instruction &instruction_descriptor_ =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
 
   ir::InstructionSet transform(const ir::InstructionSet &instruction_set) {
     return transformer_.run(instruction_set);

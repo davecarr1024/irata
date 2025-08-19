@@ -51,7 +51,7 @@ TEST(MicrocodeCompilerTest, NullPasses) {
 TEST(MicrocodeCompilerTest, LdaImm) {
   const auto table = Compiler::compile_irata();
   const auto &descriptor = asm_::InstructionSet::irata().get_instruction(
-      "lda", asm_::AddressingMode::IMMEDIATE);
+      "lda", asm_::AddressingMode::Immediate);
   auto entries = table_entries_for_instruction(descriptor);
   const auto &increment_step_counter =
       hdl::irata().cpu().controller().step_counter().increment();
@@ -71,7 +71,7 @@ TEST(MicrocodeCompilerTest, LdaImm) {
 TEST(MicrocodeCompilerTest, CmpHasOpcode1) {
   const auto table = Compiler::compile_irata();
   const auto &descriptor = asm_::InstructionSet::irata().get_instruction(
-      "cmp", asm_::AddressingMode::IMMEDIATE);
+      "cmp", asm_::AddressingMode::Immediate);
   EXPECT_THAT(table.entries,
               Contains(AllOf(EntryHasInstruction(descriptor),
                              EntryHasControls(Contains(

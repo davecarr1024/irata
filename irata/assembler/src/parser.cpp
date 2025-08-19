@@ -65,22 +65,22 @@ bool Parser::Program::Instruction::Arg::operator!=(const Arg &other) const {
 }
 
 Parser::Program::Instruction::None::None()
-    : Arg(Type::None, asm_::AddressingMode::NONE) {}
+    : Arg(Type::None, asm_::AddressingMode::None) {}
 
 Parser::Program::Instruction::Immediate::Immediate(common::bytes::Byte value)
     : ArgWithValue<common::bytes::Byte>(
-          Type::Immediate, asm_::AddressingMode::IMMEDIATE, value) {}
+          Type::Immediate, asm_::AddressingMode::Immediate, value) {}
 
 Parser::Program::Instruction::AbsoluteLiteral::AbsoluteLiteral(
     common::bytes::Word value)
     : ArgWithValue<common::bytes::Word>(Type::AbsoluteLiteral,
-                                        asm_::AddressingMode::ABSOLUTE, value) {
+                                        asm_::AddressingMode::Absolute, value) {
 }
 
 Parser::Program::Instruction::AbsoluteLabel::AbsoluteLabel(
     std::string_view value)
     : ArgWithValue<std::string>(Type::AbsoluteLabel,
-                                asm_::AddressingMode::ABSOLUTE,
+                                asm_::AddressingMode::Absolute,
                                 std::string(value)) {}
 
 Parser::Program::Instruction::Instruction(std::string_view instruction,

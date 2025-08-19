@@ -16,7 +16,7 @@ class MicrocodeIrStepTest : public ::testing::Test {
 protected:
   const dsl::Step &dsl_step_ =
       *dsl::InstructionSet::irata()
-           .get_instruction("lda", asm_::AddressingMode::IMMEDIATE)
+           .get_instruction("lda", asm_::AddressingMode::Immediate)
            .steps()
            .front();
 };

@@ -29,7 +29,7 @@ protected:
   BusValidator validator_;
   dsl::InstructionSet instruction_set_;
   dsl::Instruction *instruction_ = instruction_set_.create_instruction(
-      "lda", asm_::AddressingMode::IMMEDIATE);
+      "lda", asm_::AddressingMode::Immediate);
   dsl::Step *step_ = instruction_->create_step();
 
   const hdl::WriteControlDecl &write_control_1_ =

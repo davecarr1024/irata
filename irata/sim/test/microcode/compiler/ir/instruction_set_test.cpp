@@ -41,7 +41,7 @@ TEST(MicrocodeIrInstructionSetTest, ConstructFromDsl) {
 TEST(MicrocodeIrInstructionSetTest, ConstructDirectly) {
   const asm_::Instruction &descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   InstructionSet instruction_set({Instruction(descriptor, {}, {})});
   EXPECT_THAT(instruction_set.instructions(),
               UnorderedElementsAre(InstructionHasDescriptor(descriptor)));

@@ -44,7 +44,7 @@ TEST_F(MicrocodeDslInstructionSetTest, CreateInstruction) {
   InstructionSet instruction_set;
   const asm_::Instruction &instruction_descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   instruction_set.create_instruction(instruction_descriptor);
   EXPECT_THAT(instruction_set.instructions(),
               UnorderedElementsAre(Pointee(
@@ -54,19 +54,19 @@ TEST_F(MicrocodeDslInstructionSetTest, CreateInstruction) {
 
 TEST_F(MicrocodeDslInstructionSetTest, CreateInstructionByName) {
   InstructionSet instruction_set;
-  instruction_set.create_instruction("lda", asm_::AddressingMode::IMMEDIATE);
+  instruction_set.create_instruction("lda", asm_::AddressingMode::Immediate);
   EXPECT_THAT(instruction_set.instructions(),
               UnorderedElementsAre(Pointee(
                   AllOf(InstructionHasDescriptor(
                             asm_::InstructionSet::irata().get_instruction(
-                                "lda", asm_::AddressingMode::IMMEDIATE)),
+                                "lda", asm_::AddressingMode::Immediate)),
                         InstructionHasInstructionSet(&instruction_set)))));
 }
 
 TEST_F(MicrocodeDslInstructionSetTest, ContainsInstruction) {
   InstructionSet instruction_set;
   const auto &descriptor = asm_::InstructionSet::irata().get_instruction(
-      "lda", asm_::AddressingMode::IMMEDIATE);
+      "lda", asm_::AddressingMode::Immediate);
   EXPECT_FALSE(instruction_set.contains_instruction(descriptor));
   instruction_set.create_instruction(descriptor);
   EXPECT_TRUE(instruction_set.contains_instruction(descriptor));
@@ -76,7 +76,7 @@ TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByDescriptor) {
   InstructionSet instruction_set;
   const asm_::Instruction &instruction_descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   auto *instruction =
       instruction_set.create_instruction(instruction_descriptor);
   EXPECT_EQ(&instruction_set.get_instruction(instruction_descriptor),
@@ -87,7 +87,7 @@ TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByDescriptorNotFound) {
   InstructionSet instruction_set;
   const asm_::Instruction &instruction_descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   EXPECT_THROW(instruction_set.get_instruction(instruction_descriptor),
                std::invalid_argument);
 }
@@ -96,7 +96,7 @@ TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByDescriptorWithStatus) {
   InstructionSet instruction_set;
   const asm_::Instruction &instruction_descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   auto *instruction1 =
       instruction_set.create_instruction(instruction_descriptor)
           ->with_status(status, true);
@@ -116,7 +116,7 @@ TEST_F(MicrocodeDslInstructionSetTest,
   InstructionSet instruction_set;
   const asm_::Instruction &instruction_descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   instruction_set.create_instruction(instruction_descriptor)
       ->with_status(status, true);
   EXPECT_THROW(instruction_set.get_instruction(instruction_descriptor,
@@ -127,19 +127,19 @@ TEST_F(MicrocodeDslInstructionSetTest,
 TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByName) {
   InstructionSet instruction_set;
   auto *instruction = instruction_set.create_instruction(
-      "lda", asm_::AddressingMode::IMMEDIATE);
+      "lda", asm_::AddressingMode::Immediate);
   EXPECT_EQ(
-      &instruction_set.get_instruction("lda", asm_::AddressingMode::IMMEDIATE),
+      &instruction_set.get_instruction("lda", asm_::AddressingMode::Immediate),
       instruction);
   EXPECT_EQ(
-      &instruction_set.get_instruction("LDA", asm_::AddressingMode::IMMEDIATE),
+      &instruction_set.get_instruction("LDA", asm_::AddressingMode::Immediate),
       instruction);
 }
 
 TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByNameNotFound) {
   InstructionSet instruction_set;
   EXPECT_THROW(
-      instruction_set.get_instruction("lda", asm_::AddressingMode::IMMEDIATE),
+      instruction_set.get_instruction("lda", asm_::AddressingMode::Immediate),
       std::invalid_argument);
 }
 
@@ -147,33 +147,33 @@ TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByNameWithStatus) {
   InstructionSet instruction_set;
   auto *instruction1 =
       instruction_set
-          .create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
+          .create_instruction("lda", asm_::AddressingMode::Immediate)
           ->with_status(status, true);
   auto *instruction2 =
       instruction_set
-          .create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
+          .create_instruction("lda", asm_::AddressingMode::Immediate)
           ->with_status(status, false);
   EXPECT_EQ(&instruction_set.get_instruction(
-                "lda", asm_::AddressingMode::IMMEDIATE, {{&status, true}}),
+                "lda", asm_::AddressingMode::Immediate, {{&status, true}}),
             instruction1);
   EXPECT_EQ(&instruction_set.get_instruction(
-                "lda", asm_::AddressingMode::IMMEDIATE, {{&status, false}}),
+                "lda", asm_::AddressingMode::Immediate, {{&status, false}}),
             instruction2);
 }
 
 TEST_F(MicrocodeDslInstructionSetTest, GetInstructionByNameWithStatusNotFound) {
   InstructionSet instruction_set;
-  instruction_set.create_instruction("lda", asm_::AddressingMode::IMMEDIATE)
+  instruction_set.create_instruction("lda", asm_::AddressingMode::Immediate)
       ->with_status(status, true);
   EXPECT_THROW(instruction_set.get_instruction(
-                   "lda", asm_::AddressingMode::IMMEDIATE, {{&status, false}}),
+                   "lda", asm_::AddressingMode::Immediate, {{&status, false}}),
                std::invalid_argument);
 }
 
 TEST_F(MicrocodeDslInstructionSetTest, Irata) {
   const auto &instruction_set = InstructionSet::irata();
   EXPECT_NO_THROW(
-      instruction_set.get_instruction("lda", asm_::AddressingMode::IMMEDIATE));
+      instruction_set.get_instruction("lda", asm_::AddressingMode::Immediate));
 }
 
 TEST_F(MicrocodeDslInstructionSetTest, Irata_CmpOpcode) {
@@ -182,7 +182,7 @@ TEST_F(MicrocodeDslInstructionSetTest, Irata_CmpOpcode) {
       instruction_set.instructions(),
       Contains(Pointee(AllOf(InstructionHasDescriptor(
                                  asm_::InstructionSet::irata().get_instruction(
-                                     "cmp", asm_::AddressingMode::IMMEDIATE)),
+                                     "cmp", asm_::AddressingMode::Immediate)),
                              Property("steps", &Instruction::steps,
                                       Contains(Pointee(Property(
                                           "controls", &Step::controls,

@@ -32,7 +32,7 @@ protected:
   StepIndexValidator validator;
   const asm_::Instruction &instruction_descriptor =
       asm_::InstructionSet::irata().get_instruction(
-          "lda", asm_::AddressingMode::IMMEDIATE);
+          "lda", asm_::AddressingMode::Immediate);
   const hdl::ProcessControlDecl &increment_step_index =
       hdl::irata().cpu().controller().step_counter().increment();
   const hdl::ProcessControlDecl &reset_step_index =

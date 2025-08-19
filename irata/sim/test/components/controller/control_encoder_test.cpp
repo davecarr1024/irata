@@ -19,7 +19,7 @@ protected:
   const hdl::ProcessControlDecl control2 =
       hdl::ProcessControlDecl("control2", hdl::irata());
   const asm_::Instruction instruction = asm_::Instruction(
-      "instruction", Byte(0x01), asm_::AddressingMode::IMMEDIATE, "");
+      "instruction", Byte(0x01), asm_::AddressingMode::Immediate, "");
   const microcode::table::Table table = {.entries = {{
                                              .instruction = instruction,
                                              .step_index = Byte(0x01),

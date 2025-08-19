@@ -14,9 +14,9 @@ TEST(InstructionSetTest, Empty) {
 
 TEST(InstructionSetTest, GetInstructionByNameAndAddressingMode) {
   const auto &instruction =
-      InstructionSet::irata().get_instruction("LDA", AddressingMode::IMMEDIATE);
+      InstructionSet::irata().get_instruction("LDA", AddressingMode::Immediate);
   EXPECT_EQ(instruction.name(), "LDA");
-  EXPECT_EQ(instruction.addressing_mode(), AddressingMode::IMMEDIATE);
+  EXPECT_EQ(instruction.addressing_mode(), AddressingMode::Immediate);
   EXPECT_EQ(instruction.opcode(), Byte(0xA9));
   EXPECT_EQ(instruction.description(), "Load accumulator from constant");
 }
@@ -24,14 +24,14 @@ TEST(InstructionSetTest, GetInstructionByNameAndAddressingMode) {
 TEST(InstructionSetTest, GetInstructionByOpcode) {
   const auto &instruction = InstructionSet::irata().get_instruction(Byte(0xA9));
   EXPECT_EQ(instruction.name(), "LDA");
-  EXPECT_EQ(instruction.addressing_mode(), AddressingMode::IMMEDIATE);
+  EXPECT_EQ(instruction.addressing_mode(), AddressingMode::Immediate);
   EXPECT_EQ(instruction.opcode(), Byte(0xA9));
   EXPECT_EQ(instruction.description(), "Load accumulator from constant");
 }
 
 TEST(InstructionSetTest, GetInstructionByNameAndAddressingModeNotFound) {
   EXPECT_THROW(InstructionSet::irata().get_instruction(
-                   "unknown_instruction", AddressingMode::IMMEDIATE),
+                   "unknown_instruction", AddressingMode::Immediate),
                std::invalid_argument);
 }
 
@@ -42,11 +42,11 @@ TEST(InstructionSetTest, GetInstructionByOpcodeNotFound) {
 
 TEST(InstructionSetTest, GetInstructionByNameAndAddressingModeCaseInsensitive) {
   EXPECT_EQ(InstructionSet::irata()
-                .get_instruction("lda", AddressingMode::IMMEDIATE)
+                .get_instruction("lda", AddressingMode::Immediate)
                 .name(),
             "LDA");
   EXPECT_EQ(InstructionSet::irata()
-                .get_instruction("LDA", AddressingMode::IMMEDIATE)
+                .get_instruction("LDA", AddressingMode::Immediate)
                 .name(),
             "LDA");
 }

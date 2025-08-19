@@ -17,13 +17,13 @@ protected:
   ByteEncoder encoder;
 
   const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
-      "HLT", asm_::AddressingMode::NONE);
+      "HLT", asm_::AddressingMode::None);
   const asm_::Instruction &lda_immediate =
       asm_::InstructionSet::irata().get_instruction(
-          "LDA", asm_::AddressingMode::IMMEDIATE);
+          "LDA", asm_::AddressingMode::Immediate);
   const asm_::Instruction &lda_absolute =
       asm_::InstructionSet::irata().get_instruction(
-          "LDA", asm_::AddressingMode::ABSOLUTE);
+          "LDA", asm_::AddressingMode::Absolute);
 };
 
 } // namespace

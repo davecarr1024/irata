@@ -18,11 +18,11 @@ namespace {
 class InstructionMemoryTest : public ::testing::Test {
 protected:
   const asm_::Instruction instruction1 = asm_::Instruction(
-      "instruction1", Byte(0x10), asm_::AddressingMode::IMMEDIATE,
+      "instruction1", Byte(0x10), asm_::AddressingMode::Immediate,
       "instruction1 is a sequence instruction with two steps: the first step "
       "asserts control1 and the second step asserts control2.");
   const asm_::Instruction instruction2 = asm_::Instruction(
-      "instruction2", Byte(0x20), asm_::AddressingMode::IMMEDIATE,
+      "instruction2", Byte(0x20), asm_::AddressingMode::Immediate,
       "instruction2 is a branching instruction with two variants: the first "
       "variant is used when status1 is true and asserts control1, the second "
       "variant is used when status1 is false and asserts control2.");
@@ -118,7 +118,7 @@ TEST_F(InstructionMemoryTest, ReadByInstruction) {
 
 TEST_F(InstructionMemoryTest, CmpHasAluOpcode1) {
   const auto &cmp = asm_::InstructionSet::irata().get_instruction(
-      "cmp", asm_::AddressingMode::IMMEDIATE);
+      "cmp", asm_::AddressingMode::Immediate);
   const auto im =
       InstructionMemory(microcode::compiler::Compiler::compile_irata());
   std::cout << "checking instruction " << cmp << std::endl;
