@@ -47,6 +47,16 @@ public:
   Counter &low_register();
   const Counter &low_register() const;
 
+  bool increment() const;
+  void set_increment(bool increment);
+  Control &increment_control();
+  const Control &increment_control() const;
+
+  bool decrement() const;
+  void set_decrement(bool decrement);
+  Control &decrement_control();
+  const Control &decrement_control() const;
+
   Word value() const;
   void set_value(Word value);
 
@@ -67,6 +77,8 @@ private:
   Control reset_;
   Counter high_;
   Counter low_;
+  Control increment_;
+  Control decrement_;
 };
 
 } // namespace irata::sim::components::memory

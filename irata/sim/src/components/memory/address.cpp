@@ -9,7 +9,9 @@ Address::Address(Component &parent, WordBus &address_bus, ByteBus &data_bus)
       data_bus_(data_bus), read_("read", hdl::TickPhase::Read, this),
       write_("write", hdl::TickPhase::Write, this),
       reset_("reset", hdl::TickPhase::Process, this),
-      high_("high", &data_bus, this), low_("low", &data_bus, this) {}
+      high_("high", &data_bus, this), low_("low", &data_bus, this),
+      increment_("increment", hdl::TickPhase::Process, this),
+      decrement_("decrement", hdl::TickPhase::Process, this) {}
 
 hdl::ComponentType Address::type() const {
   return hdl::ComponentType::MemoryAddress;
@@ -46,6 +48,16 @@ void Address::set_low(Byte value) { low_.set_value(value); }
 Counter &Address::low_register() { return low_; }
 const Counter &Address::low_register() const { return low_; }
 
+bool Address::increment() const { return increment_.value(); }
+void Address::set_increment(bool value) { increment_.set_value(value); }
+Control &Address::increment_control() { return increment_; }
+const Control &Address::increment_control() const { return increment_; }
+
+bool Address::decrement() const { return decrement_.value(); }
+void Address::set_decrement(bool value) { decrement_.set_value(value); }
+Control &Address::decrement_control() { return decrement_; }
+const Control &Address::decrement_control() const { return decrement_; }
+
 Word Address::value() const { return Word::from_bytes(high(), low()); }
 
 void Address::set_value(Word value) {
@@ -79,6 +91,14 @@ void Address::tick_process(Logger &logger) {
   if (reset()) {
     set_value(0);
     logger << "Reset to 0";
+  }
+  if (increment()) {
+    set_value(value() + Word(0x0001));
+    logger << "Incremented to " << value();
+  }
+  if (decrement()) {
+    set_value(value() - Word(0x0001));
+    logger << "Decremented to " << value();
   }
 }
 

@@ -108,6 +108,11 @@ public:
   Instruction *
   indirect_read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest);
 
+  Instruction *read_word_at_pc(const hdl::ComponentWithByteBusDecl &high_dest,
+                               const hdl::ComponentWithByteBusDecl &low_dest);
+
+  Instruction *read_word_at_pc(const hdl::ComponentWithWordBusDecl &dest);
+
   // Read the value from memory at the address in the next two bytes of the
   // program, and write the value from the source register to that address.
   Instruction *

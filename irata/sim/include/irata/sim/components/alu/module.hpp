@@ -13,11 +13,12 @@ public:
     static Result for_result(bool carry_in, Byte lhs, Byte rhs,
                              unsigned int result);
 
-    Byte value;
-    bool carry = false;
-    bool zero = false;
-    bool negative = false;
-    bool overflow = false;
+    const Byte value;
+    const bool set_flags = true;
+    const bool carry = false;
+    const bool zero = false;
+    const bool negative = false;
+    const bool overflow = false;
 
     bool operator==(const Result &other) const;
     bool operator!=(const Result &other) const;

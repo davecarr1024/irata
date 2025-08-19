@@ -209,11 +209,13 @@ void ALU::tick_process(Logger &logger) {
     const auto lhs = this->lhs();
     const auto rhs = this->rhs();
     const auto result = module->apply(carry_in, lhs, rhs);
-    this->set_result(result.value);
-    this->set_carry_out(result.carry);
-    this->set_zero(result.zero);
-    this->set_negative(result.negative);
-    this->set_overflow(result.overflow);
+    if (result.set_flags) {
+      this->set_result(result.value);
+      this->set_carry_out(result.carry);
+      this->set_zero(result.zero);
+      this->set_negative(result.negative);
+      this->set_overflow(result.overflow);
+    }
     logger << "ALU operation: " << module->name() << "(" << lhs << ", " << rhs
            << ") = " << result;
   }

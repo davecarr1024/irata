@@ -101,26 +101,36 @@ Instruction::write_memory(const hdl::ComponentWithWordBusDecl &address_source,
 Instruction *
 Instruction::read_memory_at_pc(const hdl::ComponentWithByteBusDecl &data_dest) {
   return read_memory(hdl::irata().cpu().pc(), data_dest)
-      ->create_step()
-      ->with_control(hdl::irata().cpu().pc().increment())
-      ->instruction();
+      ->with_control(hdl::irata().cpu().pc().increment());
 }
 
 Instruction *
 Instruction::write_memory_at_pc(const hdl::ComponentWithByteBusDecl &source) {
   return write_memory(hdl::irata().cpu().pc(), source)
-      ->create_step()
-      ->with_control(hdl::irata().cpu().pc().increment())
-      ->instruction();
+      ->with_control(hdl::irata().cpu().pc().increment());
+}
+
+Instruction *
+Instruction::read_word_at_pc(const hdl::ComponentWithByteBusDecl &high_dest,
+                             const hdl::ComponentWithByteBusDecl &low_dest) {
+  return read_memory_at_pc(high_dest)
+      ->with_control(hdl::irata().memory().address().increment())
+      ->copy(hdl::irata().memory(), low_dest)
+      ->with_control(hdl::irata().cpu().pc().increment());
+}
+
+Instruction *
+Instruction::read_word_at_pc(const hdl::ComponentWithWordBusDecl &dest) {
+  return read_word_at_pc(hdl::irata().cpu().buffer().high(),
+                         hdl::irata().cpu().buffer().low())
+      ->copy(hdl::irata().cpu().buffer(), dest);
 }
 
 namespace {
 
 // Read the next two bytes of the program into MAR.
 Instruction *read_address_at_pc(Instruction *instruction) {
-  return instruction->read_memory_at_pc(hdl::irata().cpu().buffer().high())
-      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
-      ->copy(hdl::irata().cpu().buffer(), hdl::irata().memory().address());
+  return instruction->read_word_at_pc(hdl::irata().memory().address());
 }
 
 } // namespace

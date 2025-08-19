@@ -50,6 +50,12 @@ TEST_F(AddressTest, Value) {
   EXPECT_EQ(address.low().value(), 0x34);
 }
 
+TEST_F(AddressTest, Idle) {
+  address.set_value(0x1234);
+  address.tick();
+  EXPECT_EQ(address.value(), 0x1234);
+}
+
 TEST_F(AddressTest, Write) {
   address.set_value(0x1234);
   address.set_write(true);
@@ -89,6 +95,20 @@ TEST_F(AddressTest, StackPointerWrite) {
 
   // MAR = 0x0100 + SP.
   EXPECT_EQ(address.value(), 0x0123);
+}
+
+TEST_F(AddressTest, Increment) {
+  address.set_value(0x1234);
+  address.set_increment(true);
+  address.tick();
+  EXPECT_EQ(address.value(), 0x1235);
+}
+
+TEST_F(AddressTest, Decrement) {
+  address.set_value(0x1234);
+  address.set_decrement(true);
+  address.tick();
+  EXPECT_EQ(address.value(), 0x1233);
 }
 
 } // namespace irata::sim::components::memory

@@ -177,6 +177,7 @@ void MemoryAddressRegisterDecl::verify(
   ComponentWithParentDecl<ComponentType::MemoryAddress>::verify(component);
   RegisterWithResetDecl::verify(component);
   RegisterWithWordBusDecl::verify(component);
+  RegisterWithIncrementDecl::verify(component);
   verify_child(low_, component);
   verify_child(high_, component);
 }

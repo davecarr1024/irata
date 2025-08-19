@@ -177,7 +177,8 @@ private:
 class MemoryAddressRegisterDecl final
     : public ComponentWithParentDecl<ComponentType::MemoryAddress>,
       public RegisterWithResetDecl,
-      public RegisterWithWordBusDecl {
+      public RegisterWithWordBusDecl,
+      public RegisterWithIncrementDecl {
 public:
   MemoryAddressRegisterDecl(std::string_view name, const ComponentDecl &parent,
                             const WordBusDecl &address_bus,

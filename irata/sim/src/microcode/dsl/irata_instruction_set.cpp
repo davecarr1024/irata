@@ -161,9 +161,7 @@ InstructionSet *branch_op(InstructionSet *instruction_set,
       // Branch version. Read the address from the program and jump to it.
       ->create_instruction(name, asm_::AddressingMode::Absolute)
       ->with_status(status, branch_status_value)
-      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
-      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
-      ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc())
+      ->read_word_at_pc(hdl::irata().cpu().pc())
       ->instruction_set();
 }
 
@@ -226,9 +224,7 @@ std::unique_ptr<const InstructionSet> build_irata() {
       unary_alu_op(instruction_set, "ror", hdl::AluOpcode::RotateRight);
 
   instruction_set->create_instruction("jmp", asm_::AddressingMode::Absolute)
-      ->read_memory_at_pc(hdl::irata().cpu().buffer().high())
-      ->read_memory_at_pc(hdl::irata().cpu().buffer().low())
-      ->copy(hdl::irata().cpu().buffer(), hdl::irata().cpu().pc());
+      ->read_word_at_pc(hdl::irata().cpu().pc());
 
   instruction_set =
       branch_op(instruction_set, "jne",
