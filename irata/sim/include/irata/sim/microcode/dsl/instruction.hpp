@@ -146,11 +146,30 @@ public:
   Instruction *indirect_write_memory_zero_page_at_pc(
       const hdl::ComponentWithByteBusDecl &data_source);
 
+  // Read the next byte of the program to get the zero page address, then read
+  // the value from the zero page in memory at that address plus the value of
+  // the index register.
   Instruction *read_memory_zero_page_indexed(
       const hdl::ComponentWithByteBusDecl &index_source,
       const hdl::ComponentWithByteBusDecl &data_dest);
 
+  // Read the next byte of the program to get the zero page address, then write
+  // the value from the source register to the zero page in memory at that
+  // address plus the value of the index register.
   Instruction *write_memory_zero_page_indexed(
+      const hdl::ComponentWithByteBusDecl &index_source,
+      const hdl::ComponentWithByteBusDecl &data_source);
+
+  // Read an absolute address from the next two bytes of the program, then read
+  // the value from memory at that address plus the value of the index register.
+  Instruction *read_memory_absolute_indexed(
+      const hdl::ComponentWithByteBusDecl &index_source,
+      const hdl::ComponentWithByteBusDecl &data_dest);
+
+  // Read an absolute address from the next two bytes of the program, then
+  // write the value from the source register to memory at that address plus
+  // the value of the index register.
+  Instruction *write_memory_absolute_indexed(
       const hdl::ComponentWithByteBusDecl &index_source,
       const hdl::ComponentWithByteBusDecl &data_source);
 

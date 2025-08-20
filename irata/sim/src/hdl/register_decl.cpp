@@ -162,7 +162,8 @@ MemoryAddressRegisterDecl::MemoryAddressRegisterDecl(
       ComponentWithWordBusDecl(address_bus),
       ComponentWithParentDecl<ComponentType::MemoryAddress>(name, parent),
       RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
-      high_("high", *this, data_bus), address_add_carry_(address_add_carry) {}
+      high_("high", *this, data_bus), address_add_carry_(address_add_carry),
+      carry_increment_("carry_increment", *this) {}
 
 const IncrementableConnectedByteRegisterDecl &
 MemoryAddressRegisterDecl::low() const {
@@ -174,6 +175,14 @@ MemoryAddressRegisterDecl::high() const {
   return high_;
 }
 
+const StatusDecl &MemoryAddressRegisterDecl::address_add_carry() const {
+  return address_add_carry_;
+}
+
+const ProcessControlDecl &MemoryAddressRegisterDecl::carry_increment() const {
+  return carry_increment_;
+}
+
 void MemoryAddressRegisterDecl::verify(
     const components::Component *component) const {
   ComponentWithParentDecl<ComponentType::MemoryAddress>::verify(component);
@@ -182,6 +191,10 @@ void MemoryAddressRegisterDecl::verify(
   RegisterWithIncrementDecl::verify(component);
   verify_child(low_, component);
   verify_child(high_, component);
+  verify_child(carry_increment_, component);
+  // Don't verify address_add_carry_ because it's not a child of this component.
+  // Instead, check that it's connected the same as the matching status in the
+  // sim component.
   const auto &address_component =
       dynamic_cast<const components::memory::Address &>(*component);
   const auto &address_add_carry_component = address_component.carry_status();

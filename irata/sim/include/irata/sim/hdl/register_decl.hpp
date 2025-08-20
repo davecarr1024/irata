@@ -189,12 +189,17 @@ public:
   const IncrementableConnectedByteRegisterDecl &low() const;
   const IncrementableConnectedByteRegisterDecl &high() const;
 
+  const StatusDecl &address_add_carry() const;
+
+  const ProcessControlDecl &carry_increment() const;
+
   void verify(const components::Component *component) const override final;
 
 private:
   const IncrementableConnectedByteRegisterDecl low_;
   const IncrementableConnectedByteRegisterDecl high_;
   const StatusDecl &address_add_carry_;
+  const ProcessControlDecl carry_increment_;
 };
 
 } // namespace irata::sim::hdl

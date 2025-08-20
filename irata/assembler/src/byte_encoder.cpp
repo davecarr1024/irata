@@ -54,6 +54,15 @@ void encode_arg(std::map<common::bytes::Word, common::bytes::Byte> &bytes,
     append_byte(bytes, address, value);
     break;
   }
+  case LabelBinder::Program::Instruction::Arg::Type::AbsoluteIndexed: {
+    const auto &value =
+        dynamic_cast<
+            const LabelBinder::Program::Instruction::AbsoluteIndexed &>(arg)
+            .value();
+    const auto &[high, low] = value.to_bytes();
+    append_bytes(bytes, address, {high, low});
+    break;
+  }
   }
 }
 

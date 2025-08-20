@@ -26,6 +26,9 @@ protected:
   const asm_::Instruction &lda_zero_page_x =
       asm_::InstructionSet::irata().get_instruction(
           "lda", asm_::AddressingMode::ZeroPageX);
+  const asm_::Instruction &lda_absolute_x =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::AbsoluteX);
 };
 
 } // namespace
@@ -69,6 +72,11 @@ TEST_F(AssemblerTest, Assemble_SingleInstruction_AbsoluteLabel) {
 TEST_F(AssemblerTest, Assemble_SingleInstruction_ZeroPageIndexed) {
   EXPECT_THAT(assembler.assemble("lda $12,x"),
               ElementsAre(lda_zero_page_x.opcode(), 0x12));
+}
+
+TEST_F(AssemblerTest, Assemble_SingleInstruction_AbsoluteIndexed) {
+  EXPECT_THAT(assembler.assemble("lda $1234,x"),
+              ElementsAre(lda_absolute_x.opcode(), 0x12, 0x34));
 }
 
 TEST_F(AssemblerTest, Assemble_ByteDirective) {

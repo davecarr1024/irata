@@ -101,6 +101,24 @@ InstructionSet *zero_page_y_load_op(InstructionSet *instruction_set,
       ->instruction_set();
 }
 
+// Create an instruction for an absolute indexed by x mode load operation.
+InstructionSet *absolute_x_load_op(InstructionSet *instruction_set,
+                                   const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(load_op_name(reg), asm_::AddressingMode::AbsoluteX)
+      ->read_memory_absolute_indexed(hdl::irata().cpu().x(), reg)
+      ->instruction_set();
+}
+
+// Create an instruction for an absolute indexed by y mode load operation.
+InstructionSet *absolute_y_load_op(InstructionSet *instruction_set,
+                                   const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(load_op_name(reg), asm_::AddressingMode::AbsoluteY)
+      ->read_memory_absolute_indexed(hdl::irata().cpu().y(), reg)
+      ->instruction_set();
+}
+
 // Create instructions for a load operation in all addressing modes.
 InstructionSet *load_op(InstructionSet *instruction_set,
                         const hdl::RegisterWithByteBusDecl &reg) {
@@ -110,10 +128,13 @@ InstructionSet *load_op(InstructionSet *instruction_set,
   return instruction_set;
 }
 
+// Create instructions for indexed load operations.
 InstructionSet *indexed_load_op(InstructionSet *instruction_set,
                                 const hdl::RegisterWithByteBusDecl &reg) {
   instruction_set = zero_page_x_load_op(instruction_set, reg);
   instruction_set = zero_page_y_load_op(instruction_set, reg);
+  instruction_set = absolute_x_load_op(instruction_set, reg);
+  instruction_set = absolute_y_load_op(instruction_set, reg);
   return instruction_set;
 }
 
@@ -156,6 +177,7 @@ InstructionSet *load_and_store_op(InstructionSet *instruction_set,
   return instruction_set;
 }
 
+// Create instructions for an indexed load and store operation.
 InstructionSet *
 indexed_load_and_store_op(InstructionSet *instruction_set,
                           const hdl::RegisterWithByteBusDecl &reg) {

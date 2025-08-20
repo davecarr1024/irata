@@ -16,6 +16,10 @@ std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode) {
     return os << "ZeroPageX";
   case AddressingMode::ZeroPageY:
     return os << "ZeroPageY";
+  case AddressingMode::AbsoluteX:
+    return os << "AbsoluteX";
+  case AddressingMode::AbsoluteY:
+    return os << "AbsoluteY";
   }
 }
 

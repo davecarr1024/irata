@@ -89,10 +89,8 @@ TEST_F(ParserTest, AbsoluteLabel_Equality) {
 }
 
 TEST_F(ParserTest, ZeroPageIndexed_Properties) {
-  auto arg = Parser::Program::Instruction::ZeroPageIndexed(
-      Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12);
-  EXPECT_EQ(arg.index(),
-            Parser::Program::Instruction::ZeroPageIndexed::Index::X);
+  auto arg = Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x12);
+  EXPECT_EQ(arg.index(), Index::X);
   EXPECT_EQ(arg.value(), 0x12);
   EXPECT_EQ(arg.addressing_mode(), asm_::AddressingMode::ZeroPageX);
   EXPECT_EQ(arg.type(),
@@ -100,20 +98,33 @@ TEST_F(ParserTest, ZeroPageIndexed_Properties) {
 }
 
 TEST_F(ParserTest, ZeroPageIndexed_Equality) {
-  EXPECT_EQ(Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
-            Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12));
-  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
-            Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::Y, 0x12));
-  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
-            Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x34));
-  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(
-                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
+  EXPECT_EQ(Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x12));
+  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            Parser::Program::Instruction::ZeroPageIndexed(Index::Y, 0x12));
+  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x34));
+  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            Parser::Program::Instruction::None());
+}
+
+TEST_F(ParserTest, AbsoluteIndexed_Properties) {
+  auto arg = Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234);
+  EXPECT_EQ(arg.index(), Index::X);
+  EXPECT_EQ(arg.value(), 0x1234);
+  EXPECT_EQ(arg.addressing_mode(), asm_::AddressingMode::AbsoluteX);
+  EXPECT_EQ(arg.type(),
+            Parser::Program::Instruction::Arg::Type::AbsoluteIndexed);
+}
+
+TEST_F(ParserTest, AbsoluteIndexed_Equality) {
+  EXPECT_EQ(Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
+            Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234));
+  EXPECT_NE(Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
+            Parser::Program::Instruction::AbsoluteIndexed(Index::Y, 0x1234));
+  EXPECT_NE(Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
+            Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x5678));
+  EXPECT_NE(Parser::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
             Parser::Program::Instruction::None());
 }
 
@@ -225,17 +236,50 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteLabelArg) {
 }
 
 TEST_F(ParserTest, Parse_SingleInstruction_ZeroPageIndexedArg) {
-  for (const auto &[index_str, index] : std::vector<std::pair<
-           std::string, Parser::Program::Instruction::ZeroPageIndexed::Index>>{
-           {"x", Parser::Program::Instruction::ZeroPageIndexed::Index::X},
-           {"y", Parser::Program::Instruction::ZeroPageIndexed::Index::Y}}) {
-    for (const std::string &expr_base : {"$12,", "18,", "0x12,"}) {
+  for (const auto &[index_str, index] :
+       std::vector<std::pair<std::string, Index>>{
+           {"x", Index::X},
+           {"y", Index::Y},
+       }) {
+    for (const std::string &expr_base : {
+             "$12,",
+             "18,",
+             "0x12,",
+             // Word-formatted bytes: these are expected to work since the
+             // choice between zp,x and abs,x is based on the value of the byte,
+             // not the format.
+             "$0012,",
+             "0x0012,",
+         }) {
       const auto expr = expr_base + index_str;
       std::vector<std::unique_ptr<Parser::Program::Statement>> expected;
       expected.push_back(std::make_unique<Parser::Program::Instruction>(
           "lda",
           std::make_unique<Parser::Program::Instruction::ZeroPageIndexed>(
               index, 0x12)));
+      EXPECT_EQ(parser.parse("lda " + std::string(expr)),
+                Parser::Program(std::move(expected)));
+    }
+  }
+}
+
+TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteIndexedArg) {
+  for (const auto &[index_str, index] :
+       std::vector<std::pair<std::string, Index>>{
+           {"x", Index::X},
+           {"y", Index::Y},
+       }) {
+    for (const std::string &expr_base : {
+             "$1234,",
+             "4660,",
+             "0x1234,",
+         }) {
+      const auto expr = expr_base + index_str;
+      std::vector<std::unique_ptr<Parser::Program::Statement>> expected;
+      expected.push_back(std::make_unique<Parser::Program::Instruction>(
+          "lda",
+          std::make_unique<Parser::Program::Instruction::AbsoluteIndexed>(
+              index, 0x1234)));
       EXPECT_EQ(parser.parse("lda " + std::string(expr)),
                 Parser::Program(std::move(expected)));
     }

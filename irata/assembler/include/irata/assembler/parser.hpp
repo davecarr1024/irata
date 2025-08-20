@@ -1,6 +1,7 @@
 #pragma once
 
 #include <irata/asm/instruction.hpp>
+#include <irata/assembler/index.hpp>
 #include <irata/common/bytes/byte.hpp>
 #include <irata/common/bytes/word.hpp>
 #include <memory>
@@ -82,6 +83,7 @@ public:
           AbsoluteLiteral,
           AbsoluteLabel,
           ZeroPageIndexed,
+          AbsoluteIndexed,
         };
 
         virtual ~Arg() = default;
@@ -148,11 +150,6 @@ public:
 
       class ZeroPageIndexed final : public Arg {
       public:
-        enum class Index {
-          X,
-          Y,
-        };
-
         ZeroPageIndexed(Index index, common::bytes::Byte value);
 
         Index index() const;
@@ -165,6 +162,22 @@ public:
       private:
         const Index index_;
         const common::bytes::Byte value_;
+      };
+
+      class AbsoluteIndexed final : public Arg {
+      public:
+        AbsoluteIndexed(Index index, common::bytes::Word value);
+
+        Index index() const;
+        common::bytes::Word value() const;
+
+        bool operator==(const Arg &other) const override final;
+
+        static std::unique_ptr<AbsoluteIndexed> parse(std::string_view arg);
+
+      private:
+        const Index index_;
+        const common::bytes::Word value_;
       };
 
       Instruction(std::string_view instruction, std::unique_ptr<Arg> arg);
@@ -227,10 +240,10 @@ operator<<(std::ostream &os,
            const Parser::Program::Instruction::AbsoluteLabel &arg);
 std::ostream &
 operator<<(std::ostream &os,
-           const Parser::Program::Instruction::ZeroPageIndexed::Index &index);
+           const Parser::Program::Instruction::ZeroPageIndexed &arg);
 std::ostream &
 operator<<(std::ostream &os,
-           const Parser::Program::Instruction::ZeroPageIndexed &arg);
+           const Parser::Program::Instruction::AbsoluteIndexed &arg);
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction::Arg &arg);
 std::ostream &operator<<(std::ostream &os,

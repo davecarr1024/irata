@@ -88,6 +88,10 @@ InstructionBinder::Program::Instruction::Arg::bind(
     return std::make_unique<ZeroPageIndexed>(
         dynamic_cast<const Parser::Program::Instruction::ZeroPageIndexed &>(
             arg));
+  case Parser::Program::Instruction::Arg::Type::AbsoluteIndexed:
+    return std::make_unique<AbsoluteIndexed>(
+        dynamic_cast<const Parser::Program::Instruction::AbsoluteIndexed &>(
+            arg));
   }
 }
 
@@ -185,14 +189,9 @@ InstructionBinder::Program::Instruction::ZeroPageIndexed::ZeroPageIndexed(
 
 InstructionBinder::Program::Instruction::ZeroPageIndexed::ZeroPageIndexed(
     const Parser::Program::Instruction::ZeroPageIndexed &arg)
-    : ZeroPageIndexed(
-          arg.index() == Parser::Program::Instruction::ZeroPageIndexed::Index::X
-              ? Index::X
-              : Index::Y,
-          arg.value()) {}
+    : ZeroPageIndexed(arg.index(), arg.value()) {}
 
-InstructionBinder::Program::Instruction::ZeroPageIndexed::Index
-InstructionBinder::Program::Instruction::ZeroPageIndexed::index() const {
+Index InstructionBinder::Program::Instruction::ZeroPageIndexed::index() const {
   return index_;
 }
 
@@ -212,6 +211,36 @@ bool InstructionBinder::Program::Instruction::ZeroPageIndexed::operator==(
   }
   const auto &other_arg = dynamic_cast<const ZeroPageIndexed &>(other);
   return index_ == other_arg.index_ && value_ == other_arg.value_;
+}
+
+InstructionBinder::Program::Instruction::AbsoluteIndexed ::AbsoluteIndexed(
+    Index index, common::bytes::Word value)
+    : Arg(Type::AbsoluteIndexed), index_(index), value_(value) {}
+
+InstructionBinder::Program::Instruction::AbsoluteIndexed ::AbsoluteIndexed(
+    const Parser::Program::Instruction::AbsoluteIndexed &arg)
+    : AbsoluteIndexed(arg.index(), arg.value()) {}
+
+Index InstructionBinder::Program::Instruction::AbsoluteIndexed::index() const {
+  return index_;
+}
+
+common::bytes::Word
+InstructionBinder::Program::Instruction::AbsoluteIndexed::value() const {
+  return value_;
+}
+
+size_t InstructionBinder::Program::Instruction::AbsoluteIndexed::size() const {
+  return 2;
+}
+
+bool InstructionBinder::Program::Instruction::AbsoluteIndexed::operator==(
+    const Arg &other) const {
+  if (!Arg::operator==(other)) {
+    return false;
+  }
+  const auto &rhs = dynamic_cast<const AbsoluteIndexed &>(other);
+  return index_ == rhs.index_ && value_ == rhs.value_;
 }
 
 InstructionBinder::Program::Instruction::Instruction(
@@ -353,6 +382,8 @@ operator<<(std::ostream &os,
     return os << "AbsoluteLabel";
   case InstructionBinder::Program::Instruction::Arg::Type::ZeroPageIndexed:
     return os << "ZeroPageIndexed";
+  case InstructionBinder::Program::Instruction::Arg::Type::AbsoluteIndexed:
+    return os << "AbsoluteIndexed";
   }
 }
 
@@ -380,22 +411,17 @@ operator<<(std::ostream &os,
   return os << "AbsoluteLabel(value = " << arg.value() << ")";
 }
 
-std::ostream &
-operator<<(std::ostream &os,
-           const InstructionBinder::Program::Instruction::ZeroPageIndexed::Index
-               &index) {
-  switch (index) {
-  case InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X:
-    return os << "X";
-  case InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::Y:
-    return os << "Y";
-  }
-}
-
 std::ostream &operator<<(
     std::ostream &os,
     const InstructionBinder::Program::Instruction::ZeroPageIndexed &arg) {
   return os << "ZeroPageIndexed(index = " << arg.index()
+            << ", value = " << arg.value() << ")";
+}
+
+std::ostream &operator<<(
+    std::ostream &os,
+    const InstructionBinder::Program::Instruction::AbsoluteIndexed &arg) {
+  return os << "AbsoluteIndexed(index = " << arg.index()
             << ", value = " << arg.value() << ")";
 }
 
@@ -419,6 +445,9 @@ operator<<(std::ostream &os,
   case InstructionBinder::Program::Instruction::Arg::Type::ZeroPageIndexed:
     return os << dynamic_cast<const InstructionBinder::Program::Instruction::
                                   ZeroPageIndexed &>(arg);
+  case InstructionBinder::Program::Instruction::Arg::Type::AbsoluteIndexed:
+    return os << dynamic_cast<const InstructionBinder::Program::Instruction::
+                                  AbsoluteIndexed &>(arg);
   }
 }
 

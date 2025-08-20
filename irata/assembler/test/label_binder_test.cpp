@@ -24,6 +24,9 @@ protected:
   const asm_::Instruction &lda_zero_page_x =
       asm_::InstructionSet::irata().get_instruction(
           "lda", asm_::AddressingMode::ZeroPageX);
+  const asm_::Instruction &lda_absolute_x =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::AbsoluteX);
 };
 
 } // namespace
@@ -72,34 +75,46 @@ TEST_F(LabelBinderTest, Instruction_Absolute_Equality) {
 }
 
 TEST_F(LabelBinderTest, Instruction_ZeroPageIndexed_Properties) {
-  const auto arg = LabelBinder::Program::Instruction::ZeroPageIndexed(
-      LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12);
+  const auto arg =
+      LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x12);
   EXPECT_EQ(arg.type(),
             LabelBinder::Program::Instruction::Arg::Type::ZeroPageIndexed);
-  EXPECT_EQ(arg.index(),
-            LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X);
+  EXPECT_EQ(arg.index(), Index::X);
   EXPECT_EQ(arg.value(), 0x12);
 }
 
 TEST_F(LabelBinderTest, Instruction_ZeroPageIndexed_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x12));
+  EXPECT_NE(LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            LabelBinder::Program::Instruction::ZeroPageIndexed(Index::Y, 0x12));
+  EXPECT_NE(LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x34));
+  EXPECT_NE(LabelBinder::Program::Instruction::ZeroPageIndexed(Index::X, 0x12),
+            LabelBinder::Program::Instruction::None());
+}
+
+TEST_F(LabelBinderTest, Instruction_AbsoluteIndexed_Properties) {
+  const auto arg =
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234);
+  EXPECT_EQ(arg.type(),
+            LabelBinder::Program::Instruction::Arg::Type::AbsoluteIndexed);
+  EXPECT_EQ(arg.index(), Index::X);
+  EXPECT_EQ(arg.value(), 0x1234);
+}
+
+TEST_F(LabelBinderTest, Instruction_AbsoluteIndexed_Equality) {
   EXPECT_EQ(
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12));
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234));
   EXPECT_NE(
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::Y, 0x12));
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::Y, 0x1234));
   EXPECT_NE(
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x34));
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x5678));
   EXPECT_NE(
-      LabelBinder::Program::Instruction::ZeroPageIndexed(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
+      LabelBinder::Program::Instruction::AbsoluteIndexed(Index::X, 0x1234),
       LabelBinder::Program::Instruction::None());
 }
 
@@ -297,20 +312,38 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel_NotFound) {
 TEST_F(LabelBinderTest, Bind_SingleInstruction_ZeroPageIndexed) {
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
       statements;
-  statements.push_back(std::make_unique<
-                       InstructionBinder::Program::Instruction>(
-      0x1234, lda_zero_page_x,
-      std::make_unique<
-          InstructionBinder::Program::Instruction::ZeroPageIndexed>(
-          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
-          0x12)));
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, lda_zero_page_x,
+          std::make_unique<
+              InstructionBinder::Program::Instruction::ZeroPageIndexed>(
+              Index::X, 0x12)));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_zero_page_x,
       std::make_unique<LabelBinder::Program::Instruction::ZeroPageIndexed>(
-          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12)));
+          Index::X, 0x12)));
+  EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteIndexed) {
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, lda_absolute_x,
+          std::make_unique<
+              InstructionBinder::Program::Instruction::AbsoluteIndexed>(
+              Index::X, 0x1234)));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, lda_absolute_x,
+      std::make_unique<LabelBinder::Program::Instruction::AbsoluteIndexed>(
+          Index::X, 0x1234)));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 

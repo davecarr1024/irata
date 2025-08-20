@@ -115,6 +115,11 @@ LabelBinder::Program::Instruction::Arg::bind(
         dynamic_cast<
             const InstructionBinder::Program::Instruction::ZeroPageIndexed &>(
             arg));
+  case InstructionBinder::Program::Instruction::Arg::Type::AbsoluteIndexed:
+    return std::make_unique<AbsoluteIndexed>(
+        dynamic_cast<
+            const InstructionBinder::Program::Instruction::AbsoluteIndexed &>(
+            arg));
   }
 }
 
@@ -183,14 +188,9 @@ LabelBinder::Program::Instruction::ZeroPageIndexed::ZeroPageIndexed(
 
 LabelBinder::Program::Instruction::ZeroPageIndexed::ZeroPageIndexed(
     const InstructionBinder::Program::Instruction::ZeroPageIndexed &arg)
-    : ZeroPageIndexed(arg.index() == InstructionBinder::Program::Instruction::
-                                         ZeroPageIndexed::Index::X
-                          ? Index::X
-                          : Index::Y,
-                      arg.value()) {}
+    : ZeroPageIndexed(arg.index(), arg.value()) {}
 
-LabelBinder::Program::Instruction::ZeroPageIndexed::Index
-LabelBinder::Program::Instruction::ZeroPageIndexed::index() const {
+Index LabelBinder::Program::Instruction::ZeroPageIndexed::index() const {
   return index_;
 }
 
@@ -205,6 +205,32 @@ bool LabelBinder::Program::Instruction::ZeroPageIndexed::operator==(
     return false;
   }
   const auto &rhs = dynamic_cast<const ZeroPageIndexed &>(other);
+  return index_ == rhs.index_ && value_ == rhs.value_;
+}
+
+LabelBinder::Program::Instruction::AbsoluteIndexed ::AbsoluteIndexed(
+    Index index, common::bytes::Word value)
+    : Arg(Type::AbsoluteIndexed), index_(index), value_(value) {}
+
+LabelBinder::Program::Instruction::AbsoluteIndexed ::AbsoluteIndexed(
+    const InstructionBinder::Program::Instruction::AbsoluteIndexed &arg)
+    : AbsoluteIndexed(arg.index(), arg.value()) {}
+
+Index LabelBinder::Program::Instruction::AbsoluteIndexed::index() const {
+  return index_;
+}
+
+common::bytes::Word
+LabelBinder::Program::Instruction::AbsoluteIndexed::value() const {
+  return value_;
+}
+
+bool LabelBinder::Program::Instruction::AbsoluteIndexed::operator==(
+    const Arg &other) const {
+  if (!Arg::operator==(other)) {
+    return false;
+  }
+  const auto &rhs = dynamic_cast<const AbsoluteIndexed &>(other);
   return index_ == rhs.index_ && value_ == rhs.value_;
 }
 
@@ -329,6 +355,8 @@ operator<<(std::ostream &os,
     return os << "Absolute";
   case LabelBinder::Program::Instruction::Arg::Type::ZeroPageIndexed:
     return os << "ZeroPageIndexed";
+  case LabelBinder::Program::Instruction::Arg::Type::AbsoluteIndexed:
+    return os << "AbsoluteIndexed";
   }
 }
 
@@ -349,21 +377,17 @@ operator<<(std::ostream &os,
   return os << "Absolute(value = " << absolute.value() << ")";
 }
 
-std::ostream &operator<<(
-    std::ostream &os,
-    const LabelBinder::Program::Instruction::ZeroPageIndexed::Index &index) {
-  switch (index) {
-  case LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X:
-    return os << "X";
-  case LabelBinder::Program::Instruction::ZeroPageIndexed::Index::Y:
-    return os << "Y";
-  }
-}
-
 std::ostream &
 operator<<(std::ostream &os,
            const LabelBinder::Program::Instruction::ZeroPageIndexed &arg) {
   return os << "ZeroPageIndexed(index = " << arg.index()
+            << ", value = " << arg.value() << ")";
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const LabelBinder::Program::Instruction::AbsoluteIndexed &arg) {
+  return os << "AbsoluteIndexed(index = " << arg.index()
             << ", value = " << arg.value() << ")";
 }
 
@@ -383,6 +407,9 @@ std::ostream &operator<<(std::ostream &os,
   case LabelBinder::Program::Instruction::Arg::Type::ZeroPageIndexed:
     return os << dynamic_cast<
                const LabelBinder::Program::Instruction::ZeroPageIndexed &>(arg);
+  case LabelBinder::Program::Instruction::Arg::Type::AbsoluteIndexed:
+    return os << dynamic_cast<
+               const LabelBinder::Program::Instruction::AbsoluteIndexed &>(arg);
   }
 }
 

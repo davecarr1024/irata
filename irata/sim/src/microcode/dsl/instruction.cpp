@@ -188,6 +188,49 @@ Instruction *Instruction::write_memory_zero_page_indexed(
   return instruction;
 }
 
+namespace {
+Instruction *
+set_mar_to_absolute_indexed(Instruction *instruction,
+                            const hdl::ComponentWithByteBusDecl &index_source) {
+  return instruction
+      // Read the next two bytes: high to MAR high and low goes to alu lhs.
+      ->read_word_at_pc(hdl::irata().cpu().buffer().high(),
+                        hdl::irata().cpu().alu().lhs())
+      // Copy the index source to the ALU rhs.
+      ->copy(index_source, hdl::irata().cpu().alu().rhs())
+      // Add the address low bytes. Note that this sets the address_add_carry
+      // line, read by the MAR's carry_increment operation.
+      ->alu_operation(hdl::AluOpcode::AddressAdd)
+      // Copy the alu result to MAR low.
+      ->copy(hdl::irata().cpu().alu().result(),
+             hdl::irata().memory().address().low())
+      // Copy the high byte from the buffer to MAR high
+      ->copy(hdl::irata().cpu().buffer().high(),
+             hdl::irata().memory().address().high())
+      // And perform the MAR carry_increment operation. This increments the MAR
+      // high byte if the alu address_add operation above carried.
+      ->with_control(hdl::irata().memory().address().carry_increment());
+}
+} // namespace
+
+Instruction *Instruction::read_memory_absolute_indexed(
+    const hdl::ComponentWithByteBusDecl &index_source,
+    const hdl::ComponentWithByteBusDecl &data_dest) {
+  Instruction *instruction = this;
+  instruction = set_mar_to_absolute_indexed(instruction, index_source);
+  instruction = instruction->copy(hdl::irata().memory(), data_dest);
+  return instruction;
+}
+
+Instruction *Instruction::write_memory_absolute_indexed(
+    const hdl::ComponentWithByteBusDecl &index_source,
+    const hdl::ComponentWithByteBusDecl &data_source) {
+  Instruction *instruction = this;
+  instruction = set_mar_to_absolute_indexed(instruction, index_source);
+  instruction = instruction->copy(data_source, hdl::irata().memory());
+  return instruction;
+}
+
 int Instruction::stage() const { return stage_; }
 
 Instruction *Instruction::next_stage() {

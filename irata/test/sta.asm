@@ -59,6 +59,42 @@ lda $FF,x
 cmp #$9A
 jne fail
 
+; absolute indexed by x
+lda #$BC
+sta $0102
+ldx #$02
+lda #$00
+lda $0100,x
+cmp #$BC
+jne fail
+
+; absolute indexed by y
+lda #$DE
+sta $0103
+ldy #$03
+lda #$00
+lda $0100,y
+cmp #$DE
+jne fail
+
+; absolute indexed by x with a page crossing
+lda #$CB
+sta $0201
+ldx #$02
+lda #$00
+lda $01FF,x
+cmp #$CB
+jne fail
+
+; absolute indexed by y with a page crossing
+lda #$ED
+sta $0301
+ldy #$02
+lda #$00
+lda $02FF,y
+cmp #$ED
+jne fail
+
 hlt
 
 fail: crs
