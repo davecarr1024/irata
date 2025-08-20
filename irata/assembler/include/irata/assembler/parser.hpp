@@ -81,6 +81,7 @@ public:
           Immediate,
           AbsoluteLiteral,
           AbsoluteLabel,
+          ZeroPageIndexed,
         };
 
         virtual ~Arg() = default;
@@ -145,6 +146,27 @@ public:
         explicit AbsoluteLabel(std::string_view value);
       };
 
+      class ZeroPageIndexed final : public Arg {
+      public:
+        enum class Index {
+          X,
+          Y,
+        };
+
+        ZeroPageIndexed(Index index, common::bytes::Byte value);
+
+        Index index() const;
+        common::bytes::Byte value() const;
+
+        bool operator==(const Arg &other) const override final;
+
+        static std::unique_ptr<ZeroPageIndexed> parse(std::string_view arg);
+
+      private:
+        const Index index_;
+        const common::bytes::Byte value_;
+      };
+
       Instruction(std::string_view instruction, std::unique_ptr<Arg> arg);
 
       static std::unique_ptr<Instruction> parse(std::string_view line);
@@ -203,6 +225,12 @@ operator<<(std::ostream &os,
 std::ostream &
 operator<<(std::ostream &os,
            const Parser::Program::Instruction::AbsoluteLabel &arg);
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::ZeroPageIndexed::Index &index);
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::ZeroPageIndexed &arg);
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction::Arg &arg);
 std::ostream &operator<<(std::ostream &os,

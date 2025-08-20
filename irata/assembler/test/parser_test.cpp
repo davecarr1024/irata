@@ -88,6 +88,35 @@ TEST_F(ParserTest, AbsoluteLabel_Equality) {
             Parser::Program::Instruction::None());
 }
 
+TEST_F(ParserTest, ZeroPageIndexed_Properties) {
+  auto arg = Parser::Program::Instruction::ZeroPageIndexed(
+      Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12);
+  EXPECT_EQ(arg.index(),
+            Parser::Program::Instruction::ZeroPageIndexed::Index::X);
+  EXPECT_EQ(arg.value(), 0x12);
+  EXPECT_EQ(arg.addressing_mode(), asm_::AddressingMode::ZeroPageX);
+  EXPECT_EQ(arg.type(),
+            Parser::Program::Instruction::Arg::Type::ZeroPageIndexed);
+}
+
+TEST_F(ParserTest, ZeroPageIndexed_Equality) {
+  EXPECT_EQ(Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
+            Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12));
+  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
+            Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::Y, 0x12));
+  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
+            Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x34));
+  EXPECT_NE(Parser::Program::Instruction::ZeroPageIndexed(
+                Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12),
+            Parser::Program::Instruction::None());
+}
+
 TEST_F(ParserTest, ByteDirective_Properties) {
   const Parser::Program::ByteDirective byte_directive(0x12);
   EXPECT_EQ(byte_directive.value(), 0x12);
@@ -193,6 +222,24 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteLabelArg) {
       "lda",
       std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("hello")));
   EXPECT_EQ(parser.parse("lda hello"), Parser::Program(std::move(statements)));
+}
+
+TEST_F(ParserTest, Parse_SingleInstruction_ZeroPageIndexedArg) {
+  for (const auto &[index_str, index] : std::vector<std::pair<
+           std::string, Parser::Program::Instruction::ZeroPageIndexed::Index>>{
+           {"x", Parser::Program::Instruction::ZeroPageIndexed::Index::X},
+           {"y", Parser::Program::Instruction::ZeroPageIndexed::Index::Y}}) {
+    for (const std::string &expr_base : {"$12,", "18,", "0x12,"}) {
+      const auto expr = expr_base + index_str;
+      std::vector<std::unique_ptr<Parser::Program::Statement>> expected;
+      expected.push_back(std::make_unique<Parser::Program::Instruction>(
+          "lda",
+          std::make_unique<Parser::Program::Instruction::ZeroPageIndexed>(
+              index, 0x12)));
+      EXPECT_EQ(parser.parse("lda " + std::string(expr)),
+                Parser::Program(std::move(expected)));
+    }
+  }
 }
 
 TEST_F(ParserTest, Parse_MultipleStatements_SeparateLines) {

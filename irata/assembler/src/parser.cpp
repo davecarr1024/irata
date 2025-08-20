@@ -83,6 +83,32 @@ Parser::Program::Instruction::AbsoluteLabel::AbsoluteLabel(
                                 asm_::AddressingMode::Absolute,
                                 std::string(value)) {}
 
+Parser::Program::Instruction::ZeroPageIndexed::ZeroPageIndexed(
+    Index index, common::bytes::Byte value)
+    : Arg(Type::ZeroPageIndexed, index == Index::X
+                                     ? asm_::AddressingMode::ZeroPageX
+                                     : asm_::AddressingMode::ZeroPageY),
+      index_(index), value_(value) {}
+
+Parser::Program::Instruction::ZeroPageIndexed::Index
+Parser::Program::Instruction::ZeroPageIndexed::index() const {
+  return index_;
+}
+
+common::bytes::Byte
+Parser::Program::Instruction::ZeroPageIndexed::value() const {
+  return value_;
+}
+
+bool Parser::Program::Instruction::ZeroPageIndexed::operator==(
+    const Arg &other) const {
+  if (!Arg::operator==(other)) {
+    return false;
+  }
+  const auto &rhs = dynamic_cast<const ZeroPageIndexed &>(other);
+  return index_ == rhs.index_ && value_ == rhs.value_;
+}
+
 Parser::Program::Instruction::Instruction(std::string_view instruction,
                                           std::unique_ptr<Arg> arg)
     : Statement(Type::Instruction), instruction_(instruction),
@@ -194,10 +220,34 @@ uint8_t parse_numeric_literal_byte(std::string_view value_str) {
 
 } // namespace
 
+std::unique_ptr<Parser::Program::Instruction::ZeroPageIndexed>
+Parser::Program::Instruction::ZeroPageIndexed::parse(std::string_view arg) {
+  const auto &tokens = common::strings::split(arg, ",");
+  if (tokens.size() != 2) {
+    return nullptr;
+  }
+  const auto &base_token = tokens[0];
+  const auto &index_token = tokens[1];
+  if (index_token != "x" && index_token != "y") {
+    return nullptr;
+  }
+  const auto index = index_token == "x" ? Index::X : Index::Y;
+  const uint16_t value = parse_numeric_literal(base_token);
+  if (value > 0xFF) {
+    return nullptr;
+  }
+  return std::make_unique<ZeroPageIndexed>(index, value);
+}
+
 std::unique_ptr<Parser::Program::Instruction::Arg>
 Parser::Program::Instruction::Arg::parse(std::string_view arg) {
   if (arg.empty()) {
     return std::make_unique<Parser::Program::Instruction::None>();
+  }
+
+  if (auto zero_page_indexed = ZeroPageIndexed::parse(arg);
+      zero_page_indexed != nullptr) {
+    return zero_page_indexed;
   }
 
   if (arg[0] == '#') {
@@ -322,6 +372,8 @@ std::ostream &operator<<(std::ostream &os,
     return os << "AbsoluteLiteral";
   case Parser::Program::Instruction::Arg::Type::AbsoluteLabel:
     return os << "AbsoluteLabel";
+  case Parser::Program::Instruction::Arg::Type::ZeroPageIndexed:
+    return os << "ZeroPageIndexed";
   }
 }
 
@@ -347,6 +399,24 @@ operator<<(std::ostream &os,
   return os << "AbsoluteLabel(value = " << arg.value() << ")";
 }
 
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::ZeroPageIndexed::Index &index) {
+  switch (index) {
+  case Parser::Program::Instruction::ZeroPageIndexed::Index::X:
+    return os << "X";
+  case Parser::Program::Instruction::ZeroPageIndexed::Index::Y:
+    return os << "Y";
+  }
+}
+
+std::ostream &
+operator<<(std::ostream &os,
+           const Parser::Program::Instruction::ZeroPageIndexed &arg) {
+  return os << "ZeroPageIndexed(index = " << arg.index()
+            << ", value = " << arg.value() << ")";
+}
+
 std::ostream &operator<<(std::ostream &os,
                          const Parser::Program::Instruction::Arg &arg) {
   switch (arg.type()) {
@@ -362,6 +432,9 @@ std::ostream &operator<<(std::ostream &os,
     return os
            << dynamic_cast<const Parser::Program::Instruction::AbsoluteLabel &>(
                   arg);
+  case Parser::Program::Instruction::Arg::Type::ZeroPageIndexed:
+    return os << dynamic_cast<
+               const Parser::Program::Instruction::ZeroPageIndexed &>(arg);
   }
 }
 

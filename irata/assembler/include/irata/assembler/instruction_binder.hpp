@@ -65,6 +65,7 @@ public:
           Immediate,
           AbsoluteLiteral,
           AbsoluteLabel,
+          ZeroPageIndexed,
         };
 
         virtual ~Arg() = default;
@@ -140,6 +141,29 @@ public:
         const std::string value_;
       };
 
+      class ZeroPageIndexed final : public Arg {
+      public:
+        enum class Index {
+          X,
+          Y,
+        };
+
+        ZeroPageIndexed(Index index, common::bytes::Byte value);
+        ZeroPageIndexed(
+            const Parser::Program::Instruction::ZeroPageIndexed &arg);
+
+        Index index() const;
+        common::bytes::Byte value() const;
+
+        size_t size() const override final;
+
+        bool operator==(const Arg &other) const override final;
+
+      private:
+        const Index index_;
+        const common::bytes::Byte value_;
+      };
+
       Instruction(common::bytes::Word address,
                   const asm_::Instruction &instruction,
                   std::unique_ptr<Arg> arg);
@@ -153,7 +177,7 @@ public:
 
       size_t size() const override final;
 
-    bool operator==(const Statement &other) const override final;
+      bool operator==(const Statement &other) const override final;
 
     private:
       const asm_::Instruction &instruction_;
@@ -215,6 +239,15 @@ operator<<(std::ostream &os,
 std::ostream &
 operator<<(std::ostream &os,
            const InstructionBinder::Program::Instruction::AbsoluteLabel &arg);
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::ZeroPageIndexed::Index
+               &index);
+
+std::ostream &
+operator<<(std::ostream &os,
+           const InstructionBinder::Program::Instruction::ZeroPageIndexed &arg);
 
 std::ostream &
 operator<<(std::ostream &os,

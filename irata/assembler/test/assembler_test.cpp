@@ -23,6 +23,9 @@ protected:
   const asm_::Instruction &lda_absolute =
       asm_::InstructionSet::irata().get_instruction(
           "lda", asm_::AddressingMode::Absolute);
+  const asm_::Instruction &lda_zero_page_x =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::ZeroPageX);
 };
 
 } // namespace
@@ -61,6 +64,11 @@ TEST_F(AssemblerTest, Assemble_SingleInstruction_AbsoluteLabel) {
   // Note 0x8000 offset to account for cartridge memory mapping.
   EXPECT_THAT(assembler.assemble("label: lda label"),
               ElementsAre(lda_absolute.opcode(), 0x80, 0x00));
+}
+
+TEST_F(AssemblerTest, Assemble_SingleInstruction_ZeroPageIndexed) {
+  EXPECT_THAT(assembler.assemble("lda $12,x"),
+              ElementsAre(lda_zero_page_x.opcode(), 0x12));
 }
 
 TEST_F(AssemblerTest, Assemble_ByteDirective) {

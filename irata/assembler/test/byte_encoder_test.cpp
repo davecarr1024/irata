@@ -24,6 +24,9 @@ protected:
   const asm_::Instruction &lda_absolute =
       asm_::InstructionSet::irata().get_instruction(
           "LDA", asm_::AddressingMode::Absolute);
+  const asm_::Instruction &lda_zero_page_x =
+      asm_::InstructionSet::irata().get_instruction(
+          "LDA", asm_::AddressingMode::ZeroPageX);
 };
 
 } // namespace
@@ -63,6 +66,18 @@ TEST_F(ByteEncoderTest, Encode_Instruction_Absolute) {
   EXPECT_THAT(encoder.encode(program),
               UnorderedElementsAre(Pair(0x1234, lda_absolute.opcode()),
                                    Pair(0x1235, 0x56), Pair(0x1236, 0x78)));
+}
+
+TEST_F(ByteEncoderTest, Encode_Instruction_ZeroPageIndexed) {
+  std::vector<std::unique_ptr<LabelBinder::Program::Statement>> statements;
+  statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
+      0x1234, lda_zero_page_x,
+      std::make_unique<LabelBinder::Program::Instruction::ZeroPageIndexed>(
+          LabelBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x56)));
+  const auto program = LabelBinder::Program(std::move(statements));
+  EXPECT_THAT(encoder.encode(program),
+              UnorderedElementsAre(Pair(0x1234, lda_zero_page_x.opcode()),
+                                   Pair(0x1235, 0x56)));
 }
 
 TEST_F(ByteEncoderTest, Encode_Instruction_DuplicateAddress) {

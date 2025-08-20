@@ -30,18 +30,28 @@ void encode_arg(std::map<common::bytes::Word, common::bytes::Byte> &bytes,
   switch (arg.type()) {
   case LabelBinder::Program::Instruction::Arg::Type::None:
     break;
-  case LabelBinder::Program::Instruction::Arg::Type::Immediate:
+  case LabelBinder::Program::Instruction::Arg::Type::Immediate: {
     append_byte(
         bytes, address,
         dynamic_cast<const LabelBinder::Program::Instruction::Immediate &>(arg)
             .value());
     break;
+  }
   case LabelBinder::Program::Instruction::Arg::Type::Absolute: {
     const auto &value =
         dynamic_cast<const LabelBinder::Program::Instruction::Absolute &>(arg)
             .value();
     const auto &[high, low] = value.to_bytes();
     append_bytes(bytes, address, {high, low});
+
+    break;
+  }
+  case LabelBinder::Program::Instruction::Arg::Type::ZeroPageIndexed: {
+    const auto &value =
+        dynamic_cast<
+            const LabelBinder::Program::Instruction::ZeroPageIndexed &>(arg)
+            .value();
+    append_byte(bytes, address, value);
     break;
   }
   }

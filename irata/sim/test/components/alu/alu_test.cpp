@@ -230,4 +230,22 @@ TEST_F(ALUTest, Add) {
   EXPECT_EQ(dest.value(), 0x03);
 }
 
+TEST_F(ALUTest, AddressAdd) {
+  alu.set_lhs(0x12);
+  alu.set_rhs(0x34);
+  alu.set_opcode(hdl::AluOpcode::AddressAdd);
+  alu.tick();
+  EXPECT_EQ(alu.result(), 0x46);
+  EXPECT_FALSE(alu.address_add_carry().value());
+}
+
+TEST_F(ALUTest, AddressAddWithCarry) {
+  alu.set_lhs(0xFF);
+  alu.set_rhs(0x02);
+  alu.set_opcode(hdl::AluOpcode::AddressAdd);
+  alu.tick();
+  EXPECT_EQ(alu.result(), 0x01);
+  EXPECT_TRUE(alu.address_add_carry().value());
+}
+
 } // namespace irata::sim::components::alu

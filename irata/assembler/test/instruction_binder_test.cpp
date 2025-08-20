@@ -18,6 +18,9 @@ protected:
   const asm_::Instruction &lda_absolute =
       asm_::InstructionSet::irata().get_instruction(
           "lda", asm_::AddressingMode::Absolute);
+  const asm_::Instruction &lda_zero_page_x =
+      asm_::InstructionSet::irata().get_instruction(
+          "lda", asm_::AddressingMode::ZeroPageX);
   const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
       "hlt", asm_::AddressingMode::None);
 };
@@ -112,6 +115,47 @@ TEST_F(InstructionBinderTest, Instruction_Arg_AbsoluteLabel_Equality) {
             InstructionBinder::Program::Instruction::AbsoluteLabel("label2"));
   EXPECT_NE(InstructionBinder::Program::Instruction::AbsoluteLabel("label"),
             InstructionBinder::Program::Instruction::None());
+}
+
+TEST_F(InstructionBinderTest, Instruction_Arg_ZeroPageIndexed_Properties) {
+  const auto arg = InstructionBinder::Program::Instruction::ZeroPageIndexed(
+      InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X, 0x12);
+  EXPECT_EQ(
+      arg.type(),
+      InstructionBinder::Program::Instruction::Arg::Type::ZeroPageIndexed);
+  EXPECT_EQ(arg.index(),
+            InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X);
+  EXPECT_EQ(arg.value(), 0x12);
+  EXPECT_EQ(arg.size(), 1);
+}
+
+TEST_F(InstructionBinderTest, Instruction_Arg_ZeroPageIndexed_Equality) {
+  EXPECT_EQ(
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x12),
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x12));
+  EXPECT_NE(
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x12),
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::Y,
+          0x12));
+  EXPECT_NE(
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x12),
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x34));
+  EXPECT_NE(
+      InstructionBinder::Program::Instruction::ZeroPageIndexed(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x12),
+      InstructionBinder::Program::Instruction::None());
 }
 
 TEST_F(InstructionBinderTest, Instruction_Properties) {
@@ -297,6 +341,26 @@ TEST_F(InstructionBinderTest, Bind_Instruction_AbsoluteLabel) {
       0x0000, lda_absolute,
       std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
           "label")));
+  EXPECT_EQ(program, InstructionBinder::Program(std::move(statements)));
+}
+
+TEST_F(InstructionBinderTest, Bind_Instruction_ZeroPageIndexed) {
+  std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
+  parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
+      "lda",
+      std::make_unique<Parser::Program::Instruction::ZeroPageIndexed>(
+          Parser::Program::Instruction::ZeroPageIndexed::Index::X, 0x12)));
+  const auto parser_program = Parser::Program(std::move(parser_statements));
+  const auto program = binder.bind(parser_program);
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(std::make_unique<
+                       InstructionBinder::Program::Instruction>(
+      0x0000, lda_zero_page_x,
+      std::make_unique<
+          InstructionBinder::Program::Instruction::ZeroPageIndexed>(
+          InstructionBinder::Program::Instruction::ZeroPageIndexed::Index::X,
+          0x12)));
   EXPECT_EQ(program, InstructionBinder::Program(std::move(statements)));
 }
 
