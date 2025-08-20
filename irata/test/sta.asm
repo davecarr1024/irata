@@ -37,7 +37,7 @@ cmp #$56
 jne fail
 
 ; zero page indexed by y
-; store target 0x78 at 0x0025
+; store target 0x78 at 0x0036
 lda #$78
 sta $36
 ; y = 0x06
@@ -48,6 +48,15 @@ lda #$00
 lda $30,y
 ; should be the target
 cmp #$78
+jne fail
+
+; zp,x should wrap: 0xFF + x=0x02 = 0x0001
+lda #$9A
+sta $01
+ldx #$02
+lda #$00
+lda $FF,x
+cmp #$9A
 jne fail
 
 hlt
