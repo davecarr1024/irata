@@ -25,6 +25,19 @@ void AluDecl::ModuleDecl::verify(const components::Component *component) const {
   }
 }
 
+AluDecl::AddressAddDecl::AddressAddDecl(const AluDecl &parent)
+    : ComponentWithTypeDecl<ComponentType::AluModule>("address_add"),
+      ModuleDecl(parent, "address_add", AluOpcode::AddressAdd),
+      carry_("carry", *this) {}
+
+void AluDecl::AddressAddDecl::verify(
+    const components::Component *component) const {
+  ModuleDecl::verify(component);
+  verify_child(carry_, component);
+}
+
+const StatusDecl &AluDecl::AddressAddDecl::carry() const { return carry_; }
+
 namespace {
 
 std::unique_ptr<ProcessControlDecl> opcode_control(const AluDecl &alu,
@@ -73,9 +86,11 @@ std::set<std::unique_ptr<AluDecl::ModuleDecl>> get_modules(const AluDecl &alu) {
            {"rotate_right", AluOpcode::RotateRight},
            {"shift_left", AluOpcode::ShiftLeft},
            {"shift_right", AluOpcode::ShiftRight},
+
        }) {
     modules.insert(std::make_unique<AluDecl::ModuleDecl>(alu, name, opcode));
   }
+  modules.insert(std::make_unique<AluDecl::AddressAddDecl>(alu));
   return modules;
 }
 
@@ -214,5 +229,22 @@ const StatusDecl &AluDecl::zero() const { return zero_; }
 const StatusDecl &AluDecl::negative() const { return negative_; }
 
 const StatusDecl &AluDecl::overflow() const { return overflow_; }
+
+const AluDecl::ModuleDecl &AluDecl::module(AluOpcode opcode) const {
+  for (const auto &module : modules_) {
+    if (module->opcode() == opcode) {
+      return *module;
+    }
+  }
+  std::ostringstream os;
+  os << "alu module not found for opcode: " << opcode;
+  throw std::invalid_argument(os.str());
+}
+
+const StatusDecl &AluDecl::address_add_carry() const {
+  const auto &address_add_module =
+      dynamic_cast<const AddressAddDecl &>(module(AluOpcode::AddressAdd));
+  return address_add_module.carry();
+}
 
 } // namespace irata::sim::hdl

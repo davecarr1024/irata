@@ -5,7 +5,7 @@ namespace irata::sim::components::alu {
 RotateLeft::RotateLeft(ALU &parent)
     : Module(hdl::AluOpcode::RotateLeft, "rotate_left", parent) {}
 
-Module::Result RotateLeft::apply(bool carry_in, Byte lhs, Byte rhs) const {
+Module::Result RotateLeft::apply(bool carry_in, Byte lhs, Byte rhs) {
   const auto value = (int(lhs.value()) << 1) | carry_in;
   const Byte value_byte = value;
   return {

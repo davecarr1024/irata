@@ -7,6 +7,7 @@
 namespace irata::sim::components::memory {
 
 Memory Memory::irata(Bus<Word> &address_bus, Bus<Byte> &data_bus,
+                     const Status &address_add_carry,
                      std::unique_ptr<Module> cartridge, Component *parent) {
   std::vector<std::unique_ptr<Region>> regions;
   regions.emplace_back(std::make_unique<Region>(
@@ -16,14 +17,17 @@ Memory Memory::irata(Bus<Word> &address_bus, Bus<Byte> &data_bus,
         "cartridge", std::move(cartridge), Word(0x8000));
     regions.emplace_back(std::move(cartridge_region));
   }
-  return Memory("memory", std::move(regions), address_bus, data_bus, parent);
+  return Memory("memory", std::move(regions), address_bus, data_bus,
+                address_add_carry, parent);
 }
 
 Memory::Memory(std::string_view name,
                std::vector<std::unique_ptr<Region>> regions,
-               Bus<Word> &address_bus, Bus<Byte> &data_bus, Component *parent)
+               Bus<Word> &address_bus, Bus<Byte> &data_bus,
+               const Status &address_add_carry, Component *parent)
     : Component(name, parent), address_bus_(address_bus), data_bus_(data_bus),
-      regions_(std::move(regions)), address_(*this, address_bus_, data_bus),
+      regions_(std::move(regions)),
+      address_(*this, address_bus_, data_bus, address_add_carry),
       write_("write", hdl::TickPhase::Write, this),
       read_("read", hdl::TickPhase::Read, this) {
   // Throw an exception if any regions are null.

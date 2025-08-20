@@ -8,7 +8,7 @@ class ShiftLeft final : public Module {
 public:
   explicit ShiftLeft(ALU &parent);
 
-  Result apply(bool carry_in, Byte lhs, Byte rhs) const override final;
+  Result apply(bool carry_in, Byte lhs, Byte rhs) override final;
 };
 
 } // namespace irata::sim::components::alu

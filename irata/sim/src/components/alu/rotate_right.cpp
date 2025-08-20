@@ -5,7 +5,7 @@ namespace irata::sim::components::alu {
 RotateRight::RotateRight(ALU &parent)
     : Module(hdl::AluOpcode::RotateRight, "rotate_right", parent) {}
 
-Module::Result RotateRight::apply(bool carry_in, Byte lhs, Byte rhs) const {
+Module::Result RotateRight::apply(bool carry_in, Byte lhs, Byte rhs) {
   const auto value = (int(lhs.value()) >> 1) | (carry_in << 7);
   const Byte value_byte = value;
   return {

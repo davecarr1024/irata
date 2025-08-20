@@ -44,9 +44,11 @@ protected:
                                                     different_tree_root};
   const hdl::WordBusDecl different_tree_address_bus = {"different_tree_bus",
                                                        different_tree_root};
+  const hdl::StatusDecl different_tree_carry = {"different_tree_carry",
+                                                different_tree_root};
   const hdl::MemoryDecl different_tree_memory = {
       "different_tree_memory", different_tree_root, different_tree_address_bus,
-      different_tree_data_bus};
+      different_tree_data_bus, different_tree_carry};
   const hdl::ConnectedByteRegisterDecl different_tree_byte_register = {
       "different_tree_byte_register", different_tree_root,
       different_tree_data_bus};
@@ -62,8 +64,10 @@ protected:
       "different_bus_byte_register", hdl::irata(), different_byte_bus};
   const hdl::ConnectedWordRegisterDecl different_bus_word_register = {
       "different_bus_word_register", hdl::irata(), different_word_bus};
+  const hdl::StatusDecl different_carry = {"different_carry", hdl::irata()};
   const hdl::MemoryDecl different_memory = {
-      "different_memory", hdl::irata(), different_word_bus, different_byte_bus};
+      "different_memory", hdl::irata(), different_word_bus, different_byte_bus,
+      different_carry};
 
 private:
   static void tail_control_paths(const Instruction &instruction, size_t count,

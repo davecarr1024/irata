@@ -8,6 +8,7 @@
 #include <irata/sim/components/memory/ram.hpp>
 #include <irata/sim/components/memory/rom.hpp>
 #include <irata/sim/components/register.hpp>
+#include <irata/sim/components/status.hpp>
 #include <irata/sim/components/word_register.hpp>
 
 using ::testing::Pair;
@@ -47,7 +48,8 @@ protected:
   // Creates a memory with the given regions and name.
   Memory memory(std::vector<std::unique_ptr<Region>> regions,
                 std::string_view name = "memory") {
-    return Memory(name, std::move(regions), address_bus_, data_bus_, &root);
+    return Memory(name, std::move(regions), address_bus_, data_bus_, carry_,
+                  &root);
   }
 
   // Creates a RAM memory with the given size, offset, name and data.
@@ -93,6 +95,7 @@ private:
   Register data_register_ = Register("data_register", &data_bus_, &root);
   WordRegister address_register_ =
       WordRegister("address_register", &address_bus_, nullptr, &root);
+  Status carry_ = Status("carry", &root);
 };
 
 } // namespace

@@ -4,10 +4,11 @@ namespace irata::sim::hdl {
 
 MemoryDecl::MemoryDecl(const std::string &name, const ComponentDecl &parent,
                        const WordBusDecl &address_bus,
-                       const ByteBusDecl &data_bus)
+                       const ByteBusDecl &data_bus,
+                       const StatusDecl &address_add_carry)
     : ComponentWithTypeDecl<ComponentType::Memory>(name),
       ComponentWithByteBusDecl(data_bus), ComponentWithParentDecl(name, parent),
-      address_("address", *this, address_bus, data_bus) {}
+      address_("address", *this, address_bus, data_bus, address_add_carry) {}
 
 const MemoryAddressRegisterDecl &MemoryDecl::address() const {
   return address_;

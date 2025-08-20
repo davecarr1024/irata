@@ -30,10 +30,22 @@ public:
 
     AluOpcode opcode() const;
 
-    void verify(const components::Component *component) const override final;
+    void verify(const components::Component *component) const override;
 
   private:
     const AluOpcode opcode_;
+  };
+
+  class AddressAddDecl final : public ModuleDecl {
+  public:
+    explicit AddressAddDecl(const AluDecl &parent);
+
+    void verify(const components::Component *component) const override final;
+
+    const StatusDecl &carry() const;
+
+  private:
+    const StatusDecl carry_;
   };
 
   AluDecl(const ComponentDecl &parent, const ByteBusDecl &data_bus,
@@ -68,6 +80,10 @@ public:
   const StatusDecl &negative() const;
 
   const StatusDecl &overflow() const;
+
+  const ModuleDecl &module(AluOpcode opcode) const;
+
+  const StatusDecl &address_add_carry() const;
 
 private:
   std::set<std::unique_ptr<ModuleDecl>> modules_;

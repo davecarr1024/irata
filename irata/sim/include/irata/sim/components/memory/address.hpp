@@ -2,6 +2,7 @@
 #include <irata/sim/components/component.hpp>
 #include <irata/sim/components/control.hpp>
 #include <irata/sim/components/counter.hpp>
+#include <irata/sim/components/status.hpp>
 
 namespace irata::sim::components::memory {
 
@@ -12,7 +13,8 @@ namespace irata::sim::components::memory {
 // by the CPU.
 class Address final : public Component {
 public:
-  Address(Component &parent, WordBus &address_bus, ByteBus &data_bus);
+  Address(Component &parent, WordBus &address_bus, ByteBus &data_bus,
+          const Status &carry);
 
   hdl::ComponentType type() const override final;
 
@@ -57,6 +59,14 @@ public:
   Control &decrement_control();
   const Control &decrement_control() const;
 
+  bool carry_increment() const;
+  void set_carry_increment(bool carry_increment);
+  Control &carry_increment_control();
+  const Control &carry_increment_control() const;
+
+  bool carry() const;
+  const Status &carry_status() const;
+
   Word value() const;
   void set_value(Word value);
 
@@ -79,6 +89,8 @@ private:
   Counter low_;
   Control increment_;
   Control decrement_;
+  const Status &carry_;
+  Control carry_increment_;
 };
 
 } // namespace irata::sim::components::memory

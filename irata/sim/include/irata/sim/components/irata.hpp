@@ -46,8 +46,8 @@ protected:
 private:
   ByteBus data_bus_;
   WordBus address_bus_;
-  memory::Memory memory_;
   Cpu cpu_;
+  memory::Memory memory_;
   Control halt_;
   Control crash_;
   bool halt_received_ = false;

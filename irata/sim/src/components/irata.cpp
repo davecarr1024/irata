@@ -5,9 +5,10 @@ namespace irata::sim::components {
 Irata::Irata(std::unique_ptr<memory::ROM> cartridge)
     : Component("irata", nullptr), data_bus_("data_bus", this),
       address_bus_("address_bus", this),
-      memory_(memory::Memory::irata(address_bus_, data_bus_,
-                                    std::move(cartridge), this)),
       cpu_(Cpu::irata(data_bus_, address_bus_, this)),
+      memory_(memory::Memory::irata(address_bus_, data_bus_,
+                                    cpu_.alu().address_add_carry(),
+                                    std::move(cartridge), this)),
       halt_("halt", hdl::TickPhase::Process, this),
       crash_("crash", hdl::TickPhase::Process, this) {
   cpu_.pc().set_value(Word(0x8000));

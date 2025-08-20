@@ -1,4 +1,5 @@
 #include <irata/sim/components/alu/add.hpp>
+#include <irata/sim/components/alu/address_add.hpp>
 #include <irata/sim/components/alu/alu.hpp>
 #include <irata/sim/components/alu/and.hpp>
 #include <irata/sim/components/alu/module.hpp>
@@ -26,6 +27,7 @@ std::vector<std::unique_ptr<Module>> build_modules(ALU &alu) {
   modules.push_back(std::make_unique<ShiftRight>(alu));
   modules.push_back(std::make_unique<RotateLeft>(alu));
   modules.push_back(std::make_unique<RotateRight>(alu));
+  modules.push_back(std::make_unique<AddressAdd>(alu));
   return modules;
 }
 
@@ -120,6 +122,12 @@ bool ALU::overflow() const { return overflow_.value(); }
 void ALU::set_overflow(bool value) { overflow_.set_value(value); }
 Status &ALU::overflow_status() { return overflow_; }
 const Status &ALU::overflow_status() const { return overflow_; }
+
+const Status &ALU::address_add_carry() const {
+  const auto &address_add =
+      dynamic_cast<const AddressAdd &>(*module(hdl::AluOpcode::AddressAdd));
+  return address_add.carry_status();
+}
 
 std::vector<int>
 ALU::opcode_control_indices_for_opcode(hdl::AluOpcode opcode) const {

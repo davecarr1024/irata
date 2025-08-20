@@ -100,14 +100,16 @@ TEST_F(AluDeclTest, Modules) {
           Pointee(AllOf(ModuleHasOpcode(AluOpcode::ShiftLeft),
                         ModuleHasName("shift_left"))),
           Pointee(AllOf(ModuleHasOpcode(AluOpcode::ShiftRight),
-                        ModuleHasName("shift_right")))));
+                        ModuleHasName("shift_right"))),
+          Pointee(AllOf(ModuleHasOpcode(AluOpcode::AddressAdd),
+                        ModuleHasName("address_add")))));
   EXPECT_THAT(
       alu.modules(),
       Each(Pointee(AllOf(ComponentDeclHasParent(&alu),
                          ComponentDeclHasType(ComponentType::AluModule)))));
 }
 
-TEST_F(AluDeclTest, MaxOpcode) { EXPECT_EQ(alu.max_opcode(), 0x09); }
+TEST_F(AluDeclTest, MaxOpcode) { EXPECT_EQ(alu.max_opcode(), 0x0A); }
 
 TEST_F(AluDeclTest, NumOpcodeControls) {
   EXPECT_EQ(alu.num_opcode_controls(), 4);
@@ -138,6 +140,25 @@ TEST_F(AluDeclTest, Verify) {
   auto alu_component = components::alu::ALU(irata_component, data_bus_component,
                                             carry_component);
   EXPECT_NO_THROW(alu.verify(&alu_component));
+}
+
+TEST_F(AluDeclTest, GetModule) {
+  const auto &add = alu.module(AluOpcode::Add);
+  EXPECT_EQ(add.name(), "add");
+  EXPECT_EQ(add.parent(), &alu);
+}
+
+TEST_F(AluDeclTest, GetModuleInvalid) {
+  EXPECT_THROW(alu.module(AluOpcode::Nop), std::invalid_argument);
+}
+
+TEST_F(AluDeclTest, GetAddressAddCarry) {
+  const auto &address_add = alu.module(AluOpcode::AddressAdd);
+  EXPECT_EQ(address_add.name(), "address_add");
+  EXPECT_EQ(address_add.parent(), &alu);
+  const auto &address_add_carry = alu.address_add_carry();
+  EXPECT_EQ(address_add_carry.parent(), &address_add);
+  EXPECT_EQ(address_add_carry.name(), "carry");
 }
 
 } // namespace irata::sim::hdl

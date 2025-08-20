@@ -3,6 +3,7 @@
 #include <irata/sim/components/fake_component.hpp>
 #include <irata/sim/components/memory/address.hpp>
 #include <irata/sim/components/register.hpp>
+#include <irata/sim/components/status.hpp>
 #include <irata/sim/components/word_register.hpp>
 #include <irata/sim/hdl/component_type.hpp>
 
@@ -18,7 +19,8 @@ protected:
   Register data_register = Register("data_register", &data_bus, &root);
   WordRegister address_register =
       WordRegister("address_register", &address_bus, &data_bus, &root);
-  Address address = Address(root, address_bus, data_bus);
+  Status carry = Status("carry", &root);
+  Address address = Address(root, address_bus, data_bus, carry);
 };
 
 } // namespace
@@ -109,6 +111,22 @@ TEST_F(AddressTest, Decrement) {
   address.set_decrement(true);
   address.tick();
   EXPECT_EQ(address.value(), 0x1233);
+}
+
+TEST_F(AddressTest, CarryIncrementNoCarry) {
+  address.set_value(0x1234);
+  address.set_carry_increment(true);
+  carry.set_value(false);
+  address.tick();
+  EXPECT_EQ(address.value(), 0x1234);
+}
+
+TEST_F(AddressTest, CarryIncrementWithCarry) {
+  address.set_value(0x1234);
+  address.set_carry_increment(true);
+  carry.set_value(true);
+  address.tick();
+  EXPECT_EQ(address.value(), 0x1334);
 }
 
 } // namespace irata::sim::components::memory

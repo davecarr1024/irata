@@ -5,9 +5,10 @@ namespace irata::sim::hdl {
 IrataDecl::IrataDecl()
     : ComponentWithTypeDecl<ComponentType::Irata>("irata"),
       address_bus_("address_bus", *this), data_bus_("data_bus", *this),
-      memory_("memory", *this, address_bus_, data_bus_),
-      cpu_(*this, address_bus_, data_bus_), halt_("halt", *this),
-      crash_("crash", *this) {}
+      cpu_(*this, address_bus_, data_bus_),
+      memory_("memory", *this, address_bus_, data_bus_,
+              cpu_.alu().address_add_carry()),
+      halt_("halt", *this), crash_("crash", *this) {}
 
 void IrataDecl::verify(const components::Component *component) const {
   ComponentWithTypeDecl<ComponentType::Irata>::verify(component);

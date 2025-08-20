@@ -4,6 +4,7 @@
 #include <irata/sim/hdl/component_decl.hpp>
 #include <irata/sim/hdl/component_with_bus_decl.hpp>
 #include <irata/sim/hdl/control_decl.hpp>
+#include <irata/sim/hdl/status_decl.hpp>
 
 namespace irata::sim::hdl {
 
@@ -182,7 +183,8 @@ class MemoryAddressRegisterDecl final
 public:
   MemoryAddressRegisterDecl(std::string_view name, const ComponentDecl &parent,
                             const WordBusDecl &address_bus,
-                            const ByteBusDecl &data_bus);
+                            const ByteBusDecl &data_bus,
+                            const StatusDecl &address_add_carry);
 
   const IncrementableConnectedByteRegisterDecl &low() const;
   const IncrementableConnectedByteRegisterDecl &high() const;
@@ -192,6 +194,7 @@ public:
 private:
   const IncrementableConnectedByteRegisterDecl low_;
   const IncrementableConnectedByteRegisterDecl high_;
+  const StatusDecl &address_add_carry_;
 };
 
 } // namespace irata::sim::hdl

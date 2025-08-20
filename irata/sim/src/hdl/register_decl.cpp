@@ -1,3 +1,4 @@
+#include <irata/sim/components/memory/address.hpp>
 #include <irata/sim/hdl/register_decl.hpp>
 
 namespace irata::sim::hdl {
@@ -155,12 +156,13 @@ void ProgramCounterDecl::verify(const components::Component *component) const {
 
 MemoryAddressRegisterDecl::MemoryAddressRegisterDecl(
     std::string_view name, const ComponentDecl &parent,
-    const WordBusDecl &address_bus, const ByteBusDecl &data_bus)
+    const WordBusDecl &address_bus, const ByteBusDecl &data_bus,
+    const StatusDecl &address_add_carry)
     : ComponentWithTypeDecl<ComponentType::MemoryAddress>(name),
       ComponentWithWordBusDecl(address_bus),
       ComponentWithParentDecl<ComponentType::MemoryAddress>(name, parent),
       RegisterWithWordBusDecl(address_bus), low_("low", *this, data_bus),
-      high_("high", *this, data_bus) {}
+      high_("high", *this, data_bus), address_add_carry_(address_add_carry) {}
 
 const IncrementableConnectedByteRegisterDecl &
 MemoryAddressRegisterDecl::low() const {
@@ -180,6 +182,17 @@ void MemoryAddressRegisterDecl::verify(
   RegisterWithIncrementDecl::verify(component);
   verify_child(low_, component);
   verify_child(high_, component);
+  const auto &address_component =
+      dynamic_cast<const components::memory::Address &>(*component);
+  const auto &address_add_carry_component = address_component.carry_status();
+  if (address_add_carry_component.path() != address_add_carry_.path()) {
+    std::ostringstream os;
+    os << "Memory address register address add carry status path does not "
+          "match. Expected: "
+       << address_add_carry_.path()
+       << ", actual: " << address_add_carry_component.path();
+    throw std::invalid_argument(os.str());
+  }
 }
 
 } // namespace irata::sim::hdl

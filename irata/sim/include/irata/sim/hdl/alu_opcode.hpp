@@ -16,6 +16,7 @@ enum class AluOpcode : uint8_t {
   RotateRight = 0x07,
   ShiftLeft = 0x08,
   ShiftRight = 0x09,
+  AddressAdd = 0x0A,
 };
 
 std::ostream &operator<<(std::ostream &os, AluOpcode opcode);

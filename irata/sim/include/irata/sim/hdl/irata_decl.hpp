@@ -30,8 +30,8 @@ public:
 private:
   const WordBusDecl address_bus_;
   const ByteBusDecl data_bus_;
-  const MemoryDecl memory_;
   const CpuDecl cpu_;
+  const MemoryDecl memory_;
   const ProcessControlDecl halt_;
   const ProcessControlDecl crash_;
 };

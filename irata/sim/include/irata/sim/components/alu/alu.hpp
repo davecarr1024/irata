@@ -69,6 +69,8 @@ public:
   Status &overflow_status();
   const Status &overflow_status() const;
 
+  const Status &address_add_carry() const;
+
 protected:
   void tick_process(Logger &logger) override;
 

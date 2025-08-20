@@ -30,7 +30,7 @@ public:
 
   hdl::AluOpcode opcode() const;
 
-  virtual Result apply(bool carry_in, Byte lhs, Byte rhs) const = 0;
+  virtual Result apply(bool carry_in, Byte lhs, Byte rhs) = 0;
 
 private:
   const hdl::AluOpcode opcode_;

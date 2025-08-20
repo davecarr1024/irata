@@ -22,6 +22,7 @@ class Memory : public Component {
 public:
   // Builds a memory component with the default irata machine memory layout.
   static Memory irata(Bus<Word> &address_bus, Bus<Byte> &data_bus,
+                      const Status &address_add_carry,
                       std::unique_ptr<Module> cartridge = nullptr,
                       Component *parent = nullptr);
 
@@ -31,7 +32,7 @@ public:
   explicit Memory(std::string_view name,
                   std::vector<std::unique_ptr<Region>> regions,
                   Bus<Word> &address_bus, Bus<Byte> &data_bus,
-                  Component *parent = nullptr);
+                  const Status &address_add_carry, Component *parent = nullptr);
   virtual ~Memory() = default;
 
   hdl::ComponentType type() const override;

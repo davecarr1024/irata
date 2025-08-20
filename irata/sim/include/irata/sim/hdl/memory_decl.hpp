@@ -5,6 +5,7 @@
 #include <irata/sim/hdl/component_with_bus_decl.hpp>
 #include <irata/sim/hdl/control_decl.hpp>
 #include <irata/sim/hdl/register_decl.hpp>
+#include <irata/sim/hdl/status_decl.hpp>
 
 namespace irata::sim::hdl {
 
@@ -15,7 +16,8 @@ class MemoryDecl final : public ComponentWithParentDecl<ComponentType::Memory>,
                          public virtual ComponentWithByteBusDecl {
 public:
   MemoryDecl(const std::string &name, const ComponentDecl &parent,
-             const WordBusDecl &address_bus, const ByteBusDecl &data_bus);
+             const WordBusDecl &address_bus, const ByteBusDecl &data_bus,
+             const StatusDecl &address_add_carry);
 
   // A word register that is connected to the address bus.
   // It is used to store the address of the memory region to read from or write

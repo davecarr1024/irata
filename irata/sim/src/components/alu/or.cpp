@@ -4,7 +4,7 @@ namespace irata::sim::components::alu {
 
 Or::Or(ALU &parent) : Module(hdl::AluOpcode::Or, "or", parent) {}
 
-Module::Result Or::apply(bool carry_in, Byte lhs, Byte rhs) const {
+Module::Result Or::apply(bool carry_in, Byte lhs, Byte rhs) {
   return Module::Result::for_result(carry_in, lhs, rhs,
                                     int(lhs.value()) | int(rhs.value()));
 }

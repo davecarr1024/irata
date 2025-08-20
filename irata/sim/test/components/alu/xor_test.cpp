@@ -15,7 +15,7 @@ protected:
   ByteBus data_bus = ByteBus("data_bus", &irata);
   Status carry = Status("carry", &irata);
   ALU alu = ALU(irata, data_bus, carry);
-  const Xor &xor_ = dynamic_cast<const Xor &>(*alu.module(hdl::AluOpcode::Xor));
+  Xor &xor_ = dynamic_cast<Xor &>(*alu.module(hdl::AluOpcode::Xor));
 };
 
 } // namespace

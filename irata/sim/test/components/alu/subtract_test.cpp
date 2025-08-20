@@ -15,8 +15,8 @@ protected:
   ByteBus data_bus = ByteBus("data_bus", &irata);
   Status carry = Status("carry", &irata);
   ALU alu = ALU(irata, data_bus, carry);
-  const Subtract &subtract =
-      dynamic_cast<const Subtract &>(*alu.module(hdl::AluOpcode::Subtract));
+  Subtract &subtract =
+      dynamic_cast<Subtract &>(*alu.module(hdl::AluOpcode::Subtract));
 };
 
 } // namespace

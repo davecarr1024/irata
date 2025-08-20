@@ -4,14 +4,16 @@
 
 namespace irata::sim::components::memory {
 
-Address::Address(Component &parent, WordBus &address_bus, ByteBus &data_bus)
+Address::Address(Component &parent, WordBus &address_bus, ByteBus &data_bus,
+                 const Status &carry)
     : Component("address", &parent), address_bus_(address_bus),
       data_bus_(data_bus), read_("read", hdl::TickPhase::Read, this),
       write_("write", hdl::TickPhase::Write, this),
       reset_("reset", hdl::TickPhase::Process, this),
       high_("high", &data_bus, this), low_("low", &data_bus, this),
       increment_("increment", hdl::TickPhase::Process, this),
-      decrement_("decrement", hdl::TickPhase::Process, this) {}
+      decrement_("decrement", hdl::TickPhase::Process, this), carry_(carry),
+      carry_increment_("carry_increment", hdl::TickPhase::Process, this) {}
 
 hdl::ComponentType Address::type() const {
   return hdl::ComponentType::MemoryAddress;
@@ -58,6 +60,18 @@ void Address::set_decrement(bool value) { decrement_.set_value(value); }
 Control &Address::decrement_control() { return decrement_; }
 const Control &Address::decrement_control() const { return decrement_; }
 
+bool Address::carry_increment() const { return carry_increment_.value(); }
+void Address::set_carry_increment(bool value) {
+  carry_increment_.set_value(value);
+}
+Control &Address::carry_increment_control() { return carry_increment_; }
+const Control &Address::carry_increment_control() const {
+  return carry_increment_;
+}
+
+bool Address::carry() const { return carry_.value(); }
+const Status &Address::carry_status() const { return carry_; }
+
 Word Address::value() const { return Word::from_bytes(high(), low()); }
 
 void Address::set_value(Word value) {
@@ -99,6 +113,12 @@ void Address::tick_process(Logger &logger) {
   if (decrement()) {
     set_value(value() - Word(0x0001));
     logger << "Decremented to " << value();
+  }
+  if (carry_increment()) {
+    if (carry()) {
+      set_high(high() + 0x01);
+      logger << "Carry incremented to " << value();
+    }
   }
 }
 

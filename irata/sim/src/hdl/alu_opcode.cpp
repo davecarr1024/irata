@@ -26,6 +26,8 @@ std::ostream &operator<<(std::ostream &os, AluOpcode opcode) {
     return os << "ShiftRight";
   case AluOpcode::Nop:
     return os << "Nop";
+  case AluOpcode::AddressAdd:
+    return os << "AddressAdd";
   }
 }
 
