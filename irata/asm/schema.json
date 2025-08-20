@@ -26,7 +26,9 @@
               "none",
               "immediate",
               "absolute",
-              "zero_page"
+              "zero_page",
+              "zero_page_x",
+              "zero_page_y"
             ],
             "description": "How the instruction addresses memory"
           },

@@ -16,6 +16,7 @@ enum class AddressingMode {
   Absolute,
   ZeroPage,
   ZeroPageX,
+  ZeroPageY,
 };
 
 std::ostream &operator<<(std::ostream &os, AddressingMode addressing_mode);

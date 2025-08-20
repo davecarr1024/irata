@@ -25,6 +25,14 @@ instructions:
     opcode: 0xA5
     addressing_mode: zero_page
     description: Load accumulator from zero page memory
+  - name: LDA
+    opcode: 0xB5
+    addressing_mode: zero_page_x
+    description: Load accumulator from zero page memory with X offset
+  - name: LDA
+    opcode: 0xB9
+    addressing_mode: zero_page_y
+    description: Load accumulator from zero page memory with Y offset
   - name: STA
     opcode: 0x8D
     addressing_mode: absolute

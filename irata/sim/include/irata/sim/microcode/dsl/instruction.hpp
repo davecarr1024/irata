@@ -146,6 +146,14 @@ public:
   Instruction *indirect_write_memory_zero_page_at_pc(
       const hdl::ComponentWithByteBusDecl &data_source);
 
+  Instruction *read_memory_zero_page_indexed(
+      const hdl::ComponentWithByteBusDecl &index_source,
+      const hdl::ComponentWithByteBusDecl &data_dest);
+
+  Instruction *write_memory_zero_page_indexed(
+      const hdl::ComponentWithByteBusDecl &index_source,
+      const hdl::ComponentWithByteBusDecl &data_source);
+
   // Perform an ALU operation with the given opcode, lhs, rhs, and result.
   Instruction *
   binary_alu_operation(hdl::AluOpcode opcode,

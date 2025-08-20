@@ -151,6 +151,43 @@ Instruction *Instruction::indirect_write_memory_at_pc(
   return instruction;
 }
 
+namespace {
+Instruction *set_mar_to_zero_page_indexed(
+    Instruction *instruction,
+    const hdl::ComponentWithByteBusDecl &index_source) {
+  return instruction
+      // Copy the next program byte to the ALU lhs.
+      ->read_memory_at_pc(hdl::irata().cpu().alu().lhs())
+      // Copy the index source to the ALU rhs.
+      ->copy(index_source, hdl::irata().cpu().alu().rhs())
+      // Add the two values.
+      ->alu_operation(hdl::AluOpcode::AddressAdd)
+      // Copy the result to the MAR low.
+      ->copy(hdl::irata().cpu().alu().result(),
+             hdl::irata().memory().address().low())
+      // Set the MAR high to zero page.
+      ->with_control(hdl::irata().memory().address().high().reset());
+}
+} // namespace
+
+Instruction *Instruction::read_memory_zero_page_indexed(
+    const hdl::ComponentWithByteBusDecl &index_source,
+    const hdl::ComponentWithByteBusDecl &data_dest) {
+  Instruction *instruction = this;
+  instruction = set_mar_to_zero_page_indexed(instruction, index_source);
+  instruction = instruction->copy(hdl::irata().memory(), data_dest);
+  return instruction;
+}
+
+Instruction *Instruction::write_memory_zero_page_indexed(
+    const hdl::ComponentWithByteBusDecl &index_source,
+    const hdl::ComponentWithByteBusDecl &data_source) {
+  Instruction *instruction = this;
+  instruction = set_mar_to_zero_page_indexed(instruction, index_source);
+  instruction = instruction->copy(data_source, hdl::irata().memory());
+  return instruction;
+}
+
 int Instruction::stage() const { return stage_; }
 
 Instruction *Instruction::next_stage() {

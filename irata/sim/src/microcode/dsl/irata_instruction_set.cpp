@@ -83,12 +83,37 @@ InstructionSet *zero_page_load_op(InstructionSet *instruction_set,
       ->instruction_set();
 }
 
+// Create an instruction for a zero page indexed by x mode load operation.
+InstructionSet *zero_page_x_load_op(InstructionSet *instruction_set,
+                                    const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(load_op_name(reg), asm_::AddressingMode::ZeroPageX)
+      ->read_memory_zero_page_indexed(hdl::irata().cpu().x(), reg)
+      ->instruction_set();
+}
+
+// Create an instruction for a zero page indexed by y mode load operation.
+InstructionSet *zero_page_y_load_op(InstructionSet *instruction_set,
+                                    const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(load_op_name(reg), asm_::AddressingMode::ZeroPageY)
+      ->read_memory_zero_page_indexed(hdl::irata().cpu().y(), reg)
+      ->instruction_set();
+}
+
 // Create instructions for a load operation in all addressing modes.
 InstructionSet *load_op(InstructionSet *instruction_set,
                         const hdl::RegisterWithByteBusDecl &reg) {
   instruction_set = immediate_load_op(instruction_set, reg);
   instruction_set = absolute_load_op(instruction_set, reg);
   instruction_set = zero_page_load_op(instruction_set, reg);
+  return instruction_set;
+}
+
+InstructionSet *indexed_load_op(InstructionSet *instruction_set,
+                                const hdl::RegisterWithByteBusDecl &reg) {
+  instruction_set = zero_page_x_load_op(instruction_set, reg);
+  instruction_set = zero_page_y_load_op(instruction_set, reg);
   return instruction_set;
 }
 
@@ -128,6 +153,13 @@ InstructionSet *load_and_store_op(InstructionSet *instruction_set,
                                   const hdl::RegisterWithByteBusDecl &reg) {
   instruction_set = load_op(instruction_set, reg);
   instruction_set = store_op(instruction_set, reg);
+  return instruction_set;
+}
+
+InstructionSet *
+indexed_load_and_store_op(InstructionSet *instruction_set,
+                          const hdl::RegisterWithByteBusDecl &reg) {
+  instruction_set = indexed_load_op(instruction_set, reg);
   return instruction_set;
 }
 
@@ -179,6 +211,8 @@ std::unique_ptr<const InstructionSet> build_irata() {
       ->create_step();
 
   instruction_set = load_and_store_op(instruction_set, hdl::irata().cpu().a());
+  instruction_set =
+      indexed_load_and_store_op(instruction_set, hdl::irata().cpu().a());
   instruction_set = load_and_store_op(instruction_set, hdl::irata().cpu().x());
   instruction_set = load_and_store_op(instruction_set, hdl::irata().cpu().y());
 
