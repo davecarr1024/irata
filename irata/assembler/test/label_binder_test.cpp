@@ -10,13 +10,12 @@ namespace irata::assembler {
 
 namespace {
 
-// Helper for creating test source locations
-inline SourceLocation test_loc(size_t line = 1) {
-  return SourceLocation("<test>", line);
-}
-
 class LabelBinderTest : public ::testing::Test {
 protected:
+  static SourceLocation test_loc(size_t line = 1) {
+    return SourceLocation("<test>", line);
+  }
+
   LabelBinder binder;
 
   const asm_::Instruction &hlt = asm_::InstructionSet::irata().get_instruction(
@@ -229,7 +228,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_None) {
   statements.push_back(
       std::make_unique<InstructionBinder::Program::Instruction>(
           0x1234, hlt,
-          std::make_unique<InstructionBinder::Program::Instruction::None>(), test_loc());
+          std::make_unique<InstructionBinder::Program::Instruction::None>(), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
@@ -246,7 +245,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_Immediate) {
       std::make_unique<InstructionBinder::Program::Instruction>(
           0x1234, lda_immediate,
           std::make_unique<InstructionBinder::Program::Instruction::Immediate>(
-              0x12, test_loc())));
+              0x12), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
@@ -264,7 +263,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLiteral) {
           0x1234, lda_absolute,
           std::make_unique<
               InstructionBinder::Program::Instruction::AbsoluteLiteral>(
-              0x5678, test_loc())));
+              0x5678), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
@@ -277,13 +276,13 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLiteral) {
 TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel) {
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
       statements;
-  statements.push_back(
-      std::make_unique<InstructionBinder::Program::Label>(0x5678, "label", test_loc()));
+  statements.push_back(std::make_unique<InstructionBinder::Program::Label>(
+      0x5678, "label", test_loc()));
   statements.push_back(std::make_unique<
                        InstructionBinder::Program::Instruction>(
       0x1234, lda_absolute,
       std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
-          "label")));
+          "label"), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
@@ -302,7 +301,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel_NotFound) {
                        InstructionBinder::Program::Instruction>(
       0x1234, lda_absolute,
       std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
-          "unknown_label")));
+          "unknown_label"), test_loc()));
   EXPECT_THROW(
       {
         try {
@@ -323,7 +322,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_ZeroPageIndexed) {
           0x1234, lda_zero_page_x,
           std::make_unique<
               InstructionBinder::Program::Instruction::ZeroPageIndexed>(
-              Index::X, 0x12, test_loc())));
+              Index::X, 0x12), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
@@ -342,7 +341,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteIndexed) {
           0x1234, lda_absolute_x,
           std::make_unique<
               InstructionBinder::Program::Instruction::AbsoluteIndexed>(
-              Index::X, 0x1234, test_loc())));
+              Index::X, 0x1234), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
@@ -356,10 +355,10 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteIndexed) {
 TEST_F(LabelBinderTest, Bind_DuplicateLabel) {
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
       statements;
-  statements.push_back(
-      std::make_unique<InstructionBinder::Program::Label>(0x5678, "label", test_loc()));
-  statements.push_back(
-      std::make_unique<InstructionBinder::Program::Label>(0x9ABC, "label", test_loc()));
+  statements.push_back(std::make_unique<InstructionBinder::Program::Label>(
+      0x5678, "label", test_loc()));
+  statements.push_back(std::make_unique<InstructionBinder::Program::Label>(
+      0x9ABC, "label", test_loc()));
   EXPECT_THROW(
       {
         try {
@@ -375,28 +374,28 @@ TEST_F(LabelBinderTest, Bind_DuplicateLabel) {
 TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
       statements;
-  statements.push_back(
-      std::make_unique<InstructionBinder::Program::Label>(0x4321, "label", test_loc()));
+  statements.push_back(std::make_unique<InstructionBinder::Program::Label>(
+      0x4321, "label", test_loc()));
   statements.push_back(
       std::make_unique<InstructionBinder::Program::Instruction>(
           0x1234, hlt,
-          std::make_unique<InstructionBinder::Program::Instruction::None>(), test_loc());
+          std::make_unique<InstructionBinder::Program::Instruction::None>(), test_loc()));
   statements.push_back(
       std::make_unique<InstructionBinder::Program::Instruction>(
           0x1235, lda_immediate,
           std::make_unique<InstructionBinder::Program::Instruction::Immediate>(
-              0x12, test_loc())));
+              0x12), test_loc()));
   statements.push_back(
       std::make_unique<InstructionBinder::Program::Instruction>(
           0x1236, lda_absolute,
           std::make_unique<
               InstructionBinder::Program::Instruction::AbsoluteLiteral>(
-              0x5678, test_loc())));
+              0x5678), test_loc()));
   statements.push_back(std::make_unique<
                        InstructionBinder::Program::Instruction>(
       0x1237, lda_absolute,
       std::make_unique<InstructionBinder::Program::Instruction::AbsoluteLabel>(
-          "label")));
+          "label"), test_loc()));
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
