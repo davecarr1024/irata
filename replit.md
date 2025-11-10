@@ -21,11 +21,13 @@ The project emphasizes understanding over performance, making every instruction,
   - Updated all Statement subclasses (Instruction, Literal, Label) to accept and store SourceLocation
   - Updated ByteEncoder to handle Label statements
   - Comprehensive source location test coverage added (130 assembler unit tests passing)
-- ✅ Debug Symbol Generation: Created DebugSymbolEmitter
-  - DebugSymbol struct holds label name, address, and source location
-  - DebugSymbolEmitter extracts debug symbols from LabelBinder::Program
-  - Comprehensive test coverage (6 new tests: empty, no labels, single/multiple labels, equality, mixed statements)
-  - All 136 assembler unit tests passing (up from 130)
+- ✅ Debug Symbol Generation: Created DebugSymbolEmitter with two-table design
+  - **SourceLineSymbol**: Maps every statement address → source location (for line-by-line debugging)
+  - **LabelSymbol**: Maps label name → address + source location (for named breakpoints)
+  - **DebugSymbols**: Aggregates both symbol tables for synchronized extraction
+  - Single-pass extraction from LabelBinder::Program populates both tables efficiently
+  - Comprehensive test coverage (8 tests: empty, instructions-only, labels, mixed, equality, edge cases)
+  - All 138 assembler unit tests passing (up from 130, +8 new debug symbol tests)
 - 🔄 Next: Integrate debug symbols into cartridge format for use by simulator/debugger
 
 # User Preferences
@@ -89,7 +91,11 @@ Preferred communication style: Simple, everyday language.
 
 **Recent Additions (November 2025)**:
 - **SourceLocation class**: Tracks source filename, line number, and optional column for associating assembler output with original source code. Fully integrated through Parser, InstructionBinder, and LabelBinder stages.
-- **DebugSymbolEmitter**: Extracts debug symbols (label name, address, source location) from LabelBinder output. Mirrors ByteEncoder pattern with simple `emit()` interface that filters Label statements. Enables future debugger integration for source-level debugging of assembly programs.
+- **DebugSymbolEmitter**: Extracts two separate debug symbol tables from LabelBinder output:
+  - **Source line symbols** (SourceLineSymbol): Complete address→source_location mapping for every statement, enabling line-by-line stepping through assembly code
+  - **Label symbols** (LabelSymbol): Label name→address+source_location mapping for setting named breakpoints (e.g., "break at loop")
+  - Mirrors ByteEncoder pattern with simple `emit()` interface returning DebugSymbols struct
+  - Supports efficient debugger integration with O(1) vector iteration or O(log n) binary search for PC lookups
 
 ### Test Infrastructure (`test/`)
 
