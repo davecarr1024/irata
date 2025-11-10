@@ -1,6 +1,7 @@
 #include <cctype>
 #include <charconv>
 #include <irata/assembler/parser.hpp>
+#include <irata/assembler/source_location.hpp>
 #include <irata/common/strings/strings.hpp>
 #include <stdexcept>
 #include <utility>
@@ -8,10 +9,15 @@
 
 namespace irata::assembler {
 
-Parser::Program::Statement::Statement(Type type) : type_(type) {}
+Parser::Program::Statement::Statement(Type type, SourceLocation location) 
+    : type_(type), source_location_(std::move(location)) {}
 
 Parser::Program::Statement::Type Parser::Program::Statement::type() const {
   return type_;
+}
+
+const SourceLocation &Parser::Program::Statement::source_location() const {
+  return source_location_;
 }
 
 bool Parser::Program::Statement::operator==(const Statement &other) const {
@@ -23,8 +29,9 @@ bool Parser::Program::Statement::operator!=(const Statement &other) const {
 }
 
 Parser::Program::StatementWithValue::StatementWithValue(Type type,
-                                                        std::string_view value)
-    : Statement(type), value_(value) {}
+                                                        std::string_view value,
+                                                        SourceLocation location)
+    : Statement(type, std::move(location)), value_(value) {}
 
 std::string Parser::Program::StatementWithValue::value() const {
   return value_;
@@ -36,11 +43,11 @@ bool Parser::Program::StatementWithValue::operator==(
          value_ == dynamic_cast<const StatementWithValue &>(other).value_;
 }
 
-Parser::Program::Comment::Comment(std::string_view value)
-    : StatementWithValue(Type::Comment, value) {}
+Parser::Program::Comment::Comment(std::string_view value, SourceLocation location)
+    : StatementWithValue(Type::Comment, value, std::move(location)) {}
 
-Parser::Program::Label::Label(std::string_view value)
-    : StatementWithValue(Type::Label, value) {}
+Parser::Program::Label::Label(std::string_view value, SourceLocation location)
+    : StatementWithValue(Type::Label, value, std::move(location)) {}
 
 Parser::Program::Instruction::Arg::Arg(Type type,
                                        asm_::AddressingMode addressing_mode)
@@ -134,8 +141,9 @@ bool Parser::Program::Instruction::AbsoluteIndexed::operator==(
 }
 
 Parser::Program::Instruction::Instruction(std::string_view instruction,
-                                          std::unique_ptr<Arg> arg)
-    : Statement(Type::Instruction), instruction_(instruction),
+                                          std::unique_ptr<Arg> arg,
+                                          SourceLocation location)
+    : Statement(Type::Instruction, std::move(location)), instruction_(instruction),
       arg_(std::move(arg)) {
   if (arg_ == nullptr) {
     throw std::runtime_error("Arg cannot be null");
@@ -160,8 +168,9 @@ bool Parser::Program::Instruction::operator==(const Statement &other) const {
          *arg_ == *other_instruction.arg_;
 }
 
-Parser::Program::ByteDirective::ByteDirective(common::bytes::Byte value)
-    : Statement(Type::ByteDirective), value_(value) {}
+Parser::Program::ByteDirective::ByteDirective(common::bytes::Byte value,
+                                               SourceLocation location)
+    : Statement(Type::ByteDirective, std::move(location)), value_(value) {}
 
 common::bytes::Byte Parser::Program::ByteDirective::value() const {
   return value_;
@@ -316,14 +325,14 @@ Parser::Program::Instruction::Arg::parse(std::string_view arg) {
 }
 
 std::unique_ptr<Parser::Program::Instruction>
-Parser::Program::Instruction::parse(std::string_view line) {
+Parser::Program::Instruction::parse(std::string_view line, const SourceLocation &location) {
   const auto tokens = common::strings::split(line, " \t");
   if (tokens.size() == 1) {
     return std::make_unique<Parser::Program::Instruction>(
-        tokens[0], std::make_unique<Parser::Program::Instruction::None>());
+        tokens[0], std::make_unique<Parser::Program::Instruction::None>(), location);
   } else if (tokens.size() == 2) {
     return std::make_unique<Parser::Program::Instruction>(
-        tokens[0], Arg::parse(tokens[1]));
+        tokens[0], Arg::parse(tokens[1]), location);
   } else {
     throw std::invalid_argument("Invalid instruction: \"" + std::string(line) +
                                 "\"");
@@ -333,7 +342,7 @@ Parser::Program::Instruction::parse(std::string_view line) {
 namespace {
 
 std::unique_ptr<Parser::Program::Statement>
-parse_directive(std::string_view line) {
+parse_directive(std::string_view line, const SourceLocation &location) {
   const auto tokens = common::strings::split(line, " \t");
   if (tokens.empty()) {
     throw std::invalid_argument("Invalid directive: \"" + std::string(line) +
@@ -346,7 +355,7 @@ parse_directive(std::string_view line) {
                                   "\": byte must have value");
     }
     return std::make_unique<Parser::Program::ByteDirective>(
-        parse_numeric_literal_byte(tokens[1]));
+        parse_numeric_literal_byte(tokens[1]), location);
   } else {
     throw std::invalid_argument("Invalid directive: \"" + std::string(line) +
                                 "\" with unknown directive name \"" +
@@ -358,42 +367,46 @@ parse_directive(std::string_view line) {
 
 void Parser::Program::Statement::parse(
     std::vector<std::unique_ptr<Parser::Program::Statement>> &statements,
-    std::string_view untrimmed_line) {
+    std::string_view untrimmed_line,
+    const SourceLocation &location) {
   const std::string line = common::strings::trim(untrimmed_line);
   if (line.empty()) {
     return;
   }
   if (const auto comment_start = line.find(';');
       comment_start != std::string::npos) {
-    parse(statements, line.substr(0, comment_start));
+    parse(statements, line.substr(0, comment_start), location);
     statements.emplace_back(std::make_unique<Parser::Program::Comment>(
-        common::strings::trim(line.substr(comment_start + 1))));
+        common::strings::trim(line.substr(comment_start + 1)), location));
     return;
   }
   if (const auto label_end = line.find(':'); label_end != std::string::npos) {
     statements.emplace_back(std::make_unique<Parser::Program::Label>(
-        common::strings::trim(line.substr(0, label_end))));
-    return parse(statements, line.substr(label_end + 1));
+        common::strings::trim(line.substr(0, label_end)), location));
+    return parse(statements, line.substr(label_end + 1), location);
   }
   if (line[0] == '.') {
-    statements.push_back(parse_directive(line.substr(1)));
+    statements.push_back(parse_directive(line.substr(1), location));
     return;
   }
-  if (auto instruction = Instruction::parse(line); instruction != nullptr) {
+  if (auto instruction = Instruction::parse(line, location); instruction != nullptr) {
     statements.push_back(std::move(instruction));
   }
 }
 
-Parser::Program Parser::Program::parse(std::string_view input) {
+Parser::Program Parser::Program::parse(std::string_view input, std::string_view filename) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
+  size_t line_number = 1;  // 1-indexed for human readability
   for (const auto &line : common::strings::split(input, "\n")) {
-    Statement::parse(statements, line);
+    SourceLocation location(std::string(filename), line_number);
+    Statement::parse(statements, line, location);
+    ++line_number;
   }
   return Parser::Program(std::move(statements));
 }
 
-Parser::Program Parser::parse(std::string_view input) {
-  return Program::parse(input);
+Parser::Program Parser::parse(std::string_view input, std::string_view filename) {
+  return Program::parse(input, filename);
 }
 
 std::ostream &operator<<(std::ostream &os,

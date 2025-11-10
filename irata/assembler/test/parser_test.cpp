@@ -1,10 +1,16 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <irata/assembler/parser.hpp>
+#include <irata/assembler/source_location.hpp>
 
 namespace irata::assembler {
 
 namespace {
+
+// Helper for creating test source locations
+inline SourceLocation test_loc(size_t line = 1) {
+  return SourceLocation("<test>", line);
+}
 
 class ParserTest : public ::testing::Test {
 protected:
@@ -14,29 +20,29 @@ protected:
 } // namespace
 
 TEST_F(ParserTest, Comment_Value) {
-  EXPECT_EQ(Parser::Program::Comment("hello").value(), "hello");
+  EXPECT_EQ(Parser::Program::Comment("hello", test_loc()).value(), "hello");
 }
 
 TEST_F(ParserTest, Comment_Equality) {
-  EXPECT_EQ(Parser::Program::Comment("hello"),
-            Parser::Program::Comment("hello"));
-  EXPECT_NE(Parser::Program::Comment("hello"),
-            Parser::Program::Comment("world"));
-  EXPECT_NE(Parser::Program::Comment("hello"), Parser::Program::Label("hello"));
+  EXPECT_EQ(Parser::Program::Comment("hello", test_loc()),
+            Parser::Program::Comment("hello", test_loc()));
+  EXPECT_NE(Parser::Program::Comment("hello", test_loc()),
+            Parser::Program::Comment("world", test_loc()));
+  EXPECT_NE(Parser::Program::Comment("hello", test_loc()), Parser::Program::Label("hello", test_loc()));
 }
 
 TEST_F(ParserTest, Label_Value) {
-  EXPECT_EQ(Parser::Program::Label("hello").value(), "hello");
+  EXPECT_EQ(Parser::Program::Label("hello", test_loc()).value(), "hello");
 }
 
 TEST_F(ParserTest, Label_Equality) {
-  EXPECT_EQ(Parser::Program::Label("hello"), Parser::Program::Label("hello"));
-  EXPECT_NE(Parser::Program::Label("hello"), Parser::Program::Label("world"));
-  EXPECT_NE(Parser::Program::Label("hello"), Parser::Program::Comment("hello"));
+  EXPECT_EQ(Parser::Program::Label("hello", test_loc()), Parser::Program::Label("hello", test_loc()));
+  EXPECT_NE(Parser::Program::Label("hello", test_loc()), Parser::Program::Label("world", test_loc()));
+  EXPECT_NE(Parser::Program::Label("hello", test_loc()), Parser::Program::Comment("hello", test_loc()));
 }
 
 TEST_F(ParserTest, Instruction_NullArg) {
-  EXPECT_THROW(Parser::Program::Instruction("lda", nullptr),
+  EXPECT_THROW(Parser::Program::Instruction("lda", nullptr, test_loc()),
                std::runtime_error);
 }
 
@@ -129,19 +135,19 @@ TEST_F(ParserTest, AbsoluteIndexed_Equality) {
 }
 
 TEST_F(ParserTest, ByteDirective_Properties) {
-  const Parser::Program::ByteDirective byte_directive(0x12);
+  const Parser::Program::ByteDirective byte_directive(0x12, test_loc());
   EXPECT_EQ(byte_directive.value(), 0x12);
   EXPECT_EQ(byte_directive.type(),
             Parser::Program::Statement::Type::ByteDirective);
 }
 
 TEST_F(ParserTest, ByteDirective_Equality) {
-  EXPECT_EQ(Parser::Program::ByteDirective(0x12),
-            Parser::Program::ByteDirective(0x12));
-  EXPECT_NE(Parser::Program::ByteDirective(0x12),
-            Parser::Program::ByteDirective(0x34));
-  EXPECT_NE(Parser::Program::ByteDirective(0x12),
-            Parser::Program::Comment("hello"));
+  EXPECT_EQ(Parser::Program::ByteDirective(0x12, test_loc()),
+            Parser::Program::ByteDirective(0x12, test_loc()));
+  EXPECT_NE(Parser::Program::ByteDirective(0x12, test_loc()),
+            Parser::Program::ByteDirective(0x34, test_loc()));
+  EXPECT_NE(Parser::Program::ByteDirective(0x12, test_loc()),
+            Parser::Program::Comment("hello", test_loc()));
 }
 
 TEST_F(ParserTest, Program_NullStatement) {
@@ -155,21 +161,21 @@ TEST_F(ParserTest, Program_Equality) {
   {
     std::vector<std::unique_ptr<Parser::Program::Statement>> lhs;
     std::vector<std::unique_ptr<Parser::Program::Statement>> rhs;
-    rhs.push_back(std::make_unique<Parser::Program::Comment>("hello"));
+    rhs.push_back(std::make_unique<Parser::Program::Comment>("hello", test_loc(1)));
     EXPECT_NE(Parser::Program(std::move(lhs)), Parser::Program(std::move(rhs)));
   }
   {
     std::vector<std::unique_ptr<Parser::Program::Statement>> lhs;
-    lhs.push_back(std::make_unique<Parser::Program::Comment>("hello"));
+    lhs.push_back(std::make_unique<Parser::Program::Comment>("hello", test_loc(1)));
     std::vector<std::unique_ptr<Parser::Program::Statement>> rhs;
-    rhs.push_back(std::make_unique<Parser::Program::Comment>("hello"));
+    rhs.push_back(std::make_unique<Parser::Program::Comment>("hello", test_loc(1)));
     EXPECT_EQ(Parser::Program(std::move(lhs)), Parser::Program(std::move(rhs)));
   }
   {
     std::vector<std::unique_ptr<Parser::Program::Statement>> lhs;
-    lhs.push_back(std::make_unique<Parser::Program::Comment>("hello"));
+    lhs.push_back(std::make_unique<Parser::Program::Comment>("hello", test_loc(1)));
     std::vector<std::unique_ptr<Parser::Program::Statement>> rhs;
-    rhs.push_back(std::make_unique<Parser::Program::Label>("hello"));
+    rhs.push_back(std::make_unique<Parser::Program::Label>("hello", test_loc(1)));
     EXPECT_NE(Parser::Program(std::move(lhs)), Parser::Program(std::move(rhs)));
   }
 }
@@ -180,34 +186,34 @@ TEST_F(ParserTest, Parse_EmptyInput) {
 
 TEST_F(ParserTest, Parse_SingleComment) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
-  statements.push_back(std::make_unique<Parser::Program::Comment>("hello"));
+  statements.push_back(std::make_unique<Parser::Program::Comment>("hello", test_loc(1)));
   EXPECT_EQ(parser.parse("; hello"), Parser::Program(std::move(statements)));
 }
 
 TEST_F(ParserTest, Parse_SingleLabel) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
-  statements.push_back(std::make_unique<Parser::Program::Label>("hello"));
+  statements.push_back(std::make_unique<Parser::Program::Label>("hello", test_loc(1)));
   EXPECT_EQ(parser.parse("hello:"), Parser::Program(std::move(statements)));
 }
 
 TEST_F(ParserTest, Parse_SingleInstruction_NoneArg) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "lda", std::make_unique<Parser::Program::Instruction::None>()));
+      "lda", std::make_unique<Parser::Program::Instruction::None>(), test_loc()));
   EXPECT_EQ(parser.parse("lda"), Parser::Program(std::move(statements)));
 }
 
 TEST_F(ParserTest, Parse_SingleInstruction_ImmediateArg_Decimal) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12)));
+      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12), test_loc()));
   EXPECT_EQ(parser.parse("lda #18"), Parser::Program(std::move(statements)));
 }
 
 TEST_F(ParserTest, Parse_SingleInstruction_ImmediateArg_Hex) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12)));
+      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12), test_loc()));
   EXPECT_EQ(parser.parse("lda #$12"), Parser::Program(std::move(statements)));
 }
 
@@ -215,7 +221,7 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteLiteralArg_Decimal) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234)));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234), test_loc()));
   EXPECT_EQ(parser.parse("lda 4660"), Parser::Program(std::move(statements)));
 }
 
@@ -223,7 +229,7 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteLiteralArg_Hex) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234)));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234), test_loc()));
   EXPECT_EQ(parser.parse("lda $1234"), Parser::Program(std::move(statements)));
 }
 
@@ -231,7 +237,7 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteLabelArg) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("hello")));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("hello"), test_loc()));
   EXPECT_EQ(parser.parse("lda hello"), Parser::Program(std::move(statements)));
 }
 
@@ -256,7 +262,7 @@ TEST_F(ParserTest, Parse_SingleInstruction_ZeroPageIndexedArg) {
       expected.push_back(std::make_unique<Parser::Program::Instruction>(
           "lda",
           std::make_unique<Parser::Program::Instruction::ZeroPageIndexed>(
-              index, 0x12)));
+              index, 0x12), test_loc()));
       EXPECT_EQ(parser.parse("lda " + std::string(expr)),
                 Parser::Program(std::move(expected)));
     }
@@ -279,7 +285,7 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteIndexedArg) {
       expected.push_back(std::make_unique<Parser::Program::Instruction>(
           "lda",
           std::make_unique<Parser::Program::Instruction::AbsoluteIndexed>(
-              index, 0x1234)));
+              index, 0x1234), test_loc()));
       EXPECT_EQ(parser.parse("lda " + std::string(expr)),
                 Parser::Program(std::move(expected)));
     }
@@ -288,18 +294,18 @@ TEST_F(ParserTest, Parse_SingleInstruction_AbsoluteIndexedArg) {
 
 TEST_F(ParserTest, Parse_MultipleStatements_SeparateLines) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
-  statements.push_back(std::make_unique<Parser::Program::Comment>("a comment"));
-  statements.push_back(std::make_unique<Parser::Program::Label>("my_label"));
+  statements.push_back(std::make_unique<Parser::Program::Comment>("a comment", test_loc(1)));
+  statements.push_back(std::make_unique<Parser::Program::Label>("my_label", test_loc(1)));
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "nop", std::make_unique<Parser::Program::Instruction::None>()));
+      "nop", std::make_unique<Parser::Program::Instruction::None>(), test_loc()));
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12)));
+      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12), test_loc()));
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "sta",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234)));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234), test_loc()));
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "jmp",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("hello")));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("hello"), test_loc()));
   EXPECT_EQ(parser.parse(R"(
     ; a comment
     my_label:
@@ -313,10 +319,10 @@ TEST_F(ParserTest, Parse_MultipleStatements_SeparateLines) {
 
 TEST_F(ParserTest, Parse_MultipleStatements_SameLine) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
-  statements.push_back(std::make_unique<Parser::Program::Label>("my_label"));
+  statements.push_back(std::make_unique<Parser::Program::Label>("my_label", test_loc(1)));
   statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "nop", std::make_unique<Parser::Program::Instruction::None>()));
-  statements.push_back(std::make_unique<Parser::Program::Comment>("a comment"));
+      "nop", std::make_unique<Parser::Program::Instruction::None>(), test_loc()));
+  statements.push_back(std::make_unique<Parser::Program::Comment>("a comment", test_loc(1)));
   EXPECT_EQ(parser.parse("my_label: nop ; a comment"),
             Parser::Program(std::move(statements)));
 }
@@ -363,13 +369,13 @@ TEST_F(ParserTest, Parse_Directive_Byte_InvalidNumericValue) {
 
 TEST_F(ParserTest, Parse_Directive_Byte_Decimal) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
-  statements.push_back(std::make_unique<Parser::Program::ByteDirective>(0x12));
+  statements.push_back(std::make_unique<Parser::Program::ByteDirective>(0x12, test_loc(1)));
   EXPECT_EQ(parser.parse(".byte 18"), Parser::Program(std::move(statements)));
 }
 
 TEST_F(ParserTest, Parse_Directive_Byte_Hex) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> statements;
-  statements.push_back(std::make_unique<Parser::Program::ByteDirective>(0x12));
+  statements.push_back(std::make_unique<Parser::Program::ByteDirective>(0x12, test_loc(1)));
   EXPECT_EQ(parser.parse(".byte $12"), Parser::Program(std::move(statements)));
 }
 

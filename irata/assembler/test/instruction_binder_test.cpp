@@ -3,10 +3,16 @@
 #include <irata/asm/instruction.hpp>
 #include <irata/asm/instruction_set.hpp>
 #include <irata/assembler/instruction_binder.hpp>
+#include <irata/assembler/source_location.hpp>
 
 namespace irata::assembler {
 
 namespace {
+
+// Helper for creating test source locations
+inline SourceLocation test_loc(size_t line = 1) {
+  return SourceLocation("<test>", line);
+}
 
 class InstructionBinderTest : public ::testing::Test {
 protected:
@@ -285,7 +291,7 @@ TEST_F(InstructionBinderTest, Bind_Empty) {
 TEST_F(InstructionBinderTest, Bind_Label) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(
-      std::make_unique<Parser::Program::Label>("label"));
+      std::make_unique<Parser::Program::Label>("label", test_loc(1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -298,7 +304,7 @@ TEST_F(InstructionBinderTest, Bind_Label) {
 TEST_F(InstructionBinderTest, Bind_Instruction_None) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "hlt", std::make_unique<Parser::Program::Instruction::None>()));
+      "hlt", std::make_unique<Parser::Program::Instruction::None>(), test_loc(1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -313,7 +319,8 @@ TEST_F(InstructionBinderTest, Bind_Instruction_None) {
 TEST_F(InstructionBinderTest, Bind_Instruction_Immediate) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
-      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12)));
+      "lda", std::make_unique<Parser::Program::Instruction::Immediate>(0x12), 
+      SourceLocation("<test>", 1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -330,7 +337,8 @@ TEST_F(InstructionBinderTest, Bind_Instruction_AbsoluteLiteral) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234)));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLiteral>(0x1234),
+      SourceLocation("<test>", 1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -348,7 +356,8 @@ TEST_F(InstructionBinderTest, Bind_Instruction_AbsoluteLabel) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda",
-      std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("label")));
+      std::make_unique<Parser::Program::Instruction::AbsoluteLabel>("label"),
+      SourceLocation("<test>", 1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -365,7 +374,8 @@ TEST_F(InstructionBinderTest, Bind_Instruction_ZeroPageIndexed) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda", std::make_unique<Parser::Program::Instruction::ZeroPageIndexed>(
-                 Index::X, 0x12)));
+                 Index::X, 0x12),
+      SourceLocation("<test>", 1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -383,7 +393,8 @@ TEST_F(InstructionBinderTest, Bind_Instruction_AbsoluteIndexed) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
       "lda", std::make_unique<Parser::Program::Instruction::AbsoluteIndexed>(
-                 Index::X, 0x1234)));
+                 Index::X, 0x1234),
+      SourceLocation("<test>", 1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
@@ -400,7 +411,7 @@ TEST_F(InstructionBinderTest, Bind_Instruction_AbsoluteIndexed) {
 TEST_F(InstructionBinderTest, Bind_ByteDirective) {
   std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
   parser_statements.push_back(
-      std::make_unique<Parser::Program::ByteDirective>(0x12));
+      std::make_unique<Parser::Program::ByteDirective>(0x12, test_loc(1)));
   const auto parser_program = Parser::Program(std::move(parser_statements));
   const auto program = binder.bind(parser_program);
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>

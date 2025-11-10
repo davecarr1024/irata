@@ -2,6 +2,7 @@
 
 #include <irata/asm/instruction.hpp>
 #include <irata/assembler/index.hpp>
+#include <irata/assembler/source_location.hpp>
 #include <irata/common/bytes/byte.hpp>
 #include <irata/common/bytes/word.hpp>
 #include <memory>
@@ -30,18 +31,20 @@ public:
       virtual ~Statement() = default;
 
       Type type() const;
+      const SourceLocation &source_location() const;
 
       virtual bool operator==(const Statement &other) const;
       virtual bool operator!=(const Statement &other) const;
 
       static void parse(std::vector<std::unique_ptr<Statement>> &statements,
-                        std::string_view line);
+                        std::string_view line, const SourceLocation &location);
 
     protected:
-      explicit Statement(Type type);
+      Statement(Type type, SourceLocation location);
 
     private:
       const Type type_;
+      const SourceLocation source_location_;
     };
 
     class StatementWithValue : public Statement {
@@ -51,7 +54,7 @@ public:
       bool operator==(const Statement &other) const override;
 
     protected:
-      StatementWithValue(Type type, std::string_view value);
+      StatementWithValue(Type type, std::string_view value, SourceLocation location);
 
     private:
       std::string value_;
@@ -61,14 +64,14 @@ public:
     // at the end of a line.
     class Comment final : public StatementWithValue {
     public:
-      explicit Comment(std::string_view value);
+      Comment(std::string_view value, SourceLocation location);
     };
 
     // A label in a program, of the form "label:", alone on a line or at the
     // start of a line.
     class Label final : public StatementWithValue {
     public:
-      explicit Label(std::string_view value);
+      Label(std::string_view value, SourceLocation location);
     };
 
     // An instruction in a program, of the form "instruction arg".
@@ -180,9 +183,9 @@ public:
         const common::bytes::Word value_;
       };
 
-      Instruction(std::string_view instruction, std::unique_ptr<Arg> arg);
+      Instruction(std::string_view instruction, std::unique_ptr<Arg> arg, SourceLocation location);
 
-      static std::unique_ptr<Instruction> parse(std::string_view line);
+      static std::unique_ptr<Instruction> parse(std::string_view line, const SourceLocation &location);
 
       bool operator==(const Statement &other) const override final;
 
@@ -197,7 +200,7 @@ public:
 
     class ByteDirective final : public Statement {
     public:
-      explicit ByteDirective(common::bytes::Byte value);
+      ByteDirective(common::bytes::Byte value, SourceLocation location);
 
       common::bytes::Byte value() const;
 
@@ -209,7 +212,7 @@ public:
 
     explicit Program(std::vector<std::unique_ptr<Statement>> statements);
 
-    static Program parse(std::string_view input);
+    static Program parse(std::string_view input, std::string_view filename = "<stdin>");
 
     const std::vector<std::unique_ptr<Statement>> &statements() const;
 
@@ -221,7 +224,7 @@ public:
   };
 
   // Parses the given input into a program.
-  Program parse(std::string_view input);
+  Program parse(std::string_view input, std::string_view filename = "<stdin>");
 };
 
 std::ostream &operator<<(std::ostream &os,
