@@ -49,7 +49,8 @@ LabelBinder::BindContext::get(std::string_view label) const {
 LabelBinder::Program::Statement::Statement(Type type,
                                            common::bytes::Word address,
                                            SourceLocation source_location)
-    : type_(type), address_(address), source_location_(std::move(source_location)) {}
+    : type_(type), address_(address),
+      source_location_(std::move(source_location)) {}
 
 std::unique_ptr<LabelBinder::Program::Statement>
 LabelBinder::Program::Statement::bind(
@@ -102,9 +103,7 @@ LabelBinder::Program::Label::Label(
     const InstructionBinder::Program::Label &label)
     : Label(label.address(), label.value(), label.location()) {}
 
-const std::string &LabelBinder::Program::Label::value() const {
-  return value_;
-}
+const std::string &LabelBinder::Program::Label::value() const { return value_; }
 
 bool LabelBinder::Program::Label::operator==(const Statement &other) const {
   return Statement::operator==(other) &&
@@ -371,8 +370,8 @@ std::ostream &operator<<(std::ostream &os,
 
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Label &label) {
-  return os << "Label(address = " << label.address()
-            << ", value = \"" << label.value() << "\")";
+  return os << "Label(address = " << label.address() << ", value = \""
+            << label.value() << "\")";
 }
 
 std::ostream &
