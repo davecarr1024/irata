@@ -17,8 +17,8 @@ enable_testing()
 add_library(irata_build_flags INTERFACE)
 
 if(IRATA_ENABLE_SANITIZER)
-  target_compile_options(irata_build_flags INTERFACE -fsanitize=address -fno-omit-frame-pointer)
-  target_link_options(irata_build_flags INTERFACE -fsanitize=address -fno-omit-frame-pointer)
+  target_compile_options(irata_build_flags INTERFACE -fsanitize=address -fno-omit-frame-pointer -g)
+  target_link_options(irata_build_flags INTERFACE -fsanitize=address -fno-omit-frame-pointer -g)
 endif()
 
 if(IRATA_ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")

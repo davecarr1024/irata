@@ -2,3 +2,6 @@ modules = ["cpp-clang14", "python-3.12"]
 [nix]
 channel = "stable-24_05"
 packages = ["bc", "clang-tools_18", "cmake", "hexdump", "llvmPackages.bintools-unwrapped", "python312Packages.jsonschema", "python312Packages.pyyaml", "unixtools.xxd"]
+
+[agent]
+expertMode = true

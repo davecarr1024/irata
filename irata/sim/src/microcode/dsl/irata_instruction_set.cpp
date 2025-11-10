@@ -161,6 +161,47 @@ InstructionSet *zero_page_store_op(InstructionSet *instruction_set,
       ->instruction_set();
 }
 
+InstructionSet *zero_page_x_store_op(InstructionSet *instruction_set,
+                                     const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(store_op_name(reg), asm_::AddressingMode::ZeroPageX)
+      ->write_memory_zero_page_indexed(hdl::irata().cpu().x(), reg)
+      ->instruction_set();
+}
+
+InstructionSet *zero_page_y_store_op(InstructionSet *instruction_set,
+                                     const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(store_op_name(reg), asm_::AddressingMode::ZeroPageY)
+      ->write_memory_zero_page_indexed(hdl::irata().cpu().y(), reg)
+      ->instruction_set();
+}
+
+InstructionSet *absolute_x_store_op(InstructionSet *instruction_set,
+                                    const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(store_op_name(reg), asm_::AddressingMode::AbsoluteX)
+      ->write_memory_absolute_indexed(hdl::irata().cpu().x(), reg)
+      ->instruction_set();
+}
+
+InstructionSet *absolute_y_store_op(InstructionSet *instruction_set,
+                                    const hdl::RegisterWithByteBusDecl &reg) {
+  return instruction_set
+      ->create_instruction(store_op_name(reg), asm_::AddressingMode::AbsoluteY)
+      ->write_memory_absolute_indexed(hdl::irata().cpu().y(), reg)
+      ->instruction_set();
+}
+
+InstructionSet *indexed_store_op(InstructionSet *instruction_set,
+                                 const hdl::RegisterWithByteBusDecl &reg) {
+  instruction_set = zero_page_x_store_op(instruction_set, reg);
+  instruction_set = zero_page_y_store_op(instruction_set, reg);
+  instruction_set = absolute_x_store_op(instruction_set, reg);
+  instruction_set = absolute_y_store_op(instruction_set, reg);
+  return instruction_set;
+}
+
 // Create instructions for a store operation in all addressing modes.
 InstructionSet *store_op(InstructionSet *instruction_set,
                          const hdl::RegisterWithByteBusDecl &reg) {
@@ -182,6 +223,7 @@ InstructionSet *
 indexed_load_and_store_op(InstructionSet *instruction_set,
                           const hdl::RegisterWithByteBusDecl &reg) {
   instruction_set = indexed_load_op(instruction_set, reg);
+  instruction_set = indexed_store_op(instruction_set, reg);
   return instruction_set;
 }
 

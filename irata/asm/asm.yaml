@@ -49,6 +49,22 @@ instructions:
     opcode: 0x85
     addressing_mode: zero_page
     description: Store accumulator in zero page memory
+  - name: STA
+    opcode: 0x95
+    addressing_mode: zero_page_x
+    description: Store accumulator in zero page memory with X offset
+  - name: STA
+    opcode: 0x99
+    addressing_mode: zero_page_y
+    description: Store accumulator in zero page memory with Y offset
+  - name: STA
+    opcode: 0x9D
+    addressing_mode: absolute_x
+    description: Store accumulator in memory with X offset
+  - name: STA
+    opcode: 0x91
+    addressing_mode: absolute_y
+    description: Store accumulator in memory with Y offset
 
   - name: LDX
     opcode: 0xA2
