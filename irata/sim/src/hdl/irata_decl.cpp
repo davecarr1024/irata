@@ -1,10 +1,10 @@
 #include <irata/sim/hdl/irata_decl.hpp>
 
 #ifdef __has_include
-#  if __has_include(<sanitizer/lsan_interface.h>)
-#    include <sanitizer/lsan_interface.h>
-#    define HAS_LSAN 1
-#  endif
+#if __has_include(<sanitizer/lsan_interface.h>)
+#include <sanitizer/lsan_interface.h>
+#define HAS_LSAN 1
+#endif
 #endif
 
 namespace irata::sim::hdl {
