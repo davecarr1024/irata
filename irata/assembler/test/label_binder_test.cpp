@@ -286,6 +286,9 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel) {
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  // Label is propagated for debug symbol generation
+  expected.push_back(std::make_unique<LabelBinder::Program::Label>(
+      0x5678, "label", test_loc()));
   // Note the expected value is offset 0x8000 to account for cartridge memory
   // mapping.
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
@@ -399,6 +402,9 @@ TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
   const auto program =
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
+  // Label is propagated for debug symbol generation
+  expected.push_back(std::make_unique<LabelBinder::Program::Label>(
+      0x4321, "label", test_loc()));
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, hlt,
       std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));

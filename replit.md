@@ -13,11 +13,15 @@ The project emphasizes understanding over performance, making every instruction,
 
 **Active Goal**: Implement source location tracking throughout the assembler pipeline to associate runtime state with source file locations (filename and line number) for better debugging of assembly programs.
 
-**Progress**: Phase 1 of 5-phase refactor complete (November 10, 2025)
-- ✅ Created SourceLocation class as immutable value object
-- ✅ Updated Parser to use SourceLocation instead of integer line numbers
-- ✅ All 126 assembler unit tests passing
-- 🔄 Next: Phase 2 - Propagate through InstructionBinder/LabelBinder
+**Progress**: Phase 2 of 5-phase refactor complete (November 10, 2025)
+- ✅ Phase 1: Created SourceLocation class and updated Parser
+- ✅ Phase 2: Propagated SourceLocation through LabelBinder
+  - Added SourceLocation to Statement base class
+  - Added Label statement type to LabelBinder::Program for debug symbol support
+  - Updated all Statement subclasses (Instruction, Literal, Label) to accept and store SourceLocation
+  - Updated ByteEncoder to handle Label statements
+  - All 126 assembler unit tests passing + 36 integration tests passing
+- 🔄 Next: Phase 3 - Propagate through CartridgeEncoder
 
 # User Preferences
 
