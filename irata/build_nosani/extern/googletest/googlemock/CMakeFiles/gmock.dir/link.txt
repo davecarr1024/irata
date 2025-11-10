@@ -1,2 +1,0 @@
-/nix/store/ncw864rylz6x57l3x20fsf8gg1h05bfa-llvm-binutils-17.0.6/bin/llvm-ar qc ../../../lib/libgmock.a "CMakeFiles/gmock.dir/src/gmock-all.cc.o"
-/nix/store/ncw864rylz6x57l3x20fsf8gg1h05bfa-llvm-binutils-17.0.6/bin/llvm-ranlib ../../../lib/libgmock.a

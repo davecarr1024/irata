@@ -1,2 +1,0 @@
-/nix/store/ncw864rylz6x57l3x20fsf8gg1h05bfa-llvm-binutils-17.0.6/bin/llvm-ar qc ../../../lib/libgtest.a "CMakeFiles/gtest.dir/src/gtest-all.cc.o"
-/nix/store/ncw864rylz6x57l3x20fsf8gg1h05bfa-llvm-binutils-17.0.6/bin/llvm-ranlib ../../../lib/libgtest.a
