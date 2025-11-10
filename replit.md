@@ -13,15 +13,20 @@ The project emphasizes understanding over performance, making every instruction,
 
 **Active Goal**: Implement source location tracking throughout the assembler pipeline to associate runtime state with source file locations (filename and line number) for better debugging of assembly programs.
 
-**Progress**: Phase 2 of 5-phase refactor complete (November 10, 2025)
+**Progress**: Debug symbol generation complete (November 10, 2025)
 - ✅ Phase 1: Created SourceLocation class and updated Parser
 - ✅ Phase 2: Propagated SourceLocation through LabelBinder
   - Added SourceLocation to Statement base class
   - Added Label statement type to LabelBinder::Program for debug symbol support
   - Updated all Statement subclasses (Instruction, Literal, Label) to accept and store SourceLocation
   - Updated ByteEncoder to handle Label statements
-  - All 126 assembler unit tests passing + 36 integration tests passing
-- 🔄 Next: Phase 3 - Propagate through CartridgeEncoder
+  - Comprehensive source location test coverage added (130 assembler unit tests passing)
+- ✅ Debug Symbol Generation: Created DebugSymbolEmitter
+  - DebugSymbol struct holds label name, address, and source location
+  - DebugSymbolEmitter extracts debug symbols from LabelBinder::Program
+  - Comprehensive test coverage (6 new tests: empty, no labels, single/multiple labels, equality, mixed statements)
+  - All 136 assembler unit tests passing (up from 130)
+- 🔄 Next: Integrate debug symbols into cartridge format for use by simulator/debugger
 
 # User Preferences
 
@@ -82,7 +87,9 @@ Preferred communication style: Simple, everyday language.
 
 **Rationale**: Standard two-pass design handles forward references while maintaining simplicity. Cartridge output format provides a self-contained executable for the simulator.
 
-**Recent Addition**: SourceLocation class (November 2025) - Tracks source filename, line number, and optional column for associating assembler output with original source code. Currently integrated into Parser layer with plans to propagate through binding and encoding stages.
+**Recent Additions (November 2025)**:
+- **SourceLocation class**: Tracks source filename, line number, and optional column for associating assembler output with original source code. Fully integrated through Parser, InstructionBinder, and LabelBinder stages.
+- **DebugSymbolEmitter**: Extracts debug symbols (label name, address, source location) from LabelBinder output. Mirrors ByteEncoder pattern with simple `emit()` interface that filters Label statements. Enables future debugger integration for source-level debugging of assembly programs.
 
 ### Test Infrastructure (`test/`)
 
