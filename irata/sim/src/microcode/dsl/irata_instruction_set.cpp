@@ -3,10 +3,10 @@
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 
 #ifdef __has_include
-#  if __has_include(<sanitizer/lsan_interface.h>)
-#    include <sanitizer/lsan_interface.h>
-#    define HAS_LSAN 1
-#  endif
+#if __has_include(<sanitizer/lsan_interface.h>)
+#include <sanitizer/lsan_interface.h>
+#define HAS_LSAN 1
+#endif
 #endif
 
 namespace irata::sim::microcode::dsl {
@@ -286,7 +286,8 @@ InstructionSet *branch_op(const hdl::IrataDecl &irata_hdl,
       ->instruction_set();
 }
 
-std::unique_ptr<const InstructionSet> build_irata(const hdl::IrataDecl &irata_hdl) {
+std::unique_ptr<const InstructionSet>
+build_irata(const hdl::IrataDecl &irata_hdl) {
   auto instruction_set_ptr = std::make_unique<InstructionSet>();
   auto *instruction_set = instruction_set_ptr.get();
 
@@ -299,11 +300,14 @@ std::unique_ptr<const InstructionSet> build_irata(const hdl::IrataDecl &irata_hd
   instruction_set->create_instruction("nop", asm_::AddressingMode::None)
       ->create_step();
 
-  instruction_set = load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().a());
   instruction_set =
-      indexed_load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().a());
-  instruction_set = load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().x());
-  instruction_set = load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().y());
+      load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().a());
+  instruction_set = indexed_load_and_store_op(irata_hdl, instruction_set,
+                                              irata_hdl.cpu().a());
+  instruction_set =
+      load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().x());
+  instruction_set =
+      load_and_store_op(irata_hdl, instruction_set, irata_hdl.cpu().y());
 
   instruction_set->create_instruction("tax", asm_::AddressingMode::None)
       ->copy(irata_hdl.cpu().a(), irata_hdl.cpu().x());
@@ -331,20 +335,25 @@ std::unique_ptr<const InstructionSet> build_irata(const hdl::IrataDecl &irata_hd
       ->copy(irata_hdl.cpu().a(), irata_hdl.cpu().alu().rhs())
       ->alu_operation(hdl::AluOpcode::Subtract);
 
-  instruction_set = alu_op(irata_hdl, instruction_set, "adc", hdl::AluOpcode::Add);
-  instruction_set = alu_op(irata_hdl, instruction_set, "sbc", hdl::AluOpcode::Subtract);
-  instruction_set = alu_op(irata_hdl, instruction_set, "and", hdl::AluOpcode::And);
-  instruction_set = alu_op(irata_hdl, instruction_set, "ora", hdl::AluOpcode::Or);
-  instruction_set = alu_op(irata_hdl, instruction_set, "eor", hdl::AluOpcode::Xor);
+  instruction_set =
+      alu_op(irata_hdl, instruction_set, "adc", hdl::AluOpcode::Add);
+  instruction_set =
+      alu_op(irata_hdl, instruction_set, "sbc", hdl::AluOpcode::Subtract);
+  instruction_set =
+      alu_op(irata_hdl, instruction_set, "and", hdl::AluOpcode::And);
+  instruction_set =
+      alu_op(irata_hdl, instruction_set, "ora", hdl::AluOpcode::Or);
+  instruction_set =
+      alu_op(irata_hdl, instruction_set, "eor", hdl::AluOpcode::Xor);
 
-  instruction_set =
-      unary_alu_op(irata_hdl, instruction_set, "asl", hdl::AluOpcode::ShiftLeft);
-  instruction_set =
-      unary_alu_op(irata_hdl, instruction_set, "lsr", hdl::AluOpcode::ShiftRight);
-  instruction_set =
-      unary_alu_op(irata_hdl, instruction_set, "rol", hdl::AluOpcode::RotateLeft);
-  instruction_set =
-      unary_alu_op(irata_hdl, instruction_set, "ror", hdl::AluOpcode::RotateRight);
+  instruction_set = unary_alu_op(irata_hdl, instruction_set, "asl",
+                                 hdl::AluOpcode::ShiftLeft);
+  instruction_set = unary_alu_op(irata_hdl, instruction_set, "lsr",
+                                 hdl::AluOpcode::ShiftRight);
+  instruction_set = unary_alu_op(irata_hdl, instruction_set, "rol",
+                                 hdl::AluOpcode::RotateLeft);
+  instruction_set = unary_alu_op(irata_hdl, instruction_set, "ror",
+                                 hdl::AluOpcode::RotateRight);
 
   instruction_set->create_instruction("jmp", asm_::AddressingMode::Absolute)
       ->read_word_at_pc(irata_hdl.cpu().pc());
@@ -400,10 +409,11 @@ std::unique_ptr<const InstructionSet> build_irata(const hdl::IrataDecl &irata_hd
 
 const InstructionSet &InstructionSet::irata() {
   // Initialize hdl::irata() FIRST to avoid re-entrant static initialization
-  // This ensures the HDL singleton is fully constructed before build_irata() runs
+  // This ensures the HDL singleton is fully constructed before build_irata()
+  // runs
   const auto &irata_hdl = hdl::irata();
-  // Use .release() to intentionally leak memory and avoid static destruction order issues
-  // This singleton's lifetime should extend to program termination
+  // Use .release() to intentionally leak memory and avoid static destruction
+  // order issues This singleton's lifetime should extend to program termination
   static const auto *instruction_set = build_irata(irata_hdl).release();
 #ifdef HAS_LSAN
   __lsan_ignore_object(instruction_set);
