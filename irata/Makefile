@@ -8,9 +8,11 @@ configure:
 build: configure
 	cmake --build build
 
+# Run tests with LeakSanitizer disabled to avoid crashes from intentionally leaked singletons
+# See irata_instruction_set.cpp and irata_decl.cpp for details on why singletons are intentionally leaked
 test: build
-	ctest --test-dir build --output-on-failure
-				
+	LSAN_OPTIONS=detect_leaks=0 ctest --test-dir build --output-on-failure
+                                
 format: configure
 	find sim \( -name '*.cpp' -o -name '*.hpp' \) -exec clang-format -i {} +
 

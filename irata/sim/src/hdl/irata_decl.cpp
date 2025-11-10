@@ -1,5 +1,12 @@
 #include <irata/sim/hdl/irata_decl.hpp>
 
+#ifdef __has_include
+#  if __has_include(<sanitizer/lsan_interface.h>)
+#    include <sanitizer/lsan_interface.h>
+#    define HAS_LSAN 1
+#  endif
+#endif
+
 namespace irata::sim::hdl {
 
 IrataDecl::IrataDecl()
@@ -21,8 +28,13 @@ void IrataDecl::verify(const components::Component *component) const {
 }
 
 const IrataDecl &IrataDecl::irata() {
-  static const IrataDecl irata;
-  return irata;
+  // Intentionally leak to avoid static destruction order issues
+  // This singleton's lifetime should extend to program termination
+  static const IrataDecl *irata = new IrataDecl();
+#ifdef HAS_LSAN
+  __lsan_ignore_object(irata);
+#endif
+  return *irata;
 }
 
 const IrataDecl &irata() { return IrataDecl::irata(); }

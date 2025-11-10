@@ -1,0 +1,2 @@
+/nix/store/ncw864rylz6x57l3x20fsf8gg1h05bfa-llvm-binutils-17.0.6/bin/llvm-ar qc libirata_asm.a CMakeFiles/irata_asm.dir/gen/instruction.cpp.o CMakeFiles/irata_asm.dir/src/instruction.cpp.o CMakeFiles/irata_asm.dir/src/instruction_set.cpp.o
+/nix/store/ncw864rylz6x57l3x20fsf8gg1h05bfa-llvm-binutils-17.0.6/bin/llvm-ranlib libirata_asm.a

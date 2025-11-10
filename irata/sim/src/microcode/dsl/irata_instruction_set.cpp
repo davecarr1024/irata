@@ -2,6 +2,13 @@
 #include <irata/sim/microcode/dsl/instruction.hpp>
 #include <irata/sim/microcode/dsl/instruction_set.hpp>
 
+#ifdef __has_include
+#  if __has_include(<sanitizer/lsan_interface.h>)
+#    include <sanitizer/lsan_interface.h>
+#    define HAS_LSAN 1
+#  endif
+#endif
+
 namespace irata::sim::microcode::dsl {
 
 namespace {
@@ -395,7 +402,12 @@ const InstructionSet &InstructionSet::irata() {
   // Initialize hdl::irata() FIRST to avoid re-entrant static initialization
   // This ensures the HDL singleton is fully constructed before build_irata() runs
   const auto &irata_hdl = hdl::irata();
-  static const auto instruction_set = build_irata(irata_hdl);
+  // Use .release() to intentionally leak memory and avoid static destruction order issues
+  // This singleton's lifetime should extend to program termination
+  static const auto *instruction_set = build_irata(irata_hdl).release();
+#ifdef HAS_LSAN
+  __lsan_ignore_object(instruction_set);
+#endif
   return *instruction_set;
 }
 
