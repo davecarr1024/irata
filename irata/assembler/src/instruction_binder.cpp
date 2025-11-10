@@ -45,7 +45,7 @@ InstructionBinder::Program::Statement::location() const {
 bool InstructionBinder::Program::Statement::operator==(
     const Statement &other) const {
   return type_ == other.type_ && address_ == other.address_ &&
-         size() == other.size();
+         size() == other.size() && location_ == other.location_;
 }
 
 bool InstructionBinder::Program::Statement::operator!=(

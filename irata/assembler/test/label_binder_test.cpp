@@ -131,6 +131,7 @@ TEST_F(LabelBinderTest, Instruction_Properties) {
   EXPECT_EQ(instruction.address(), 0x1234);
   EXPECT_EQ(instruction.instruction(), hlt);
   EXPECT_EQ(instruction.arg(), LabelBinder::Program::Instruction::None());
+  EXPECT_EQ(instruction.source_location(), test_loc());
 }
 
 TEST_F(LabelBinderTest, Instruction_Equality) {
@@ -159,6 +160,12 @@ TEST_F(LabelBinderTest, Instruction_Equality) {
                 0x1234, hlt,
                 std::make_unique<LabelBinder::Program::Instruction::Immediate>(
                     0x12), test_loc()));
+  EXPECT_NE(LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc(1)),
+            LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc(2)));
 }
 
 TEST_F(LabelBinderTest, Literal_Properties) {
@@ -167,6 +174,7 @@ TEST_F(LabelBinderTest, Literal_Properties) {
   EXPECT_EQ(literal.type(), LabelBinder::Program::Statement::Type::Literal);
   EXPECT_EQ(literal.address(), 0x1234);
   EXPECT_EQ(literal.values(), (std::vector<common::bytes::Byte>{0x12, 0x34}));
+  EXPECT_EQ(literal.source_location(), test_loc());
 }
 
 TEST_F(LabelBinderTest, Literal_Equality) {
@@ -181,6 +189,10 @@ TEST_F(LabelBinderTest, Literal_Equality) {
   EXPECT_NE(LabelBinder::Program::Literal(
                 0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()),
             LabelBinder::Program::Literal(0x1234, {}, test_loc()));
+  EXPECT_NE(LabelBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc(1)),
+            LabelBinder::Program::Literal(
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc(2)));
   EXPECT_NE(LabelBinder::Program::Literal(0x1234, {}, test_loc()),
             LabelBinder::Program::Instruction(
                 0x1234, hlt,
@@ -202,6 +214,8 @@ TEST_F(LabelBinderTest, Label_Equality) {
             LabelBinder::Program::Label(0x5678, "my_label", test_loc()));
   EXPECT_NE(LabelBinder::Program::Label(0x1234, "my_label", test_loc()),
             LabelBinder::Program::Label(0x1234, "other_label", test_loc()));
+  EXPECT_NE(LabelBinder::Program::Label(0x1234, "my_label", test_loc(1)),
+            LabelBinder::Program::Label(0x1234, "my_label", test_loc(2)));
   EXPECT_NE(LabelBinder::Program::Label(0x1234, "my_label", test_loc()),
             LabelBinder::Program::Instruction(
                 0x1234, hlt,
@@ -453,6 +467,31 @@ TEST_F(LabelBinderTest, Bind_Literal) {
   expected.push_back(std::make_unique<LabelBinder::Program::Literal>(
       0x1234, std::vector<common::bytes::Byte>{0xBE, 0xEF}, test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
+}
+
+TEST_F(LabelBinderTest, Bind_SourceLocationPropagation) {
+  // This test verifies that source locations from instruction binder statements
+  // are correctly propagated through the label binder
+  std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
+      statements;
+  statements.push_back(std::make_unique<InstructionBinder::Program::Label>(
+      0x4321, "start", test_loc(20)));
+  statements.push_back(
+      std::make_unique<InstructionBinder::Program::Instruction>(
+          0x1234, hlt,
+          std::make_unique<InstructionBinder::Program::Instruction::None>(),
+          test_loc(21)));
+  statements.push_back(std::make_unique<InstructionBinder::Program::Literal>(
+      0x5678, std::vector<common::bytes::Byte>{0xDE, 0xAD}, test_loc(22)));
+  const auto program =
+      binder.bind(InstructionBinder::Program(std::move(statements)));
+  
+  // Verify each statement has the correct source location
+  // Note: Label is included in output for debug symbol generation
+  ASSERT_EQ(program.statements().size(), 3);
+  EXPECT_EQ(program.statements()[0]->source_location(), test_loc(20)); // Label
+  EXPECT_EQ(program.statements()[1]->source_location(), test_loc(21)); // Instruction
+  EXPECT_EQ(program.statements()[2]->source_location(), test_loc(22)); // Literal
 }
 
 } // namespace irata::assembler

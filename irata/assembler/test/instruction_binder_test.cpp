@@ -42,6 +42,7 @@ TEST_F(InstructionBinderTest, Label_Properties) {
   EXPECT_EQ(label.value(), "label");
   EXPECT_EQ(label.type(), InstructionBinder::Program::Statement::Type::Label);
   EXPECT_EQ(label.size(), 0);
+  EXPECT_EQ(label.location(), test_loc());
 }
 
 TEST_F(InstructionBinderTest, Label_Equality) {
@@ -51,6 +52,8 @@ TEST_F(InstructionBinderTest, Label_Equality) {
             InstructionBinder::Program::Label(0x1234, "label2", test_loc()));
   EXPECT_NE(InstructionBinder::Program::Label(0x1234, "label", test_loc()),
             InstructionBinder::Program::Label(0x1235, "label", test_loc()));
+  EXPECT_NE(InstructionBinder::Program::Label(0x1234, "label", test_loc(1)),
+            InstructionBinder::Program::Label(0x1234, "label", test_loc(2)));
   EXPECT_NE(
       InstructionBinder::Program::Label(0x1234, "label", test_loc()),
       InstructionBinder::Program::Instruction(
@@ -192,6 +195,7 @@ TEST_F(InstructionBinderTest, Instruction_Properties) {
   EXPECT_EQ(instruction.arg().type(),
             InstructionBinder::Program::Instruction::Arg::Type::None);
   EXPECT_EQ(instruction.size(), 1);
+  EXPECT_EQ(instruction.location(), test_loc());
 }
 
 TEST_F(InstructionBinderTest, Instruction_Equality) {
@@ -236,6 +240,15 @@ TEST_F(InstructionBinderTest, Instruction_Equality) {
       InstructionBinder::Program::Instruction(
           0x1234, lda_immediate,
           std::make_unique<InstructionBinder::Program::Instruction::None>(),
+          test_loc(1)),
+      InstructionBinder::Program::Instruction(
+          0x1234, lda_immediate,
+          std::make_unique<InstructionBinder::Program::Instruction::None>(),
+          test_loc(2)));
+  EXPECT_NE(
+      InstructionBinder::Program::Instruction(
+          0x1234, lda_immediate,
+          std::make_unique<InstructionBinder::Program::Instruction::None>(),
           test_loc()),
       InstructionBinder::Program::Label(0x1234, "label", test_loc()));
 }
@@ -247,6 +260,7 @@ TEST_F(InstructionBinderTest, Literal_Properties) {
   EXPECT_EQ(literal.values(), (std::vector<common::bytes::Byte>{0x12, 0x34}));
   EXPECT_EQ(literal.type(),
             InstructionBinder::Program::Statement::Type::Literal);
+  EXPECT_EQ(literal.location(), test_loc());
 }
 
 TEST_F(InstructionBinderTest, Literal_Equality) {
@@ -265,6 +279,11 @@ TEST_F(InstructionBinderTest, Literal_Equality) {
           0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()),
       InstructionBinder::Program::Literal(
           0x1234, std::vector<common::bytes::Byte>{0x12, 0x35}, test_loc()));
+  EXPECT_NE(
+      InstructionBinder::Program::Literal(
+          0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc(1)),
+      InstructionBinder::Program::Literal(
+          0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc(2)));
   EXPECT_NE(InstructionBinder::Program::Literal(0x1234, {}, test_loc()),
             InstructionBinder::Program::Label(0x1234, "label", test_loc()));
 }
@@ -311,7 +330,7 @@ TEST_F(InstructionBinderTest, Bind_Label) {
   std::vector<std::unique_ptr<InstructionBinder::Program::Statement>>
       statements;
   statements.push_back(std::make_unique<InstructionBinder::Program::Label>(
-      0x0000, "label", test_loc()));
+      0x0000, "label", test_loc(1)));
   EXPECT_EQ(program, InstructionBinder::Program(std::move(statements)));
 }
 
@@ -441,6 +460,27 @@ TEST_F(InstructionBinderTest, Bind_ByteDirective) {
   statements.push_back(std::make_unique<InstructionBinder::Program::Literal>(
       0x0000, std::vector<common::bytes::Byte>{0x12}, test_loc()));
   EXPECT_EQ(program, InstructionBinder::Program(std::move(statements)));
+}
+
+TEST_F(InstructionBinderTest, Bind_SourceLocationPropagation) {
+  // This test verifies that source locations from parser statements
+  // are correctly propagated through the instruction binder
+  std::vector<std::unique_ptr<Parser::Program::Statement>> parser_statements;
+  parser_statements.push_back(
+      std::make_unique<Parser::Program::Label>("start", test_loc(10)));
+  parser_statements.push_back(std::make_unique<Parser::Program::Instruction>(
+      "hlt", std::make_unique<Parser::Program::Instruction::None>(),
+      test_loc(11)));
+  parser_statements.push_back(
+      std::make_unique<Parser::Program::ByteDirective>(0xAB, test_loc(12)));
+  const auto parser_program = Parser::Program(std::move(parser_statements));
+  const auto program = binder.bind(parser_program);
+  
+  // Verify each statement has the correct source location
+  ASSERT_EQ(program.statements().size(), 3);
+  EXPECT_EQ(program.statements()[0]->location(), test_loc(10));
+  EXPECT_EQ(program.statements()[1]->location(), test_loc(11));
+  EXPECT_EQ(program.statements()[2]->location(), test_loc(12));
 }
 
 } // namespace irata::assembler
