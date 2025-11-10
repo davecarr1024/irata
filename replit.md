@@ -9,6 +9,16 @@ Irata is a handcrafted 8-bit virtual computer system inspired by retro hardware 
 
 The project emphasizes understanding over performance, making every instruction, signal, and clock cycle inspectable. It supports writing, assembling, loading, and executing real programs end-to-end on this virtual platform.
 
+## Current Development: Source Location Tracking
+
+**Active Goal**: Implement source location tracking throughout the assembler pipeline to associate runtime state with source file locations (filename and line number) for better debugging of assembly programs.
+
+**Progress**: Phase 1 of 5-phase refactor complete (November 10, 2025)
+- ✅ Created SourceLocation class as immutable value object
+- ✅ Updated Parser to use SourceLocation instead of integer line numbers
+- ✅ All 126 assembler unit tests passing
+- 🔄 Next: Phase 2 - Propagate through InstructionBinder/LabelBinder
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -22,6 +32,8 @@ Preferred communication style: Simple, everyday language.
 - `build_nosani/` - without sanitizers for production
 
 **Rationale**: Modular CMake structure allows vertical slices of the system to be modified together as a unit, enabling rapid feature development. Separate build directories support both debugging and performance testing workflows.
+
+**Known Issue**: AddressSanitizer/LeakSanitizer generates "failed to intercept" warnings on NixOS (e.g., `__isoc99_printf`, `pthread_mutex_lock`). These are documented false positives when using ASan on NixOS and do not indicate actual memory leaks. All unit tests pass cleanly.
 
 ## Core Components
 
@@ -65,6 +77,8 @@ Preferred communication style: Simple, everyday language.
 **Two-pass assembly process**: Parses assembly text files, resolves labels, encodes instructions and operands, and produces binary cartridge files. Integrates with the instruction table from the `asm` library.
 
 **Rationale**: Standard two-pass design handles forward references while maintaining simplicity. Cartridge output format provides a self-contained executable for the simulator.
+
+**Recent Addition**: SourceLocation class (November 2025) - Tracks source filename, line number, and optional column for associating assembler output with original source code. Currently integrated into Parser layer with plans to propagate through binding and encoding stages.
 
 ### Test Infrastructure (`test/`)
 
