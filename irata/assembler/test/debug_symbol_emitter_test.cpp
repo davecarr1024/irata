@@ -1,5 +1,5 @@
 #include <gmock/gmock.h>
-<parameter name="gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <irata/asm/instruction_set.hpp>
 #include <irata/assembler/debug_symbol_emitter.hpp>
 #include <irata/assembler/source_location.hpp>
