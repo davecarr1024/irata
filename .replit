@@ -5,3 +5,26 @@ packages = ["bc", "clang-tools_18", "cmake", "hexdump", "llvmPackages.bintools-u
 
 [agent]
 expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test"
+
+[[workflows.workflow]]
+name = "test"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd irata && make test"
+
+[workflows.workflow.metadata]
+outputType = "console"
