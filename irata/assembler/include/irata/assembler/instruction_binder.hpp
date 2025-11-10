@@ -2,6 +2,7 @@
 
 #include <irata/asm/instruction.hpp>
 #include <irata/assembler/parser.hpp>
+#include <irata/assembler/source_location.hpp>
 #include <irata/common/bytes/word.hpp>
 
 namespace irata::assembler {
@@ -28,22 +29,27 @@ public:
 
       common::bytes::Word address() const;
 
+      const SourceLocation &location() const;
+
       virtual size_t size() const = 0;
 
       virtual bool operator==(const Statement &other) const;
       virtual bool operator!=(const Statement &other) const;
 
     protected:
-      Statement(Type type, common::bytes::Word address);
+      Statement(Type type, common::bytes::Word address,
+                const SourceLocation &location);
 
     private:
       const Type type_;
       const common::bytes::Word address_;
+      const SourceLocation location_;
     };
 
     class Label final : public Statement {
     public:
-      Label(common::bytes::Word address, std::string_view value);
+      Label(common::bytes::Word address, std::string_view value,
+            const SourceLocation &location);
       Label(common::bytes::Word address, const Parser::Program::Label &label);
 
       std::string value() const;
@@ -180,7 +186,7 @@ public:
 
       Instruction(common::bytes::Word address,
                   const asm_::Instruction &instruction,
-                  std::unique_ptr<Arg> arg);
+                  std::unique_ptr<Arg> arg, const SourceLocation &location);
 
       Instruction(common::bytes::Word address,
                   const Parser::Program::Instruction &instruction);
@@ -202,7 +208,8 @@ public:
     class Literal final : public Statement {
     public:
       Literal(common::bytes::Word address,
-              std::vector<common::bytes::Byte> values);
+              std::vector<common::bytes::Byte> values,
+              const SourceLocation &location);
       Literal(common::bytes::Word address,
               const Parser::Program::ByteDirective &directive);
 

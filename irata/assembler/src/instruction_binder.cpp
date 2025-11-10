@@ -5,9 +5,9 @@
 
 namespace irata::assembler {
 
-InstructionBinder::Program::Statement::Statement(Type type,
-                                                 common::bytes::Word address)
-    : type_(type), address_(address) {}
+InstructionBinder::Program::Statement::Statement(
+    Type type, common::bytes::Word address, const SourceLocation &location)
+    : type_(type), address_(address), location_(location) {}
 
 std::unique_ptr<InstructionBinder::Program::Statement>
 InstructionBinder::Program::Statement::bind(
@@ -37,6 +37,11 @@ common::bytes::Word InstructionBinder::Program::Statement::address() const {
   return address_;
 }
 
+const SourceLocation &
+InstructionBinder::Program::Statement::location() const {
+  return location_;
+}
+
 bool InstructionBinder::Program::Statement::operator==(
     const Statement &other) const {
   return type_ == other.type_ && address_ == other.address_ &&
@@ -49,12 +54,13 @@ bool InstructionBinder::Program::Statement::operator!=(
 }
 
 InstructionBinder::Program::Label::Label(common::bytes::Word address,
-                                         std::string_view value)
-    : Statement(Type::Label, address), value_(value) {}
+                                         std::string_view value,
+                                         const SourceLocation &location)
+    : Statement(Type::Label, address, location), value_(value) {}
 
 InstructionBinder::Program::Label::Label(common::bytes::Word address,
                                          const Parser::Program::Label &label)
-    : Label(address, label.value()) {}
+    : Label(address, label.value(), label.source_location()) {}
 
 std::string InstructionBinder::Program::Label::value() const { return value_; }
 
@@ -245,8 +251,8 @@ bool InstructionBinder::Program::Instruction::AbsoluteIndexed::operator==(
 
 InstructionBinder::Program::Instruction::Instruction(
     common::bytes::Word address, const asm_::Instruction &instruction,
-    std::unique_ptr<Arg> arg)
-    : Statement(Type::Instruction, address), instruction_(instruction),
+    std::unique_ptr<Arg> arg, const SourceLocation &location)
+    : Statement(Type::Instruction, address, location), instruction_(instruction),
       arg_(std::move(arg)) {
   if (arg_ == nullptr) {
     throw std::invalid_argument("null arg");
@@ -260,7 +266,7 @@ InstructionBinder::Program::Instruction::Instruction(
           address,
           asm_::InstructionSet::irata().get_instruction(
               instruction.instruction(), instruction.arg().addressing_mode()),
-          Arg::bind(instruction.arg())) {}
+          Arg::bind(instruction.arg()), instruction.source_location()) {}
 
 const asm_::Instruction &
 InstructionBinder::Program::Instruction::instruction() const {
@@ -287,13 +293,14 @@ bool InstructionBinder::Program::Instruction::operator==(
 }
 
 InstructionBinder::Program::Literal::Literal(
-    common::bytes::Word address, std::vector<common::bytes::Byte> values)
-    : Statement(Type::Literal, address), values_(std::move(values)) {}
+    common::bytes::Word address, std::vector<common::bytes::Byte> values,
+    const SourceLocation &location)
+    : Statement(Type::Literal, address, location), values_(std::move(values)) {}
 
 InstructionBinder::Program::Literal::Literal(
     common::bytes::Word address,
     const Parser::Program::ByteDirective &directive)
-    : Literal(address, {directive.value()}) {}
+    : Literal(address, {directive.value()}, directive.source_location()) {}
 
 size_t InstructionBinder::Program::Literal::size() const {
   return values_.size();
