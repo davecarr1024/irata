@@ -77,6 +77,9 @@ void encode_instruction(
 void encode_statement(std::map<common::bytes::Word, common::bytes::Byte> &bytes,
                       const LabelBinder::Program::Statement &statement) {
   switch (statement.type()) {
+  case LabelBinder::Program::Statement::Type::Label:
+    // Labels are metadata only, not encoded into bytes
+    break;
   case LabelBinder::Program::Statement::Type::Instruction:
     encode_instruction(
         bytes,

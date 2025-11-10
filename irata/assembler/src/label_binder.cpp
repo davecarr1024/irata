@@ -100,7 +100,7 @@ LabelBinder::Program::Label::Label(common::bytes::Word address,
 
 LabelBinder::Program::Label::Label(
     const InstructionBinder::Program::Label &label)
-    : Label(label.address(), label.value(), label.source_location()) {}
+    : Label(label.address(), label.value(), label.location()) {}
 
 const std::string &LabelBinder::Program::Label::value() const {
   return value_;
@@ -274,7 +274,7 @@ LabelBinder::Program::Instruction::Instruction(
     const BindContext &context)
     : Instruction(instruction.address(), instruction.instruction(),
                   Arg::bind(instruction.arg(), context),
-                  instruction.source_location()) {}
+                  instruction.location()) {}
 
 const asm_::Instruction &
 LabelBinder::Program::Instruction::instruction() const {
@@ -304,7 +304,7 @@ LabelBinder::Program::Literal::Literal(common::bytes::Word address,
 
 LabelBinder::Program::Literal::Literal(
     const InstructionBinder::Program::Literal &literal)
-    : Literal(literal.address(), literal.values(), literal.source_location()) {}
+    : Literal(literal.address(), literal.values(), literal.location()) {}
 
 bool LabelBinder::Program::Literal::operator==(const Statement &other) const {
   return Statement::operator==(other) &&

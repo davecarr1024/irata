@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <irata/asm/instruction_set.hpp>
 #include <irata/assembler/byte_encoder.hpp>
+#include <irata/assembler/source_location.hpp>
 
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
@@ -43,7 +44,7 @@ TEST_F(ByteEncoderTest, Encode_Instruction_None) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> statements;
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, hlt,
-      std::make_unique<LabelBinder::Program::Instruction::None>()));
+      std::make_unique<LabelBinder::Program::Instruction::None>(), SourceLocation("<test>", 1)));
   const auto program = LabelBinder::Program(std::move(statements));
   EXPECT_THAT(encoder.encode(program),
               UnorderedElementsAre(Pair(0x1234, hlt.opcode())));
@@ -53,7 +54,7 @@ TEST_F(ByteEncoderTest, Encode_Instruction_Immediate) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> statements;
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_immediate,
-      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x56)));
+      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x56), SourceLocation("<test>", 1)));
   const auto program = LabelBinder::Program(std::move(statements));
   EXPECT_THAT(encoder.encode(program),
               UnorderedElementsAre(Pair(0x1234, lda_immediate.opcode()),
@@ -64,7 +65,7 @@ TEST_F(ByteEncoderTest, Encode_Instruction_Absolute) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> statements;
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678), SourceLocation("<test>", 1)));
   const auto program = LabelBinder::Program(std::move(statements));
   EXPECT_THAT(encoder.encode(program),
               UnorderedElementsAre(Pair(0x1234, lda_absolute.opcode()),
@@ -76,7 +77,7 @@ TEST_F(ByteEncoderTest, Encode_Instruction_ZeroPageIndexed) {
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_zero_page_x,
       std::make_unique<LabelBinder::Program::Instruction::ZeroPageIndexed>(
-          Index::X, 0x56)));
+          Index::X, 0x56), SourceLocation("<test>", 1)));
   const auto program = LabelBinder::Program(std::move(statements));
   EXPECT_THAT(encoder.encode(program),
               UnorderedElementsAre(Pair(0x1234, lda_zero_page_x.opcode()),
@@ -88,7 +89,7 @@ TEST_F(ByteEncoderTest, Encode_Instruction_AbsoluteIndexed) {
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute_x,
       std::make_unique<LabelBinder::Program::Instruction::AbsoluteIndexed>(
-          Index::X, 0x5678)));
+          Index::X, 0x5678), SourceLocation("<test>", 1)));
   const auto program = LabelBinder::Program(std::move(statements));
   EXPECT_THAT(encoder.encode(program),
               UnorderedElementsAre(Pair(0x1234, lda_absolute_x.opcode()),
@@ -99,10 +100,10 @@ TEST_F(ByteEncoderTest, Encode_Instruction_DuplicateAddress) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> statements;
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_immediate,
-      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x56)));
+      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x56), SourceLocation("<test>", 1)));
   statements.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678), SourceLocation("<test>", 2)));
   const auto program = LabelBinder::Program(std::move(statements));
   EXPECT_THROW(
       {

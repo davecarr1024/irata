@@ -125,7 +125,7 @@ TEST_F(LabelBinderTest, Instruction_AbsoluteIndexed_Equality) {
 
 TEST_F(LabelBinderTest, Instruction_Properties) {
   const auto instruction = LabelBinder::Program::Instruction(
-      0x1234, hlt, std::make_unique<LabelBinder::Program::Instruction::None>());
+      0x1234, hlt, std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc());
   EXPECT_EQ(instruction.type(),
             LabelBinder::Program::Statement::Type::Instruction);
   EXPECT_EQ(instruction.address(), 0x1234);
@@ -136,34 +136,34 @@ TEST_F(LabelBinderTest, Instruction_Properties) {
 TEST_F(LabelBinderTest, Instruction_Equality) {
   EXPECT_EQ(LabelBinder::Program::Instruction(
                 0x1234, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()),
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()),
             LabelBinder::Program::Instruction(
                 0x1234, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()));
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
   EXPECT_NE(LabelBinder::Program::Instruction(
                 0x1234, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()),
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()),
             LabelBinder::Program::Instruction(
                 0x5678, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()));
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
   EXPECT_NE(LabelBinder::Program::Instruction(
                 0x1234, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()),
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()),
             LabelBinder::Program::Instruction(
                 0x1234, lda_immediate,
-                std::make_unique<LabelBinder::Program::Instruction::None>()));
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
   EXPECT_NE(LabelBinder::Program::Instruction(
                 0x1234, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()),
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()),
             LabelBinder::Program::Instruction(
                 0x1234, hlt,
                 std::make_unique<LabelBinder::Program::Instruction::Immediate>(
-                    0x12)));
+                    0x12), test_loc()));
 }
 
 TEST_F(LabelBinderTest, Literal_Properties) {
   const auto literal = LabelBinder::Program::Literal(
-      0x1234, std::vector<common::bytes::Byte>{0x12, 0x34});
+      0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc());
   EXPECT_EQ(literal.type(), LabelBinder::Program::Statement::Type::Literal);
   EXPECT_EQ(literal.address(), 0x1234);
   EXPECT_EQ(literal.values(), (std::vector<common::bytes::Byte>{0x12, 0x34}));
@@ -171,20 +171,20 @@ TEST_F(LabelBinderTest, Literal_Properties) {
 
 TEST_F(LabelBinderTest, Literal_Equality) {
   EXPECT_EQ(LabelBinder::Program::Literal(
-                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()),
             LabelBinder::Program::Literal(
-                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}));
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()));
   EXPECT_NE(LabelBinder::Program::Literal(
-                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()),
             LabelBinder::Program::Literal(
-                0x5678, std::vector<common::bytes::Byte>{0x12, 0x34}));
+                0x5678, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()));
   EXPECT_NE(LabelBinder::Program::Literal(
-                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}),
-            LabelBinder::Program::Literal(0x1234, {}));
-  EXPECT_NE(LabelBinder::Program::Literal(0x1234, {}),
+                0x1234, std::vector<common::bytes::Byte>{0x12, 0x34}, test_loc()),
+            LabelBinder::Program::Literal(0x1234, {}, test_loc()));
+  EXPECT_NE(LabelBinder::Program::Literal(0x1234, {}, test_loc()),
             LabelBinder::Program::Instruction(
                 0x1234, hlt,
-                std::make_unique<LabelBinder::Program::Instruction::None>()));
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
 }
 
 TEST_F(LabelBinderTest, Program_Equality) {
@@ -198,7 +198,7 @@ TEST_F(LabelBinderTest, Program_Equality) {
     std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
     lhs.push_back(std::make_unique<LabelBinder::Program::Instruction>(
         0x1234, hlt,
-        std::make_unique<LabelBinder::Program::Instruction::None>()));
+        std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
     std::vector<std::unique_ptr<LabelBinder::Program::Statement>> rhs;
     EXPECT_NE(LabelBinder::Program(std::move(lhs)),
               LabelBinder::Program(std::move(rhs)));
@@ -207,11 +207,11 @@ TEST_F(LabelBinderTest, Program_Equality) {
     std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
     lhs.push_back(std::make_unique<LabelBinder::Program::Instruction>(
         0x1234, hlt,
-        std::make_unique<LabelBinder::Program::Instruction::None>()));
+        std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
     std::vector<std::unique_ptr<LabelBinder::Program::Statement>> rhs;
     rhs.push_back(std::make_unique<LabelBinder::Program::Instruction>(
         0x1234, hlt,
-        std::make_unique<LabelBinder::Program::Instruction::None>()));
+        std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
     EXPECT_EQ(LabelBinder::Program(std::move(lhs)),
               LabelBinder::Program(std::move(rhs)));
   }
@@ -234,7 +234,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_None) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, hlt,
-      std::make_unique<LabelBinder::Program::Instruction::None>()));
+      std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -251,7 +251,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_Immediate) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_immediate,
-      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x12)));
+      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x12), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -269,7 +269,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLiteral) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -290,7 +290,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteLabel) {
   // mapping.
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xD678)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xD678), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -329,7 +329,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_ZeroPageIndexed) {
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_zero_page_x,
       std::make_unique<LabelBinder::Program::Instruction::ZeroPageIndexed>(
-          Index::X, 0x12)));
+          Index::X, 0x12), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -348,7 +348,7 @@ TEST_F(LabelBinderTest, Bind_SingleInstruction_AbsoluteIndexed) {
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, lda_absolute_x,
       std::make_unique<LabelBinder::Program::Instruction::AbsoluteIndexed>(
-          Index::X, 0x1234)));
+          Index::X, 0x1234), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -401,17 +401,17 @@ TEST_F(LabelBinderTest, Bind_MultipleInstructions) {
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1234, hlt,
-      std::make_unique<LabelBinder::Program::Instruction::None>()));
+      std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1235, lda_immediate,
-      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x12)));
+      std::make_unique<LabelBinder::Program::Instruction::Immediate>(0x12), test_loc()));
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1236, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0x5678), test_loc()));
   // Note 0x8000 offset to account for cartridge memory mapping.
   expected.push_back(std::make_unique<LabelBinder::Program::Instruction>(
       0x1237, lda_absolute,
-      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xC321)));
+      std::make_unique<LabelBinder::Program::Instruction::Absolute>(0xC321), test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
@@ -424,7 +424,7 @@ TEST_F(LabelBinderTest, Bind_Literal) {
       binder.bind(InstructionBinder::Program(std::move(statements)));
   std::vector<std::unique_ptr<LabelBinder::Program::Statement>> expected;
   expected.push_back(std::make_unique<LabelBinder::Program::Literal>(
-      0x1234, std::vector<common::bytes::Byte>{0xBE, 0xEF}));
+      0x1234, std::vector<common::bytes::Byte>{0xBE, 0xEF}, test_loc()));
   EXPECT_EQ(program, LabelBinder::Program(std::move(expected)));
 }
 
