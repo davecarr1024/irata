@@ -187,6 +187,27 @@ TEST_F(LabelBinderTest, Literal_Equality) {
                 std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
 }
 
+TEST_F(LabelBinderTest, Label_Properties) {
+  const auto label = LabelBinder::Program::Label(0x1234, "my_label", test_loc());
+  EXPECT_EQ(label.type(), LabelBinder::Program::Statement::Type::Label);
+  EXPECT_EQ(label.address(), 0x1234);
+  EXPECT_EQ(label.value(), "my_label");
+  EXPECT_EQ(label.source_location(), test_loc());
+}
+
+TEST_F(LabelBinderTest, Label_Equality) {
+  EXPECT_EQ(LabelBinder::Program::Label(0x1234, "my_label", test_loc()),
+            LabelBinder::Program::Label(0x1234, "my_label", test_loc()));
+  EXPECT_NE(LabelBinder::Program::Label(0x1234, "my_label", test_loc()),
+            LabelBinder::Program::Label(0x5678, "my_label", test_loc()));
+  EXPECT_NE(LabelBinder::Program::Label(0x1234, "my_label", test_loc()),
+            LabelBinder::Program::Label(0x1234, "other_label", test_loc()));
+  EXPECT_NE(LabelBinder::Program::Label(0x1234, "my_label", test_loc()),
+            LabelBinder::Program::Instruction(
+                0x1234, hlt,
+                std::make_unique<LabelBinder::Program::Instruction::None>(), test_loc()));
+}
+
 TEST_F(LabelBinderTest, Program_Equality) {
   {
     std::vector<std::unique_ptr<LabelBinder::Program::Statement>> lhs;
