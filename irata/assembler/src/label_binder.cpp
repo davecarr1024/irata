@@ -47,8 +47,9 @@ LabelBinder::BindContext::get(std::string_view label) const {
 }
 
 LabelBinder::Program::Statement::Statement(Type type,
-                                           common::bytes::Word address)
-    : type_(type), address_(address) {}
+                                           common::bytes::Word address,
+                                           SourceLocation source_location)
+    : type_(type), address_(address), source_location_(std::move(source_location)) {}
 
 std::unique_ptr<LabelBinder::Program::Statement>
 LabelBinder::Program::Statement::bind(
@@ -56,7 +57,8 @@ LabelBinder::Program::Statement::bind(
     const BindContext &context) {
   switch (statement.type()) {
   case InstructionBinder::Program::Statement::Type::Label:
-    return nullptr;
+    return std::make_unique<Label>(
+        dynamic_cast<const InstructionBinder::Program::Label &>(statement));
   case InstructionBinder::Program::Statement::Type::Instruction:
     return std::make_unique<Instruction>(
         dynamic_cast<const InstructionBinder::Program::Instruction &>(
@@ -64,7 +66,6 @@ LabelBinder::Program::Statement::bind(
         context);
   case InstructionBinder::Program::Statement::Type::Literal:
     return std::make_unique<Literal>(
-        statement.address(),
         dynamic_cast<const InstructionBinder::Program::Literal &>(statement));
   }
 }
@@ -78,12 +79,36 @@ common::bytes::Word LabelBinder::Program::Statement::address() const {
   return address_;
 }
 
+const SourceLocation &LabelBinder::Program::Statement::source_location() const {
+  return source_location_;
+}
+
 bool LabelBinder::Program::Statement::operator==(const Statement &other) const {
-  return type_ == other.type_ && address_ == other.address_;
+  return type_ == other.type_ && address_ == other.address_ &&
+         source_location_ == other.source_location_;
 }
 
 bool LabelBinder::Program::Statement::operator!=(const Statement &other) const {
   return !(*this == other);
+}
+
+LabelBinder::Program::Label::Label(common::bytes::Word address,
+                                   std::string value,
+                                   SourceLocation source_location)
+    : Statement(Type::Label, address, std::move(source_location)),
+      value_(std::move(value)) {}
+
+LabelBinder::Program::Label::Label(
+    const InstructionBinder::Program::Label &label)
+    : Label(label.address(), label.value(), label.source_location()) {}
+
+const std::string &LabelBinder::Program::Label::value() const {
+  return value_;
+}
+
+bool LabelBinder::Program::Label::operator==(const Statement &other) const {
+  return Statement::operator==(other) &&
+         value_ == dynamic_cast<const Label &>(other).value_;
 }
 
 LabelBinder::Program::Instruction::Arg::Arg(Type type) : type_(type) {}
@@ -236,9 +261,9 @@ bool LabelBinder::Program::Instruction::AbsoluteIndexed::operator==(
 
 LabelBinder::Program::Instruction::Instruction(
     common::bytes::Word address, const asm_::Instruction &instruction,
-    std::unique_ptr<Arg> arg)
-    : Statement(Type::Instruction, address), instruction_(instruction),
-      arg_(std::move(arg)) {
+    std::unique_ptr<Arg> arg, SourceLocation source_location)
+    : Statement(Type::Instruction, address, std::move(source_location)),
+      instruction_(instruction), arg_(std::move(arg)) {
   if (arg_ == nullptr) {
     throw std::invalid_argument("null arg");
   }
@@ -248,7 +273,8 @@ LabelBinder::Program::Instruction::Instruction(
     const InstructionBinder::Program::Instruction &instruction,
     const BindContext &context)
     : Instruction(instruction.address(), instruction.instruction(),
-                  Arg::bind(instruction.arg(), context)) {}
+                  Arg::bind(instruction.arg(), context),
+                  instruction.source_location()) {}
 
 const asm_::Instruction &
 LabelBinder::Program::Instruction::instruction() const {
@@ -271,13 +297,14 @@ bool LabelBinder::Program::Instruction::operator==(
 }
 
 LabelBinder::Program::Literal::Literal(common::bytes::Word address,
-                                       std::vector<common::bytes::Byte> values)
-    : Statement(Type::Literal, address), values_(std::move(values)) {}
+                                       std::vector<common::bytes::Byte> values,
+                                       SourceLocation source_location)
+    : Statement(Type::Literal, address, std::move(source_location)),
+      values_(std::move(values)) {}
 
 LabelBinder::Program::Literal::Literal(
-    common::bytes::Word address,
     const InstructionBinder::Program::Literal &literal)
-    : Literal(address, literal.values()) {}
+    : Literal(literal.address(), literal.values(), literal.source_location()) {}
 
 bool LabelBinder::Program::Literal::operator==(const Statement &other) const {
   return Statement::operator==(other) &&
@@ -325,10 +352,7 @@ LabelBinder::bind(const InstructionBinder::Program &program) {
   const BindContext context(program);
   std::vector<std::unique_ptr<Program::Statement>> statements;
   for (const auto &statement : program.statements()) {
-    if (auto bound_statement = Program::Statement::bind(*statement, context);
-        bound_statement != nullptr) {
-      statements.push_back(std::move(bound_statement));
-    }
+    statements.push_back(Program::Statement::bind(*statement, context));
   }
   return Program(std::move(statements));
 }
@@ -336,11 +360,19 @@ LabelBinder::bind(const InstructionBinder::Program &program) {
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Statement::Type &type) {
   switch (type) {
+  case LabelBinder::Program::Statement::Type::Label:
+    return os << "Label";
   case LabelBinder::Program::Statement::Type::Instruction:
     return os << "Instruction";
   case LabelBinder::Program::Statement::Type::Literal:
     return os << "Literal";
   }
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Label &label) {
+  return os << "Label(address = " << label.address()
+            << ", value = \"" << label.value() << "\")";
 }
 
 std::ostream &
@@ -434,6 +466,8 @@ std::ostream &operator<<(std::ostream &os,
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Statement &statement) {
   switch (statement.type()) {
+  case LabelBinder::Program::Statement::Type::Label:
+    return os << dynamic_cast<const LabelBinder::Program::Label &>(statement);
   case LabelBinder::Program::Statement::Type::Instruction:
     return os << dynamic_cast<const LabelBinder::Program::Instruction &>(
                statement);

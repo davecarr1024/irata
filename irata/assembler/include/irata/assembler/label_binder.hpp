@@ -1,6 +1,7 @@
 #pragma once
 
 #include <irata/assembler/instruction_binder.hpp>
+#include <irata/assembler/source_location.hpp>
 #include <map>
 
 namespace irata::assembler {
@@ -28,6 +29,7 @@ public:
     class Statement {
     public:
       enum class Type {
+        Label,
         Instruction,
         Literal,
       };
@@ -42,15 +44,33 @@ public:
 
       common::bytes::Word address() const;
 
+      const SourceLocation &source_location() const;
+
       virtual bool operator==(const Statement &other) const;
       virtual bool operator!=(const Statement &other) const;
 
     protected:
-      Statement(Type type, common::bytes::Word address);
+      Statement(Type type, common::bytes::Word address,
+                SourceLocation source_location);
 
     private:
       const Type type_;
       const common::bytes::Word address_;
+      const SourceLocation source_location_;
+    };
+
+    class Label final : public Statement {
+    public:
+      Label(common::bytes::Word address, std::string value,
+            SourceLocation source_location);
+      Label(const InstructionBinder::Program::Label &label);
+
+      const std::string &value() const;
+
+      bool operator==(const Statement &other) const override final;
+
+    private:
+      const std::string value_;
     };
 
     class Instruction final : public Statement {
@@ -156,7 +176,7 @@ public:
 
       Instruction(common::bytes::Word address,
                   const asm_::Instruction &instruction,
-                  std::unique_ptr<Arg> arg);
+                  std::unique_ptr<Arg> arg, SourceLocation source_location);
       Instruction(const InstructionBinder::Program::Instruction &instruction,
                   const BindContext &context);
 
@@ -175,9 +195,9 @@ public:
     class Literal final : public Statement {
     public:
       Literal(common::bytes::Word address,
-              std::vector<common::bytes::Byte> values);
-      Literal(common::bytes::Word address,
-              const InstructionBinder::Program::Literal &literal);
+              std::vector<common::bytes::Byte> values,
+              SourceLocation source_location);
+      Literal(const InstructionBinder::Program::Literal &literal);
 
       const std::vector<common::bytes::Byte> &values() const;
 
@@ -203,6 +223,8 @@ public:
 
 std::ostream &operator<<(std::ostream &os,
                          const LabelBinder::Program::Statement::Type &type);
+std::ostream &operator<<(std::ostream &os,
+                         const LabelBinder::Program::Label &label);
 std::ostream &
 operator<<(std::ostream &os,
            const LabelBinder::Program::Instruction::Arg::Type &type);
